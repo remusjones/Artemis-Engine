@@ -1,6 +1,0 @@
-"D:\Work\CLion 2021.2.3\bin\cmake\win\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_DEPENDS_USE_COMPILER=FALSE -G "CodeBlocks - MinGW Makefiles" D:\Work\Git\3DEngine
--- Could NOT find Doxygen (missing: DOXYGEN_EXECUTABLE) 
--- Including Win32 support
--- Configuring done
--- Generating done
--- Build files have been written to: D:/Work/Git/3DEngine/cmake-build-debug

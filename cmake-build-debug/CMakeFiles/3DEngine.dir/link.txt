@@ -1,3 +1,0 @@
-"D:\Work\CLion 2021.2.3\bin\cmake\win\bin\cmake.exe" -E rm -f CMakeFiles\3DEngine.dir/objects.a
-D:\Work\MSYS2\mingw64\bin\ar.exe cr CMakeFiles\3DEngine.dir/objects.a @CMakeFiles\3DEngine.dir\objects1.rsp
-D:\Work\MSYS2\mingw64\bin\g++.exe -g -Wl,--whole-archive CMakeFiles\3DEngine.dir/objects.a -Wl,--no-whole-archive -o 3DEngine.exe -Wl,--out-implib,lib3DEngine.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\3DEngine.dir\linklibs.rsp
