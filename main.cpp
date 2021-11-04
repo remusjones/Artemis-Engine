@@ -12,7 +12,7 @@
 int main() {
 
 
-    DefaultApplication app = DefaultApplication("3D Engine", 800,600);
+    DefaultApplication app = DefaultApplication("YahBoi", 800,600);
 
     try {
         app.Run();

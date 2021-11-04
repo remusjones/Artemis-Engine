@@ -169,17 +169,25 @@ void DefaultApplication::SetupDebugMessenger()
     createInfo.pfnUserCallback = DebugCallback;
     createInfo.pUserData = nullptr; // Optional
 
-    if (CreateDebugUtilsMessengerEXT(m_vulkanInstance, &createInfo, nullptr, &m_debugMessenger) != VK_SUCCESS) {
-        throw std::runtime_error("failed to set up debug messenger!");
+    // TODO - this is returning null, https://vulkan-tutorial.com/Drawing_a_triangle/Setup/Validation_layers
+    if (VKCreateDebugUtilsMessengerEXT(m_vulkanInstance,
+                                       &createInfo,
+                                       nullptr,
+                                       &m_debugMessenger)
+                                       != VK_SUCCESS)
+    {
+
+        std::cout << "Failed to setup debug messenger." << std::endl;
     }
 
 }
-VkResult DefaultApplication::CreateDebugUtilsMessengerEXT(VkInstance instance,
+VkResult DefaultApplication::VKCreateDebugUtilsMessengerEXT(VkInstance instance,
                                                           const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
                                                           const VkAllocationCallbacks *pAllocator,
                                                           VkDebugUtilsMessengerEXT *pDebugMessenger)
 {
-    auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+    auto func = (PFN_vkCreateDebugUtilsMessengerEXT)
+            vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
     if (func != nullptr) {
         return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
     } else {
