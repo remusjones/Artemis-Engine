@@ -8,6 +8,7 @@
 #define INC_3DENGINE_DEFAULTAPPLICATION_H
 #include <vector>
 #include <optional>
+#include "ShaderModule.h"
 
 struct QueueFamilyIndices
 {
@@ -85,6 +86,10 @@ private:
     VkQueue m_graphicsQueue;
     VkQueue m_presentQueue;
     VkSurfaceKHR m_surface;
+
+    ShaderModule m_shaderModule;
+
+
 
     // swapchain
     VkSwapchainKHR m_swapChain;

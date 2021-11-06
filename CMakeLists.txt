@@ -4,10 +4,12 @@ project(3DEngine)
 
 set(CMAKE_CXX_STANDARD 23)
 
-add_executable(3DEngine main.cpp Project/Applications/DefaultApplication.cpp Project/Applications/DefaultApplication.h)
+add_executable(3DEngine main.cpp Project/Applications/DefaultApplication.cpp Project/Applications/DefaultApplication.h Project/Core/Systems/ShaderModule.cpp Project/Core/Systems/ShaderModule.h)
 
 # Include Vulkan Headers
 include_directories("C:/VulkanSDK/1.2.189.2/Include")
+include_directories(Project/Core/Systems)
+include_directories(Project/Applications)
 
 add_library(glm INTERFACE)
 target_include_directories(glm INTERFACE "glm")

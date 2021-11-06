@@ -44,6 +44,9 @@ void DefaultApplication::Update()
 void DefaultApplication::Cleanup()
 {
     std::cout << "Destroying Application" << std::endl;
+
+    m_shaderModule.Cleanup();
+
     for (auto imageView : m_swapChainImageViews) {
         vkDestroyImageView(m_logicalDevice, imageView, nullptr);
     }
@@ -219,7 +222,9 @@ void DefaultApplication::CreateImageViews()
 }
 void DefaultApplication::CreateGraphicsPipeline()
 {
-
+    m_shaderModule = ShaderModule();
+    m_shaderModule.Initialize(m_logicalDevice);
+    m_shaderModule.LoadShader("shader", BOTH);
 }
 
 bool DefaultApplication::CheckValidationLayerSupport() {
