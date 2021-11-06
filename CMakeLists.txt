@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 project(3DEngine)
 
+
 set(CMAKE_CXX_STANDARD 23)
 
 add_executable(3DEngine main.cpp Project/Applications/DefaultApplication.cpp Project/Applications/DefaultApplication.h)
@@ -14,3 +15,4 @@ target_include_directories(glm INTERFACE "glm")
 add_subdirectory("glfw" glfw)
 
 target_link_libraries(3DEngine glfw C:/VulkanSDK/1.2.189.2/Lib/vulkan-1.lib glm)
+
