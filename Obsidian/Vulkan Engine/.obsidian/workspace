@@ -1,0 +1,105 @@
+{
+  "main": {
+    "id": "806be97c5b6d2e51",
+    "type": "split",
+    "children": [
+      {
+        "id": "8e89e6c1669a0d57",
+        "type": "leaf",
+        "state": {
+          "type": "markdown",
+          "state": {
+            "file": "Main/The TODO.md",
+            "mode": "source"
+          }
+        },
+        "group": "dcc411dd7c666603"
+      },
+      {
+        "id": "cd52ed4e9046d172",
+        "type": "leaf",
+        "state": {
+          "type": "markdown",
+          "state": {
+            "file": "Main/The TODO.md",
+            "mode": "preview"
+          }
+        },
+        "group": "dcc411dd7c666603"
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "2060c39a1191935f",
+    "type": "split",
+    "children": [
+      {
+        "id": "e52326a3c54e02e1",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "794f09b4db95249a",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {}
+            }
+          },
+          {
+            "id": "b96d7419dfc4247e",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "f3cc078946bf8b99",
+    "type": "split",
+    "children": [
+      {
+        "id": "f94646c230a6d11f",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "3676cb3dbc5eb3e0",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Main/The TODO.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "active": "8e89e6c1669a0d57",
+  "lastOpenFiles": [
+    "Main/The TODO.md"
+  ]
+}
