@@ -1,0 +1,1 @@
+for /r %%i in (*.frag, *.vert) do C:\VulkanSDK\1.2.189.2\Bin\glslc %%i -o Compiled_Shaders/%%~ni.spv
