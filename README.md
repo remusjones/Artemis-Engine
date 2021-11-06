@@ -22,3 +22,11 @@ target_link_libraries(3DEngine glfw C:/VulkanSDK/1.2.189.2/Lib/vulkan-1.lib glm)
 3. Select the mingw installation in CLion:
 4. File | Settings | Build ,Execution... | Toolchains
 5. Set MinGW Home to {MSys2 installation dir}\mingw64
+
+## Preparing Shader Compilation
+1. Navigate to the %repo%/Automation/CompileShaders.bat
+2. Make sure the path is set to your vulkan directory. 
+3. Navigate to Settings > External Tools and add the CompileShaders.bat to your tools list.
+4. Right Click -> External Tools > CompileShaders.
+
+Note: your shader vert/frags should have a unique name, otherwise they will be overwritten.
