@@ -11,3 +11,4 @@
 ### Current Steps: 
 1. Implement Shader Modules:
 https://vulkan-tutorial.com/Drawing_a_triangle/Graphics_pipeline_basics/Shader_modules
+2. Implement Fixed Functions https://vulkan-tutorial.com/Drawing_a_triangle/Graphics_pipeline_basics/Fixed_functions
