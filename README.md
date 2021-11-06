@@ -1,6 +1,6 @@
 # VulkanProject
 
-## Setup using CLion 
+## Setup using CLion (Windows)
 
 
 1. Install Vulkan SDK https://www.lunarg.com/vulkan-sdk/
