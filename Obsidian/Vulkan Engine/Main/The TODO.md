@@ -1,10 +1,10 @@
 ### Development Steps
 1. Use https://vulkan-tutorial.com/ to create the fundementals of the Engine Rendering.
-2. Create 3D Shaders, for Lighting, Shadows, Etc. 
-3. Implement Game-Object System
-4. Create Basic Physic Interactions
-5. ??
-
+2. Extrapolate the "Base-Line" fundamentals of the Engine into seperate classes.
+	1. RenderPipeline class for Shader Creation, textures, frag/verts, buffers, etc. 
+	2. Material class to contain the Textures, Frags, Verts, Buffers, etc.
+	3. A Model class to contain the Material Class and drawing information 
+	4. A GameObject class to pivot/move the Models and Materials around. 
 
 
 
@@ -25,3 +25,6 @@ mandBuffers member of any element of pSubmits was not recorded with the VK_COMMA
 https://vulkan.lunarg.com/doc/view/1.2.189.2/windows/1.2-extensions/vkspec.html#VUID-vkQueueSubmit-pCommandBuffers-00071
 
 https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/f
+
+4. Implement Vertex Buffers
+	https://vulkan-tutorial.com/Vertex_buffers/Vertex_input_description
