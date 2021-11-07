@@ -5,7 +5,13 @@
 	2. Material class to contain the Textures, Frags, Verts, Buffers, etc.
 	3. A Model class to contain the Material Class and drawing information 
 	4. A GameObject class to pivot/move the Models and Materials around. 
-
+3. Create Model Importer to dynamically load relevant model data
+	https://github.com/tinyobjloader/tinyobjloader
+1. Implement Lighting & Shadowmaps https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping
+2. Create/Implement a Physic System - perhaps https://www.reactphysics3d.com/ ?
+3. Create Component Flow for creating GameObjects? 
+4. Design Something
+5. Profit??
 
 
 ### Current Steps: 
