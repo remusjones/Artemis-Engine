@@ -464,7 +464,7 @@ void ShaderModule::DrawFrame()
 
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &m_commandBuffers[imageIndex];
-    
+
 
     VkSemaphore signalSemaphores[] = {m_renderFinishedSemaphore};
     submitInfo.signalSemaphoreCount = 1;
