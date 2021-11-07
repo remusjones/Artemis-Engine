@@ -11,6 +11,7 @@ void ShaderModule::Initialize(VkDevice& logicalDevice,
                               VkExtent2D& swapChainExtent,
                               VkFormat& swapChainImageFormat,
                               std::vector<VkImageView>& swapChainImageViews,
+                              std::vector<VkImage>& swapChainImages,
                               VkPhysicalDevice& physicalDevice,
                               VkQueue& graphicsQueue,
                               VkQueue& presentQueue
@@ -25,6 +26,7 @@ void ShaderModule::Initialize(VkDevice& logicalDevice,
     m_swapChainImageViews = swapChainImageViews;
     m_graphicsQueue = graphicsQueue;
     m_presentQueue = presentQueue;
+    m_swapChainImages = swapChainImages;
     CreateRenderPass();
 }
 
@@ -33,8 +35,11 @@ void ShaderModule::Cleanup()
 {
     if (m_hasCreatedPipeline)
     {
-        vkDestroySemaphore(m_logicalDevice, m_renderFinishedSemaphore, nullptr);
-        vkDestroySemaphore(m_logicalDevice, m_imageAvailableSemaphore, nullptr);
+        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+            vkDestroySemaphore(m_logicalDevice, m_renderFinishedSemaphores[i], nullptr);
+            vkDestroySemaphore(m_logicalDevice, m_imageAvailableSemaphores[i], nullptr);
+            vkDestroyFence(m_logicalDevice, m_inFlightFences[i], nullptr);
+        }
 
         if (m_commandPool != nullptr)
         {
@@ -155,6 +160,8 @@ VkShaderModule ShaderModule::CreateShaderModule(const std::vector<char> &code)
     return shaderModule;
 
 }
+
+//TODO: Move this into Shader->Setup
 
 void ShaderModule::CreatePipelineLayout()
 {
@@ -428,10 +435,6 @@ void ShaderModule::CreateCommandBuffer()
         dependency.srcAccessMask = 0;
         dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
         dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-       //renderPassInfo.dependencyCount = 1;
-       //renderPassInfo.pDependencies = &dependency;
-
-
 
         vkCmdBeginRenderPass(m_commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
         vkCmdBindPipeline(m_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
@@ -443,20 +446,34 @@ void ShaderModule::CreateCommandBuffer()
 
     }
 
-    CreateSemaphores();
+    CreateSyncObjects();
 
 }
 
 void ShaderModule::DrawFrame()
 {
+    vkWaitForFences(m_logicalDevice, 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
+
+
 
     uint32_t imageIndex;
-    vkAcquireNextImageKHR(m_logicalDevice, m_swapChain, UINT64_MAX, m_imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+    vkAcquireNextImageKHR(m_logicalDevice,
+                          m_swapChain,
+                          UINT64_MAX,
+                          m_imageAvailableSemaphores[m_currentFrame],
+                          VK_NULL_HANDLE,
+                          &imageIndex);
 
+    // Check if a previous frame is using this image (i.e. there is its fence to wait on)
+    if (m_imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
+        vkWaitForFences(m_logicalDevice, 1, &m_imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
+    }
+    // Mark the image as now being in use by this frame
+    m_imagesInFlight[imageIndex] = m_inFlightFences[m_currentFrame];
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    VkSemaphore waitSemaphores[] = {m_imageAvailableSemaphore};
+    VkSemaphore waitSemaphores[] = {m_imageAvailableSemaphores[m_currentFrame]};
     VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = waitSemaphores;
@@ -466,11 +483,12 @@ void ShaderModule::DrawFrame()
     submitInfo.pCommandBuffers = &m_commandBuffers[imageIndex];
 
 
-    VkSemaphore signalSemaphores[] = {m_renderFinishedSemaphore};
+    VkSemaphore signalSemaphores[] = {m_renderFinishedSemaphores[m_currentFrame]};
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
-    if (vkQueueSubmit(m_graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+    vkResetFences(m_logicalDevice, 1, &m_inFlightFences[m_currentFrame]);
+    if (vkQueueSubmit(m_graphicsQueue, 1, &submitInfo, m_inFlightFences[m_currentFrame]) != VK_SUCCESS) {
         throw std::runtime_error("failed to submit draw command buffer!");
     }
 
@@ -488,21 +506,32 @@ void ShaderModule::DrawFrame()
 
     vkQueuePresentKHR(m_presentQueue, &presentInfo);
 
+    m_currentFrame = (m_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+
 }
 
-void ShaderModule::CreateSemaphores()
+void ShaderModule::CreateSyncObjects()
 {
+    std::cout << "Creating Semaphores and Fences" << std::endl;
+    m_imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+    m_renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+    m_inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+    m_imagesInFlight.resize(m_swapChainImages.size(), VK_NULL_HANDLE);
 
-    std::cout << "Creating Semaphores" << std::endl;
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-    if (vkCreateSemaphore(m_logicalDevice, &semaphoreInfo, nullptr, &m_imageAvailableSemaphore) != VK_SUCCESS ||
-        vkCreateSemaphore(m_logicalDevice, &semaphoreInfo, nullptr, &m_renderFinishedSemaphore) != VK_SUCCESS) {
+    VkFenceCreateInfo fenceInfo{};
+    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-        throw std::runtime_error("failed to create semaphores!");
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+        if (vkCreateSemaphore(m_logicalDevice, &semaphoreInfo, nullptr, &m_imageAvailableSemaphores[i]) != VK_SUCCESS ||
+            vkCreateSemaphore(m_logicalDevice, &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]) != VK_SUCCESS ||
+            vkCreateFence(m_logicalDevice, &fenceInfo, nullptr, &m_inFlightFences[i]) != VK_SUCCESS) {
 
+            throw std::runtime_error("failed to create synchronization objects for a frame!");
+        }
     }
-
 }
 

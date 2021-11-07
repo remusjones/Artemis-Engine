@@ -40,6 +40,7 @@ void DefaultApplication::Update()
         glfwPollEvents();
         this->m_shaderModule.DrawFrame();
     }
+    vkDeviceWaitIdle(m_logicalDevice);
 }
 
 void DefaultApplication::Cleanup()
@@ -225,12 +226,12 @@ void DefaultApplication::CreateImageViews()
 // Have this function virtual for extension??
 void DefaultApplication::CreateGraphicsPipeline()
 {
-    m_shaderModule = ShaderModule();
     m_shaderModule.Initialize(m_logicalDevice,
                               m_swapChain,
                               m_swapChainExtent,
                               m_swapChainImageFormat,
                               m_swapChainImageViews,
+                              m_swapChainImages,
                               m_physicalDevice,
                               m_graphicsQueue,
                               m_presentQueue

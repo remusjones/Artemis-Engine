@@ -109,6 +109,7 @@ public:
                     VkExtent2D& swapChainExtent,
                     VkFormat& swapChainImageFormat,
                     std::vector<VkImageView>& swapChainImageViews,
+                    std::vector<VkImage>& swapChainImages,
                     VkPhysicalDevice& physicalDevice,
                     VkQueue& graphicsQueue,
                     VkQueue& presentQueue
@@ -118,14 +119,16 @@ public:
 
     VkResult LoadShader(const std::string& shaderName, ShaderType shaderType);
     void CreatePipelineLayout();
+    void ReinitializeSwapChain();
     void CreateRenderPass();
     void CreateFrameBuffers();
     void CreateCommandPool(QueueFamilyIndices& queueFamilyIndices);
     void CreateCommandBuffer();
     void UnloadShader(const std::string& shaderName);
     void DrawFrame();
-    void CreateSemaphores();
-
+    void CreateSyncObjects();
+    std::vector<VkFence> m_inFlightFences;
+    std::vector<VkFence> m_imagesInFlight;
     void Cleanup();
     static std::vector<char> ReadFile(const std::string& filename);
 
@@ -141,6 +144,7 @@ private:
     VkFormat m_swapChainImageFormat;
     VkPipeline m_graphicsPipeline;
     std::vector<VkImageView> m_swapChainImageViews{};
+    std::vector<VkImage> m_swapChainImages;
     std::vector<VkFramebuffer> m_swapChainFrameBuffers{};
     VkCommandPool m_commandPool;
     std::vector<VkCommandBuffer> m_commandBuffers{};
@@ -149,10 +153,13 @@ private:
     VkQueue m_graphicsQueue;
     VkQueue m_presentQueue;
 
-    VkSemaphore m_imageAvailableSemaphore;
-    VkSemaphore m_renderFinishedSemaphore;
+    std::vector<VkSemaphore>  m_imageAvailableSemaphores;
+    std::vector<VkSemaphore>  m_renderFinishedSemaphores;
+
+    size_t m_currentFrame = 0;
 
 
+    const int MAX_FRAMES_IN_FLIGHT = 2;
 };
 
 

@@ -71,7 +71,7 @@ private:
     VkQueue m_presentQueue;
     VkSurfaceKHR m_surface;
 
-    ShaderModule m_shaderModule;
+    ShaderModule m_shaderModule{};
 
 
 
