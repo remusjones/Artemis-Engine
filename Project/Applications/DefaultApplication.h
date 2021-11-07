@@ -9,24 +9,8 @@
 #include <vector>
 #include <optional>
 #include "ShaderModule.h"
+#include "SystemStructs.h"
 
-struct QueueFamilyIndices
-{
-    std::optional<uint32_t> m_graphicsFamily;
-    std::optional<uint32_t> m_presentFamily;
-
-    bool isComplete()
-    {
-        return m_graphicsFamily.has_value() && m_presentFamily.has_value();
-    }
-};
-
-struct SwapChainSupportDetails
-{
-    VkSurfaceCapabilitiesKHR m_capabilities;
-    std::vector<VkSurfaceFormatKHR> m_formats;
-    std::vector<VkPresentModeKHR> m_presentModes;
-};
 
 class DefaultApplication
 {

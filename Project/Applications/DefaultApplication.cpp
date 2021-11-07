@@ -38,6 +38,7 @@ void DefaultApplication::Update()
     while (!glfwWindowShouldClose(m_window))
     {
         glfwPollEvents();
+        this->m_shaderModule.DrawFrame();
     }
 }
 
@@ -220,11 +221,30 @@ void DefaultApplication::CreateImageViews()
         }
     }
 }
+
+// Have this function virtual for extension??
 void DefaultApplication::CreateGraphicsPipeline()
 {
     m_shaderModule = ShaderModule();
-    m_shaderModule.Initialize(m_logicalDevice);
+    m_shaderModule.Initialize(m_logicalDevice,
+                              m_swapChain,
+                              m_swapChainExtent,
+                              m_swapChainImageFormat,
+                              m_swapChainImageViews,
+                              m_physicalDevice,
+                              m_graphicsQueue,
+                              m_presentQueue
+                              );
     m_shaderModule.LoadShader("shader", BOTH);
+
+
+    // this needs to be created AFTER LoadShader(s)
+    m_shaderModule.CreatePipelineLayout();
+
+
+    auto queueFamilies = FindQueueFamilies(m_physicalDevice);
+    m_shaderModule.CreateCommandPool(queueFamilies);
+
 }
 
 bool DefaultApplication::CheckValidationLayerSupport() {

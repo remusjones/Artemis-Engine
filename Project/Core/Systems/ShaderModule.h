@@ -10,12 +10,16 @@
 #include <vector>
 #include <string>
 #include <map>
+#include "SystemStructs.h"
 
 // Helpers
 #define SHADER_VERTEX_SUFFIX "_v"
 #define SHADER_FRAGMENT_SUFFIX "_f"
 #define SHADER_FILE_EXTENSION ".spv"
 #define SHADER_DIRECTORY "\\Shaders\\"
+
+
+//TODO Rename ShaderModule to RenderPipeline
 
 enum ShaderType
 {
@@ -100,18 +104,54 @@ class ShaderModule
 {
 public:
 
-    void Initialize(VkDevice& logicalDevice);
+    void Initialize(VkDevice& logicalDevice,
+                    VkSwapchainKHR& swapChainKhr,
+                    VkExtent2D& swapChainExtent,
+                    VkFormat& swapChainImageFormat,
+                    std::vector<VkImageView>& swapChainImageViews,
+                    VkPhysicalDevice& physicalDevice,
+                    VkQueue& graphicsQueue,
+                    VkQueue& presentQueue
+                    );
 
     VkShaderModule CreateShaderModule(const std::vector<char>& code);
 
     VkResult LoadShader(const std::string& shaderName, ShaderType shaderType);
+    void CreatePipelineLayout();
+    void CreateRenderPass();
+    void CreateFrameBuffers();
+    void CreateCommandPool(QueueFamilyIndices& queueFamilyIndices);
+    void CreateCommandBuffer();
     void UnloadShader(const std::string& shaderName);
+    void DrawFrame();
+    void CreateSemaphores();
+
     void Cleanup();
     static std::vector<char> ReadFile(const std::string& filename);
+
 
 private:
     std::vector<Shader*> m_loadedShaders{};
     VkDevice m_logicalDevice;
+    VkPhysicalDevice m_physicalDevice;
+    VkRenderPass m_renderPass;
+    VkPipelineLayout m_pipelineLayout;
+    VkSwapchainKHR m_swapChain;
+    VkExtent2D m_swapChainExtent;
+    VkFormat m_swapChainImageFormat;
+    VkPipeline m_graphicsPipeline;
+    std::vector<VkImageView> m_swapChainImageViews{};
+    std::vector<VkFramebuffer> m_swapChainFrameBuffers{};
+    VkCommandPool m_commandPool;
+    std::vector<VkCommandBuffer> m_commandBuffers{};
+    bool m_hasCreatedPipeline = false;
+
+    VkQueue m_graphicsQueue;
+    VkQueue m_presentQueue;
+
+    VkSemaphore m_imageAvailableSemaphore;
+    VkSemaphore m_renderFinishedSemaphore;
+
 
 };
 

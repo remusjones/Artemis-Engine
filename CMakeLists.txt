@@ -4,7 +4,7 @@ project(3DEngine)
 
 set(CMAKE_CXX_STANDARD 23)
 
-add_executable(3DEngine main.cpp Project/Applications/DefaultApplication.cpp Project/Applications/DefaultApplication.h Project/Core/Systems/ShaderModule.cpp Project/Core/Systems/ShaderModule.h)
+add_executable(3DEngine main.cpp Project/Applications/DefaultApplication.cpp Project/Applications/DefaultApplication.h Project/Core/Systems/ShaderModule.cpp Project/Core/Systems/ShaderModule.h Project/Core/Systems/SystemStructs.h)
 
 # Include Vulkan Headers
 include_directories("C:/VulkanSDK/1.2.189.2/Include")
