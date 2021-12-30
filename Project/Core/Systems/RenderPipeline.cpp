@@ -2,11 +2,11 @@
 // Created by Remus on 6/11/2021.
 //
 #include <fstream>
-#include "ShaderModule.h"
+#include "RenderPipeline.h"
 #include <Windows.h>
 #include <iostream>
 
-void ShaderModule::Initialize(VkDevice& logicalDevice,
+void RenderPipeline::Initialize(VkDevice& logicalDevice,
                               VkSwapchainKHR& swapChainKhr,
                               VkExtent2D& swapChainExtent,
                               VkFormat& swapChainImageFormat,
@@ -22,7 +22,6 @@ void ShaderModule::Initialize(VkDevice& logicalDevice,
     m_swapChain = swapChainKhr;
     m_swapChainExtent = swapChainExtent;
     m_swapChainImageFormat = swapChainImageFormat;
-    m_physicalDevice = physicalDevice;
     m_swapChainImageViews = swapChainImageViews;
     m_graphicsQueue = graphicsQueue;
     m_presentQueue = presentQueue;
@@ -31,7 +30,7 @@ void ShaderModule::Initialize(VkDevice& logicalDevice,
 }
 
 
-void ShaderModule::Cleanup()
+void RenderPipeline::Cleanup()
 {
     if (m_hasCreatedPipeline)
     {
@@ -62,22 +61,26 @@ void ShaderModule::Cleanup()
     }
     vkDestroyRenderPass(m_logicalDevice, m_renderPass, nullptr);
     // release all loaded shaders
-    while(m_loadedShaders.size() > 0)
+
+    for(int i = 0; i < m_loadedShaders.size(); i++)
     {
-        m_loadedShaders[m_loadedShaders.size() -1]->DestroyShader(m_logicalDevice);
-        delete m_loadedShaders[m_loadedShaders.size() - 1];
-        m_loadedShaders.pop_back();
+        if (m_loadedShaders[i]->m_fragment != nullptr)
+            vkDestroyShaderModule(m_logicalDevice, m_loadedShaders[i]->m_fragment, nullptr);
+        if (m_loadedShaders[i]->m_vertex != nullptr)
+            vkDestroyShaderModule(m_logicalDevice, m_loadedShaders[i]->m_vertex, nullptr);
+
+        delete m_loadedShaders[i];
     }
 
-
+    m_loadedShaders.resize(0,nullptr);
 }
 
-void ShaderModule::UnloadShader(const std::string& shaderName)
+void RenderPipeline::UnloadShader(const std::string& shaderName)
 {
     // unload a specific shader
 }
 
-VkResult ShaderModule::LoadShader(const std::string& shaderName, ShaderType shaderType)
+VkResult RenderPipeline::LoadShader(const std::string& shaderName, ShaderType shaderType)
 {
     if (shaderType == NONE)
         throw std::runtime_error("Cannot create a Shader with the ShaderType of NONE");
@@ -98,8 +101,7 @@ VkResult ShaderModule::LoadShader(const std::string& shaderName, ShaderType shad
         auto fragData = CreateShaderModule(ReadFile(frag));
         auto vertData = CreateShaderModule(ReadFile(vertex));
 
-        Shader* shader = new Shader(fragData, vertData);
-
+        ShaderComponent* shader = new ShaderComponent(fragData, vertData);
         m_loadedShaders.push_back(shader);
 
 
@@ -109,7 +111,7 @@ VkResult ShaderModule::LoadShader(const std::string& shaderName, ShaderType shad
     {
         auto t = CreateShaderModule(ReadFile(shaderName));
 
-        Shader* shader = new Shader(t, shaderType);
+        ShaderComponent* shader = new ShaderComponent(t, shaderType);
         m_loadedShaders.push_back(shader);
         return VK_SUCCESS;
     }
@@ -125,7 +127,7 @@ std::string GetCurrentDirectory()
 
     return std::string(buffer).substr(0, pos);
 }
-std::vector<char> ShaderModule::ReadFile(const std::string &filename)
+std::vector<char> RenderPipeline::ReadFile(const std::string &filename)
 {
     std::string finalDirectory = GetCurrentDirectory();
     finalDirectory.append(SHADER_DIRECTORY);
@@ -145,7 +147,7 @@ std::vector<char> ShaderModule::ReadFile(const std::string &filename)
     return buffer;
 }
 
-VkShaderModule ShaderModule::CreateShaderModule(const std::vector<char> &code)
+VkShaderModule RenderPipeline::CreateShaderModule(const std::vector<char> &code)
 {
     VkShaderModuleCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -163,7 +165,7 @@ VkShaderModule ShaderModule::CreateShaderModule(const std::vector<char> &code)
 
 //TODO: Move this into Shader->Setup
 
-void ShaderModule::CreatePipelineLayout()
+void RenderPipeline::CreatePipelineLayout()
 {
     std::cout << "Creating Graphics Pipeline Layout" << std::endl;
 
@@ -313,7 +315,7 @@ void ShaderModule::CreatePipelineLayout()
     m_hasCreatedPipeline = true;
 }
 
-void ShaderModule::CreateRenderPass()
+void RenderPipeline::CreateRenderPass()
 {
     std::cout << "Creating Render Pass" << std::endl;
     VkAttachmentDescription colorAttachment{};
@@ -349,7 +351,7 @@ void ShaderModule::CreateRenderPass()
 
 }
 
-void ShaderModule::CreateFrameBuffers()
+void RenderPipeline::CreateFrameBuffers()
 {
     std::cout << "Creating Frame Buffers" << std::endl;
     m_swapChainFrameBuffers.resize(m_swapChainImageViews.size());
@@ -375,7 +377,7 @@ void ShaderModule::CreateFrameBuffers()
 
 }
 
-void ShaderModule::CreateCommandPool(QueueFamilyIndices& queueFamilyIndices)
+void RenderPipeline::CreateCommandPool(QueueFamilyIndices& queueFamilyIndices)
 {
     std::cout << "Creating Command Pool" << std::endl;
 
@@ -392,7 +394,7 @@ void ShaderModule::CreateCommandPool(QueueFamilyIndices& queueFamilyIndices)
 
 }
 
-void ShaderModule::CreateCommandBuffer()
+void RenderPipeline::CreateCommandBuffer()
 {
     std::cout << "Creating Command Buffer" << std::endl;
     m_commandBuffers.resize(m_swapChainFrameBuffers.size());
@@ -450,7 +452,7 @@ void ShaderModule::CreateCommandBuffer()
 
 }
 
-void ShaderModule::DrawFrame()
+void RenderPipeline::DrawFrame()
 {
     vkWaitForFences(m_logicalDevice, 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
 
@@ -510,7 +512,7 @@ void ShaderModule::DrawFrame()
 
 }
 
-void ShaderModule::CreateSyncObjects()
+void RenderPipeline::CreateSyncObjects()
 {
     std::cout << "Creating Semaphores and Fences" << std::endl;
     m_imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
@@ -532,6 +534,26 @@ void ShaderModule::CreateSyncObjects()
 
             throw std::runtime_error("failed to create synchronization objects for a frame!");
         }
+    }
+}
+
+void RenderPipeline::DestroyShader(ShaderComponent* shaderComponent)
+{
+    if ( std::find(m_loadedShaders.begin(), m_loadedShaders.end(), shaderComponent) != m_loadedShaders.end() )
+    {
+        std::remove(m_loadedShaders.begin(), m_loadedShaders.end(), shaderComponent);
+
+        if (shaderComponent->m_fragment != nullptr)
+            vkDestroyShaderModule(m_logicalDevice, shaderComponent->m_fragment, nullptr);
+        if (shaderComponent->m_vertex != nullptr)
+            vkDestroyShaderModule(m_logicalDevice, shaderComponent->m_vertex, nullptr);
+
+        delete shaderComponent;
+        m_loadedShaders.shrink_to_fit();
+
+    }else
+    {
+        throw std::runtime_error("Shader not registered");
     }
 }
 

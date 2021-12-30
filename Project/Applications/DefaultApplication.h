@@ -8,7 +8,7 @@
 #define INC_3DENGINE_DEFAULTAPPLICATION_H
 #include <vector>
 #include <optional>
-#include "ShaderModule.h"
+#include "RenderPipeline.h"
 #include "SystemStructs.h"
 
 
@@ -71,7 +71,7 @@ private:
     VkQueue m_presentQueue;
     VkSurfaceKHR m_surface;
 
-    ShaderModule m_shaderModule{};
+    RenderPipeline m_renderPipeline{};
 
 
 

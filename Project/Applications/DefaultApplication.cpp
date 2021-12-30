@@ -38,7 +38,7 @@ void DefaultApplication::Update()
     while (!glfwWindowShouldClose(m_window))
     {
         glfwPollEvents();
-        this->m_shaderModule.DrawFrame();
+        this->m_renderPipeline.DrawFrame();
     }
     vkDeviceWaitIdle(m_logicalDevice);
 }
@@ -47,7 +47,7 @@ void DefaultApplication::Cleanup()
 {
     std::cout << "Destroying Application" << std::endl;
 
-    m_shaderModule.Cleanup();
+    m_renderPipeline.Cleanup();
 
     for (auto imageView : m_swapChainImageViews) {
         vkDestroyImageView(m_logicalDevice, imageView, nullptr);
@@ -226,25 +226,27 @@ void DefaultApplication::CreateImageViews()
 // Have this function virtual for extension??
 void DefaultApplication::CreateGraphicsPipeline()
 {
-    m_shaderModule.Initialize(m_logicalDevice,
-                              m_swapChain,
-                              m_swapChainExtent,
-                              m_swapChainImageFormat,
-                              m_swapChainImageViews,
-                              m_swapChainImages,
-                              m_physicalDevice,
-                              m_graphicsQueue,
-                              m_presentQueue
+    m_renderPipeline.Initialize(m_logicalDevice,
+                                m_swapChain,
+                                m_swapChainExtent,
+                                m_swapChainImageFormat,
+                                m_swapChainImageViews,
+                                m_swapChainImages,
+                                m_physicalDevice,
+                                m_graphicsQueue,
+                                m_presentQueue
                               );
-    m_shaderModule.LoadShader("shader", BOTH);
+
+
+    m_renderPipeline.LoadShader("shader", BOTH);
 
 
     // this needs to be created AFTER LoadShader(s)
-    m_shaderModule.CreatePipelineLayout();
+    m_renderPipeline.CreatePipelineLayout();
 
 
     auto queueFamilies = FindQueueFamilies(m_physicalDevice);
-    m_shaderModule.CreateCommandPool(queueFamilies);
+    m_renderPipeline.CreateCommandPool(queueFamilies);
 
 }
 
