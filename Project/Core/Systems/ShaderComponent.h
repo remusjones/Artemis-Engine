@@ -29,13 +29,11 @@ public:
 
     VkShaderModule  m_fragment;
     VkShaderModule  m_vertex;
-    ShaderType m_type = NONE;
 
     ShaderComponent(VkShaderModule& frag,VkShaderModule& vert)
     {
         m_fragment = frag;
         m_vertex = vert;
-        m_type = BOTH;
 
         VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
         vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -54,7 +52,6 @@ public:
     }
     ShaderComponent(VkShaderModule& target, ShaderType shaderType)
     {
-        m_type = shaderType;
 
         if (shaderType == FRAGMENT)
         {

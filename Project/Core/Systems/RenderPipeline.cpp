@@ -3,9 +3,8 @@
 //
 #include <fstream>
 #include "RenderPipeline.h"
-#include <Windows.h>
 #include <iostream>
-
+#include <Helpers/File Management/FileManagement.h>
 void RenderPipeline::Initialize(VkDevice& logicalDevice,
                               VkSwapchainKHR& swapChainKhr,
                               VkExtent2D& swapChainExtent,
@@ -75,77 +74,42 @@ void RenderPipeline::Cleanup()
     m_loadedShaders.resize(0,nullptr);
 }
 
-void RenderPipeline::UnloadShader(const std::string& shaderName)
+VkResult RenderPipeline::LoadShader(const std::string& shaderName)
 {
-    // unload a specific shader
-}
-
-VkResult RenderPipeline::LoadShader(const std::string& shaderName, ShaderType shaderType)
-{
-    if (shaderType == NONE)
-        throw std::runtime_error("Cannot create a Shader with the ShaderType of NONE");
 
     std::cout << "Creating Shader: " << shaderName << std::endl;
 
-    if (shaderType == BOTH)
-    {
-        // shaderName and apply suffix targets and populate shader
-        std::string vertex = shaderName;
-        vertex.append(SHADER_VERTEX_SUFFIX);
-        vertex.append(SHADER_FILE_EXTENSION);
+    //
+    // Attempts to automatically load vert + frag with req suffixes
+    //
+    std::string vertex = shaderName;
 
-        std::string frag = shaderName;
-        frag.append(SHADER_FRAGMENT_SUFFIX);
-        frag.append(SHADER_FILE_EXTENSION);
+    //
+    // Append required suffixes to locate file
+    //
+    vertex.append(SHADER_VERTEX_SUFFIX);
+    vertex.append(SHADER_FILE_EXTENSION);
 
-        auto fragData = CreateShaderModule(ReadFile(frag));
-        auto vertData = CreateShaderModule(ReadFile(vertex));
-
-        ShaderComponent* shader = new ShaderComponent(fragData, vertData);
-        m_loadedShaders.push_back(shader);
+    std::string frag = shaderName;
+    frag.append(SHADER_FRAGMENT_SUFFIX);
+    frag.append(SHADER_FILE_EXTENSION);
 
 
-        return VK_SUCCESS;
 
-    }else if (shaderType == VERTEX || shaderType == FRAGMENT)
-    {
-        auto t = CreateShaderModule(ReadFile(shaderName));
+    //
+    // Load and create module
+    //
+    auto fragData = CreateShaderModule(FileManagement::GetShaderFileData(frag));
+    auto vertData = CreateShaderModule(FileManagement::GetShaderFileData(vertex));
 
-        ShaderComponent* shader = new ShaderComponent(t, shaderType);
-        m_loadedShaders.push_back(shader);
-        return VK_SUCCESS;
-    }
+    //
+    // Merge the two into a ShaderComponent for easy lookup
+    //
+    m_loadedShaders.push_back(new ShaderComponent(fragData, vertData));
 
-    return VK_ERROR_INVALID_SHADER_NV;
-
+    return VK_SUCCESS;
 }
-std::string GetCurrentDirectory()
-{
-    char buffer[MAX_PATH];
-    GetModuleFileNameA(NULL, buffer, MAX_PATH);
-    std::string::size_type pos = std::string(buffer).find_last_of("\\/");
 
-    return std::string(buffer).substr(0, pos);
-}
-std::vector<char> RenderPipeline::ReadFile(const std::string &filename)
-{
-    std::string finalDirectory = GetCurrentDirectory();
-    finalDirectory.append(SHADER_DIRECTORY);
-    finalDirectory.append(filename);
-
-    std::ifstream file(finalDirectory, std::ios::ate | std::ios::binary);
-
-    if (!file.is_open()) {
-        throw std::runtime_error("failed to open file!");
-    }
-    size_t fileSize = (size_t) file.tellg();
-    std::vector<char> buffer(fileSize);
-    file.seekg(0);
-    file.read(buffer.data(), fileSize);
-    file.close();
-
-    return buffer;
-}
 
 VkShaderModule RenderPipeline::CreateShaderModule(const std::vector<char> &code)
 {

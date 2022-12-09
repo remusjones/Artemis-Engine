@@ -4,30 +4,44 @@
     "type": "split",
     "children": [
       {
-        "id": "8e89e6c1669a0d57",
-        "type": "leaf",
+        "id": "83b506383ba236d6",
+        "type": "tabs",
         "dimension": 55.37159676232525,
-        "state": {
-          "type": "markdown",
-          "state": {
-            "file": "Main/The TODO.md",
-            "mode": "source"
+        "children": [
+          {
+            "id": "8e89e6c1669a0d57",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Main/The TODO.md",
+                "mode": "source",
+                "source": false
+              }
+            },
+            "group": "dcc411dd7c666603"
           }
-        },
-        "group": "dcc411dd7c666603"
+        ]
       },
       {
-        "id": "cd52ed4e9046d172",
-        "type": "leaf",
+        "id": "dae12b8266b6f2e2",
+        "type": "tabs",
         "dimension": 44.62840323767475,
-        "state": {
-          "type": "markdown",
-          "state": {
-            "file": "Main/The TODO.md",
-            "mode": "preview"
+        "children": [
+          {
+            "id": "cd52ed4e9046d172",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Main/The TODO.md",
+                "mode": "preview",
+                "source": false
+              }
+            },
+            "group": "dcc411dd7c666603"
           }
-        },
-        "group": "dcc411dd7c666603"
+        ]
       }
     ],
     "direction": "vertical"
@@ -45,7 +59,9 @@
             "type": "leaf",
             "state": {
               "type": "file-explorer",
-              "state": {}
+              "state": {
+                "sortOrder": "alphabetical"
+              }
             }
           },
           {

@@ -13,15 +13,6 @@
 #include "SystemStructs.h"
 #include "ShaderComponent.h"
 
-// Helpers
-#define SHADER_VERTEX_SUFFIX "_v"
-#define SHADER_FRAGMENT_SUFFIX "_f"
-#define SHADER_FILE_EXTENSION ".spv"
-#define SHADER_DIRECTORY "\\Shaders\\"
-
-
-//TODO Rename ShaderModule to RenderPipeline
-
 class RenderPipeline
 {
 public:
@@ -39,19 +30,17 @@ public:
 
     VkShaderModule CreateShaderModule(const std::vector<char>& code);
 
-    VkResult LoadShader(const std::string& shaderName, ShaderType shaderType);
+    VkResult LoadShader(const std::string& shaderName);
     void CreatePipelineLayout();
     void CreateRenderPass();
     void CreateFrameBuffers();
     void CreateCommandPool(QueueFamilyIndices& queueFamilyIndices);
     void CreateCommandBuffer();
-    void UnloadShader(const std::string& shaderName);
     void DrawFrame();
     void CreateSyncObjects();
     std::vector<VkFence> m_inFlightFences;
     std::vector<VkFence> m_imagesInFlight;
     void Cleanup();
-    static std::vector<char> ReadFile(const std::string& filename);
     void DestroyShader(ShaderComponent* shaderComponent);
 
 private:
@@ -80,6 +69,7 @@ private:
 
 
     const int MAX_FRAMES_IN_FLIGHT = 2;
+
 };
 
 

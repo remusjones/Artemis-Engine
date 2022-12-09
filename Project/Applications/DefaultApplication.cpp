@@ -1,11 +1,7 @@
 //
 // Created by Remus on 4/11/2021.
 //
-
-
 #include "DefaultApplication.h"
-#include <glm/vec4.hpp>
-#include <glm/mat4x4.hpp>
 #include <stdexcept>
 #include <cstring>
 #include <iostream>
@@ -238,7 +234,7 @@ void DefaultApplication::CreateGraphicsPipeline()
                               );
 
 
-    m_renderPipeline.LoadShader("shader", BOTH);
+    m_renderPipeline.LoadShader("shader");
 
 
     // this needs to be created AFTER LoadShader(s)
