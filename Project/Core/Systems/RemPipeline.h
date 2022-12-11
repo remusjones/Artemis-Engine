@@ -12,13 +12,12 @@
 #include <map>
 #include "SystemStructs.h"
 #include "RemShaderComponent.h"
-#include "RemPipelineConfigInfo.h"
-
 class RemPipeline
 {
 public:
 
     void Initialize(VkDevice& logicalDevice,
+                    VkRenderPass& renderPass,
                     VkSwapchainKHR& swapChainKhr,
                     VkExtent2D& swapChainExtent,
                     VkFormat& swapChainImageFormat,
@@ -43,7 +42,6 @@ public:
     void Cleanup();
     void DestroyShader(RemShaderComponent* shaderComponent);
 
-    RemPipelineConfigInfo m_activePipelineConfiguration = {};
     std::vector<VkFence> m_inFlightFences;
     std::vector<VkFence> m_imagesInFlight;
 private:

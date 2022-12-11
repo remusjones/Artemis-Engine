@@ -6,6 +6,7 @@
 #include <iostream>
 #include <Helpers/File Management/RemFileManagement.h>
 void RemPipeline::Initialize(VkDevice& logicalDevice,
+                             VkRenderPass& renderPass,
                               VkSwapchainKHR& swapChainKhr,
                               VkExtent2D& swapChainExtent,
                               VkFormat& swapChainImageFormat,
@@ -18,6 +19,7 @@ void RemPipeline::Initialize(VkDevice& logicalDevice,
 {
     // Register the shader module
     m_logicalDevice = logicalDevice;
+    m_renderPass = renderPass;
     m_swapChain = swapChainKhr;
     m_swapChainExtent = swapChainExtent;
     m_swapChainImageFormat = swapChainImageFormat;
@@ -33,7 +35,6 @@ void RemPipeline::Initialize(VkDevice& logicalDevice,
     //
     VkPhysicalDeviceProperties deviceProperties;
     vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
-    this->m_activePipelineConfiguration.activeHardwareDevice = deviceProperties.deviceName;
 }
 
 

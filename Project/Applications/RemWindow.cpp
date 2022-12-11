@@ -8,6 +8,7 @@
 #include <set>
 #include <cstdint> // Necessary for UINT32_MAX
 #include <algorithm> // Necessary for std::min/std::max
+#include <RemSwapChain.h>
 
 void RemWindow::Run()
 {
@@ -24,8 +25,12 @@ void RemWindow::InitializeVulkan()
     CreateSurface();
     InitializePhysicalDevice();
     CreateLogicalDevice();
-    CreateSwapChain();
-    CreateImageViews();
+    m_swapChain = new RemSwapChain(m_logicalDevice,
+                                   m_physicalDevice,
+                                   m_surface,
+                                   m_renderPass,
+                                   this);
+    m_swapChain->Initialize();
     CreateGraphicsPipeline();
 }
 
@@ -41,14 +46,9 @@ void RemWindow::Update()
 
 void RemWindow::Cleanup()
 {
-    std::cout << "Destroying Application" << std::endl;
-
     m_renderPipeline.Cleanup();
-
-    for (auto imageView : m_swapChainImageViews) {
-        vkDestroyImageView(m_logicalDevice, imageView, nullptr);
-    }
-    vkDestroySwapchainKHR(m_logicalDevice, m_swapChain, nullptr);
+    m_swapChain->Cleanup();
+    delete m_swapChain;
     vkDestroyDevice(m_logicalDevice, nullptr);
 
     if (enableValidationLayers) {
@@ -57,6 +57,7 @@ void RemWindow::Cleanup()
     vkDestroySurfaceKHR(m_vulkanInstance, m_surface, nullptr);
     vkDestroyInstance(m_vulkanInstance, nullptr);
 
+    std::cout << "Destroying Application" << std::endl;
     glfwDestroyWindow(m_window);
     glfwTerminate();
 
@@ -142,108 +143,20 @@ void RemWindow::CreateSurface()
 }
 
 
-void RemWindow::CreateSwapChain()
-{
-    SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(m_physicalDevice);
-
-    VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.m_formats);
-    VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.m_presentModes);
-    VkExtent2D extent = ChooseSwapExtent(swapChainSupport.m_capabilities);
-
-    uint32_t imageCount = swapChainSupport.m_capabilities.minImageCount + 1;
-
-    if (swapChainSupport.m_capabilities.maxImageCount > 0 && imageCount > swapChainSupport.m_capabilities.maxImageCount) {
-        imageCount = swapChainSupport.m_capabilities.maxImageCount;
-    }
-    VkSwapchainCreateInfoKHR createInfo{};
-    createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    createInfo.surface = m_surface;
-    createInfo.minImageCount = imageCount;
-    createInfo.imageFormat = surfaceFormat.format;
-    createInfo.imageColorSpace = surfaceFormat.colorSpace;
-    createInfo.imageExtent = extent;
-    createInfo.imageArrayLayers = 1;
-    createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-
-    QueueFamilyIndices indices = FindQueueFamilies(m_physicalDevice);
-    uint32_t queueFamilyIndices[] = {indices.m_graphicsFamily.value(), indices.m_presentFamily.value()};
-
-    if (indices.m_graphicsFamily != indices.m_presentFamily) {
-        createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-        createInfo.queueFamilyIndexCount = 2;
-        createInfo.pQueueFamilyIndices = queueFamilyIndices;
-    } else {
-        createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        createInfo.queueFamilyIndexCount = 0;
-        createInfo.pQueueFamilyIndices = nullptr;
-    }
-
-    createInfo.preTransform = swapChainSupport.m_capabilities.currentTransform;
-    createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-    createInfo.presentMode = presentMode;
-    createInfo.clipped = VK_TRUE;
-    createInfo.oldSwapchain = VK_NULL_HANDLE;
-
-
-
-    if (vkCreateSwapchainKHR(m_logicalDevice, &createInfo, nullptr, &m_swapChain) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create swap chain!");
-    }
-    m_swapChainImageFormat = surfaceFormat.format;
-    m_swapChainExtent = extent;
-    vkGetSwapchainImagesKHR(m_logicalDevice, m_swapChain, &imageCount, nullptr);
-    m_swapChainImages.resize(imageCount);
-    vkGetSwapchainImagesKHR(m_logicalDevice, m_swapChain, &imageCount, m_swapChainImages.data());
-}
-
-void RemWindow::RecreateSwapChain()
-{
-    vkDeviceWaitIdle(m_logicalDevice);
-    CreateSwapChain();
-    CreateImageViews();
-    CreateFrameBuffers();
-}
-
-void RemWindow::CreateFrameBuffers()
-{
-    //m_swapChainFramebuffers.resize(swapChainImageViews.size());
-}
-
-void RemWindow::CreateImageViews()
-{
-    m_swapChainImageViews.resize(m_swapChainImages.size());
-    for (size_t i = 0; i < m_swapChainImages.size(); i++)
-    {
-        VkImageViewCreateInfo createInfo{};
-        createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        createInfo.image = m_swapChainImages[i];
-        createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        createInfo.format = m_swapChainImageFormat;
-        createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-        createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-        createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-        createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-        createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        createInfo.subresourceRange.baseMipLevel = 0;
-        createInfo.subresourceRange.levelCount = 1;
-        createInfo.subresourceRange.baseArrayLayer = 0;
-        createInfo.subresourceRange.layerCount = 1;
-
-        if (vkCreateImageView(m_logicalDevice, &createInfo, nullptr, &m_swapChainImageViews[i]) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create image views!");
-        }
-    }
-}
-
 // Have this function virtual for extension??
 void RemWindow::CreateGraphicsPipeline()
 {
+
+    //
+    // TODO: Swapchain init here
+    //
     m_renderPipeline.Initialize(m_logicalDevice,
-                                m_swapChain,
-                                m_swapChainExtent,
-                                m_swapChainImageFormat,
-                                m_swapChainImageViews,
-                                m_swapChainImages,
+                                m_renderPass,
+                                m_swapChain->m_swapChain,
+                                m_swapChain->m_swapChainExtent,
+                                m_swapChain->m_swapChainImageFormat,
+                                m_swapChain->m_swapChainImageViews,
+                                m_swapChain->m_swapChainImages,
                                 m_physicalDevice,
                                 m_graphicsQueue,
                                 m_presentQueue

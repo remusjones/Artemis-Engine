@@ -10,7 +10,7 @@
 #include <optional>
 #include "RemPipeline.h"
 #include "SystemStructs.h"
-
+class RemSwapChain;
 
 class RemWindow
 {
@@ -18,7 +18,11 @@ public:
     RemWindow(const char* windowName, int windowWidth, int windowHeight);
     void Run();
 
-
+    VkSurfaceFormatKHR  ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+    VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+    VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+    SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
+    QueueFamilyIndices  FindQueueFamilies(VkPhysicalDevice device);
 
 private:
 
@@ -45,15 +49,7 @@ private:
 
     // Create WSI > Vulkan bridge
     void CreateSurface();
-    void RecreateSwapChain();
-    void CreateSwapChain();
-    void CreateImageViews();
     void CreateGraphicsPipeline();
-    void CreateFrameBuffers();
-
-    VkSurfaceFormatKHR  ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-    VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
-    VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 
 
     // Window Variables
@@ -69,17 +65,10 @@ private:
     VkQueue m_graphicsQueue;
     VkQueue m_presentQueue;
     VkSurfaceKHR m_surface;
-
+    RemSwapChain* m_swapChain;
+    VkRenderPass m_renderPass;
     RemPipeline m_renderPipeline{};
 
-
-
-    // swapchain
-    VkSwapchainKHR m_swapChain;
-    VkFormat m_swapChainImageFormat;
-    VkExtent2D m_swapChainExtent;
-    std::vector<VkImage> m_swapChainImages;
-    std::vector<VkImageView> m_swapChainImageViews;
 
     const std::vector<const char*> m_deviceExtensions = {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME
@@ -92,8 +81,7 @@ private:
     bool isDeviceSuitable(VkPhysicalDevice physicalDevice);
     bool checkDeviceExtensionSupport(VkPhysicalDevice device);
 
-    QueueFamilyIndices  FindQueueFamilies(VkPhysicalDevice device);
-    SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
+
 
     // Reference to our target device
     VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
