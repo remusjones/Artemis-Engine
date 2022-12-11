@@ -8,14 +8,14 @@
 #define INC_3DENGINE_DEFAULTAPPLICATION_H
 #include <vector>
 #include <optional>
-#include "rem_pipeline.h"
+#include "RemPipeline.h"
 #include "SystemStructs.h"
 
 
-class rem_window
+class RemWindow
 {
 public:
-    rem_window(const char* windowName, int windowWidth, int windowHeight);
+    RemWindow(const char* windowName, int windowWidth, int windowHeight);
     void Run();
 
 
@@ -70,7 +70,7 @@ private:
     VkQueue m_presentQueue;
     VkSurfaceKHR m_surface;
 
-    rem_pipeline m_renderPipeline{};
+    RemPipeline m_renderPipeline{};
 
 
 
@@ -101,7 +101,7 @@ private:
     VkDevice  m_logicalDevice{};
     VkPhysicalDeviceFeatures m_deviceFeatures{};
 
-    // =======Hardware End=
+
 
     // =======Validation=====
 
@@ -130,7 +130,6 @@ private:
     const bool enableValidationLayers = true;
 #endif
 
-    // =======Validation End========
 };
 
-#endif //INC_3DENGINE_DEFAULTAPPLICATION_H
+#endif

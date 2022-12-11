@@ -4,7 +4,7 @@ project(3DEngine)
 
 set(CMAKE_CXX_STANDARD 23)
 
-add_executable(3DEngine main.cpp Project/Applications/rem_window.cpp Project/Applications/rem_window.h Project/Core/Systems/rem_pipeline.cpp Project/Core/Systems/rem_pipeline.h Project/Core/Systems/SystemStructs.h Project/Core/Systems/rem_shaderComponent.cpp Project/Core/Systems/rem_shaderComponent.h "Project/Core/Helpers/File Management/rem_fileManagement.cpp" "Project/Core/Helpers/File Management/rem_fileManagement.h")
+add_executable(3DEngine main.cpp Project/Applications/RemWindow.cpp Project/Applications/RemWindow.h Project/Core/Systems/RemPipeline.cpp Project/Core/Systems/RemPipeline.h Project/Core/Systems/SystemStructs.h Project/Core/Systems/RemShaderComponent.cpp Project/Core/Systems/RemShaderComponent.h "Project/Core/Helpers/File Management/RemFileManagement.cpp" "Project/Core/Helpers/File Management/RemFileManagement.h" Project/Core/Systems/RemPipelineConfigInfo.h)
 
 # Include Vulkan Headers
 include_directories("C:/VulkanSDK/1.2.189.2/Include")

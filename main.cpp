@@ -7,12 +7,12 @@
 #include <glm/mat4x4.hpp>
 
 #include <iostream>
-#include "Project/Applications/rem_window.h"
+#include "Project/Applications/RemWindow.h"
 
 int main() {
 
 
-    rem_window app = rem_window("YahBoi", 800,600);
+    RemWindow app = RemWindow("YahBoi", 800,600);
 
     try {
         app.Run();

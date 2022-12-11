@@ -2,10 +2,10 @@
 // Created by Remus on 6/11/2021.
 //
 #include <fstream>
-#include "rem_pipeline.h"
+#include "RemPipeline.h"
 #include <iostream>
-#include <Helpers/File Management/rem_fileManagement.h>
-void rem_pipeline::Initialize(VkDevice& logicalDevice,
+#include <Helpers/File Management/RemFileManagement.h>
+void RemPipeline::Initialize(VkDevice& logicalDevice,
                               VkSwapchainKHR& swapChainKhr,
                               VkExtent2D& swapChainExtent,
                               VkFormat& swapChainImageFormat,
@@ -29,7 +29,7 @@ void rem_pipeline::Initialize(VkDevice& logicalDevice,
 }
 
 
-void rem_pipeline::Cleanup()
+void RemPipeline::Cleanup()
 {
     if (m_hasCreatedPipeline)
     {
@@ -74,7 +74,7 @@ void rem_pipeline::Cleanup()
     m_loadedShaders.resize(0,nullptr);
 }
 
-VkResult rem_pipeline::LoadShader(const std::string& shaderName)
+VkResult RemPipeline::LoadShader(const std::string& shaderName)
 {
 
     std::cout << "Creating Shader: " << shaderName << std::endl;
@@ -99,19 +99,19 @@ VkResult rem_pipeline::LoadShader(const std::string& shaderName)
     //
     // Load and create module
     //
-    auto fragData = CreateShaderModule(rem_fileManagement::GetShaderFileData(frag));
-    auto vertData = CreateShaderModule(rem_fileManagement::GetShaderFileData(vertex));
+    auto fragData = CreateShaderModule(RemFileManagement::GetShaderFileData(frag));
+    auto vertData = CreateShaderModule(RemFileManagement::GetShaderFileData(vertex));
 
     //
-    // Merge the two into a rem_shaderComponent for easy lookup
+    // Merge the two into a RemShaderComponent for easy lookup
     //
-    m_loadedShaders.push_back(new rem_shaderComponent(fragData, vertData));
+    m_loadedShaders.push_back(new RemShaderComponent(fragData, vertData));
 
     return VK_SUCCESS;
 }
 
 
-VkShaderModule rem_pipeline::CreateShaderModule(const std::vector<char> &code)
+VkShaderModule RemPipeline::CreateShaderModule(const std::vector<char> &code)
 {
     VkShaderModuleCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -129,7 +129,7 @@ VkShaderModule rem_pipeline::CreateShaderModule(const std::vector<char> &code)
 
 //TODO: Move this into Shader->Setup
 
-void rem_pipeline::CreatePipelineLayout()
+void RemPipeline::CreatePipelineLayout()
 {
     std::cout << "Creating Graphics Pipeline Layout" << std::endl;
 
@@ -279,7 +279,7 @@ void rem_pipeline::CreatePipelineLayout()
     m_hasCreatedPipeline = true;
 }
 
-void rem_pipeline::CreateRenderPass()
+void RemPipeline::CreateRenderPass()
 {
     std::cout << "Creating Render Pass" << std::endl;
     VkAttachmentDescription colorAttachment{};
@@ -315,7 +315,7 @@ void rem_pipeline::CreateRenderPass()
 
 }
 
-void rem_pipeline::CreateFrameBuffers()
+void RemPipeline::CreateFrameBuffers()
 {
     std::cout << "Creating Frame Buffers" << std::endl;
     m_swapChainFrameBuffers.resize(m_swapChainImageViews.size());
@@ -341,7 +341,7 @@ void rem_pipeline::CreateFrameBuffers()
 
 }
 
-void rem_pipeline::CreateCommandPool(QueueFamilyIndices& queueFamilyIndices)
+void RemPipeline::CreateCommandPool(QueueFamilyIndices& queueFamilyIndices)
 {
     std::cout << "Creating Command Pool" << std::endl;
 
@@ -358,7 +358,7 @@ void rem_pipeline::CreateCommandPool(QueueFamilyIndices& queueFamilyIndices)
 
 }
 
-void rem_pipeline::CreateCommandBuffer()
+void RemPipeline::CreateCommandBuffer()
 {
     std::cout << "Creating Command Buffer" << std::endl;
     m_commandBuffers.resize(m_swapChainFrameBuffers.size());
@@ -416,7 +416,7 @@ void rem_pipeline::CreateCommandBuffer()
 
 }
 
-void rem_pipeline::DrawFrame()
+void RemPipeline::DrawFrame()
 {
     vkWaitForFences(m_logicalDevice, 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
 
@@ -476,7 +476,7 @@ void rem_pipeline::DrawFrame()
 
 }
 
-void rem_pipeline::CreateSyncObjects()
+void RemPipeline::CreateSyncObjects()
 {
     std::cout << "Creating Semaphores and Fences" << std::endl;
     m_imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
@@ -501,7 +501,7 @@ void rem_pipeline::CreateSyncObjects()
     }
 }
 
-void rem_pipeline::DestroyShader(rem_shaderComponent* shaderComponent)
+void RemPipeline::DestroyShader(RemShaderComponent* shaderComponent)
 {
     if ( std::find(m_loadedShaders.begin(), m_loadedShaders.end(), shaderComponent) != m_loadedShaders.end() )
     {
