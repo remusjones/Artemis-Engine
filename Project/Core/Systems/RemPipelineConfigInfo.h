@@ -9,5 +9,7 @@
 
 class RemPipelineConfigInfo
 {
+public:
+    char* activeHardwareDevice;
 
 };

@@ -12,6 +12,7 @@
 #include <map>
 #include "SystemStructs.h"
 #include "RemShaderComponent.h"
+#include "RemPipelineConfigInfo.h"
 
 class RemPipeline
 {
@@ -42,7 +43,7 @@ public:
     void Cleanup();
     void DestroyShader(RemShaderComponent* shaderComponent);
 
-
+    RemPipelineConfigInfo m_activePipelineConfiguration = {};
     std::vector<VkFence> m_inFlightFences;
     std::vector<VkFence> m_imagesInFlight;
 private:

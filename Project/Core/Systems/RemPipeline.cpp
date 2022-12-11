@@ -26,6 +26,14 @@ void RemPipeline::Initialize(VkDevice& logicalDevice,
     m_presentQueue = presentQueue;
     m_swapChainImages = swapChainImages;
     CreateRenderPass();
+
+
+    //
+    // Configuration info population
+    //
+    VkPhysicalDeviceProperties deviceProperties;
+    vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
+    this->m_activePipelineConfiguration.activeHardwareDevice = deviceProperties.deviceName;
 }
 
 
