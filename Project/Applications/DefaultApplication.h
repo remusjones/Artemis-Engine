@@ -45,12 +45,11 @@ private:
 
     // Create WSI > Vulkan bridge
     void CreateSurface();
-
+    void RecreateSwapChain();
     void CreateSwapChain();
-
     void CreateImageViews();
-
     void CreateGraphicsPipeline();
+    void CreateFrameBuffers();
 
     VkSurfaceFormatKHR  ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
     VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);

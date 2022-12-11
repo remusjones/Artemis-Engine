@@ -38,11 +38,14 @@ public:
     void CreateCommandBuffer();
     void DrawFrame();
     void CreateSyncObjects();
-    std::vector<VkFence> m_inFlightFences;
-    std::vector<VkFence> m_imagesInFlight;
+    void RecreateSwapChain();
+
     void Cleanup();
     void DestroyShader(ShaderComponent* shaderComponent);
 
+
+    std::vector<VkFence> m_inFlightFences;
+    std::vector<VkFence> m_imagesInFlight;
 private:
     std::vector<ShaderComponent*> m_loadedShaders{};
     VkDevice m_logicalDevice;

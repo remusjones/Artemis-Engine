@@ -140,6 +140,8 @@ void DefaultApplication::CreateSurface()
         throw std::runtime_error("failed to create window surface!");
     }
 }
+
+
 void DefaultApplication::CreateSwapChain()
 {
     SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(m_physicalDevice);
@@ -193,6 +195,20 @@ void DefaultApplication::CreateSwapChain()
     m_swapChainImages.resize(imageCount);
     vkGetSwapchainImagesKHR(m_logicalDevice, m_swapChain, &imageCount, m_swapChainImages.data());
 }
+
+void DefaultApplication::RecreateSwapChain()
+{
+    vkDeviceWaitIdle(m_logicalDevice);
+    CreateSwapChain();
+    CreateImageViews();
+    CreateFrameBuffers();
+}
+
+void DefaultApplication::CreateFrameBuffers()
+{
+    //m_swapChainFramebuffers.resize(swapChainImageViews.size());
+}
+
 void DefaultApplication::CreateImageViews()
 {
     m_swapChainImageViews.resize(m_swapChainImages.size());

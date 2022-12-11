@@ -35,7 +35,7 @@
               "type": "markdown",
               "state": {
                 "file": "Main/The TODO.md",
-                "mode": "preview",
+                "mode": "source",
                 "source": false
               }
             },
@@ -118,7 +118,7 @@
   },
   "active": "8e89e6c1669a0d57",
   "lastOpenFiles": [
-    "Main/The TODO.md",
-    "Main/Pasted/Pasted image 20211107150328.png"
+    "Main/Pasted/Pasted image 20211107150328.png",
+    "Main/The TODO.md"
   ]
 }
