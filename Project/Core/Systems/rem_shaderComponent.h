@@ -23,14 +23,14 @@ enum ShaderType
     BOTH
 };
 
-class ShaderComponent {
+class rem_shaderComponent {
 public:
     std::vector<VkPipelineShaderStageCreateInfo> m_shaderStages{};
 
     VkShaderModule  m_fragment;
     VkShaderModule  m_vertex;
 
-    ShaderComponent(VkShaderModule& frag,VkShaderModule& vert)
+    rem_shaderComponent(VkShaderModule& frag,VkShaderModule& vert)
     {
         m_fragment = frag;
         m_vertex = vert;
@@ -50,7 +50,7 @@ public:
         m_shaderStages.push_back(vertShaderStageInfo);
         m_shaderStages.push_back(fragShaderStageInfo);
     }
-    ShaderComponent(VkShaderModule& target, ShaderType shaderType)
+    rem_shaderComponent(VkShaderModule& target, ShaderType shaderType)
     {
 
         if (shaderType == FRAGMENT)

@@ -11,9 +11,9 @@
 #include <string>
 #include <map>
 #include "SystemStructs.h"
-#include "ShaderComponent.h"
+#include "rem_shaderComponent.h"
 
-class RenderPipeline
+class rem_pipeline
 {
 public:
 
@@ -41,13 +41,13 @@ public:
     void RecreateSwapChain();
 
     void Cleanup();
-    void DestroyShader(ShaderComponent* shaderComponent);
+    void DestroyShader(rem_shaderComponent* shaderComponent);
 
 
     std::vector<VkFence> m_inFlightFences;
     std::vector<VkFence> m_imagesInFlight;
 private:
-    std::vector<ShaderComponent*> m_loadedShaders{};
+    std::vector<rem_shaderComponent*> m_loadedShaders{};
     VkDevice m_logicalDevice;
     VkRenderPass m_renderPass;
     VkPipelineLayout m_pipelineLayout;

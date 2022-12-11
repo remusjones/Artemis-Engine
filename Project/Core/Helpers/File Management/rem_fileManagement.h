@@ -12,7 +12,7 @@
 #include <vector>
 #include <string>
 
-class FileManagement {
+class rem_fileManagement {
 public:
     static std::vector<char> GetShaderFileData(const std::string& filename);
     static std::string GetCurrentDirectory();

@@ -8,14 +8,14 @@
 #define INC_3DENGINE_DEFAULTAPPLICATION_H
 #include <vector>
 #include <optional>
-#include "RenderPipeline.h"
+#include "rem_pipeline.h"
 #include "SystemStructs.h"
 
 
-class DefaultApplication
+class rem_window
 {
 public:
-    DefaultApplication(const char* windowName, int windowWidth, int windowHeight);
+    rem_window(const char* windowName, int windowWidth, int windowHeight);
     void Run();
 
 
@@ -70,7 +70,7 @@ private:
     VkQueue m_presentQueue;
     VkSurfaceKHR m_surface;
 
-    RenderPipeline m_renderPipeline{};
+    rem_pipeline m_renderPipeline{};
 
 
 

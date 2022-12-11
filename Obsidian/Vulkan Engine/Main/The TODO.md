@@ -1,7 +1,7 @@
 ### Development Steps
 1. Use https://vulkan-tutorial.com/ to create the fundementals of the Engine Rendering.
 2. Extrapolate the "Base-Line" fundamentals of the Engine into seperate classes.
-	1. RenderPipeline class for Shader Creation, textures, frag/verts, buffers, etc. 
+	1. rem_pipeline class for Shader Creation, textures, frag/verts, buffers, etc. 
 	2. Material class to contain the Textures, Frags, Verts, Buffers, etc.
 	3. A Model class to contain the Material Class and drawing information 
 	4. A GameObject class to pivot/move the Models and Materials around. 
