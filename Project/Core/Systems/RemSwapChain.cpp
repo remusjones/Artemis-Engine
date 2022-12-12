@@ -6,23 +6,36 @@
 #include <iostream>
 #include "RemSwapChain.h"
 #include "SystemStructs.h"
-#include "RemWindow.h"
+#include "RemApplication.h"
 
 void RemSwapChain::RecreateSwapChain()
 {
+    int width = 0, height = 0;
+    glfwGetFramebufferSize(m_remApplicationInstance->m_window, &width, &height);
+    while (width == 0 || height == 0) {
+
+        glfwGetFramebufferSize(m_remApplicationInstance->m_window, &width, &height);
+        glfwWaitEvents();
+        std::cout << "Application Minimized" << std::endl;
+    }
     vkDeviceWaitIdle(m_logicalDevice);
+    Cleanup();
+    glfwWaitEvents();
+
     CreateSwapChain();
     CreateImageViews();
     CreateFrameBuffers();
+
+    vkDeviceWaitIdle(m_logicalDevice);
 }
 
 void RemSwapChain::CreateSwapChain()
 {
-    SwapChainSupportDetails swapChainSupport = m_remWindowInstance->QuerySwapChainSupport(m_physicalDevice);
+    SwapChainSupportDetails swapChainSupport = m_remApplicationInstance->QuerySwapChainSupport(m_physicalDevice);
 
-    VkSurfaceFormatKHR surfaceFormat = m_remWindowInstance->ChooseSwapSurfaceFormat(swapChainSupport.m_formats);
-    VkPresentModeKHR presentMode = m_remWindowInstance->ChooseSwapPresentMode(swapChainSupport.m_presentModes);
-    VkExtent2D extent = m_remWindowInstance->ChooseSwapExtent(swapChainSupport.m_capabilities);
+    VkSurfaceFormatKHR surfaceFormat = m_remApplicationInstance->ChooseSwapSurfaceFormat(swapChainSupport.m_formats);
+    VkPresentModeKHR presentMode = m_remApplicationInstance->ChooseSwapPresentMode(swapChainSupport.m_presentModes);
+    VkExtent2D extent = m_remApplicationInstance->ChooseSwapExtent(swapChainSupport.m_capabilities);
 
     uint32_t imageCount = swapChainSupport.m_capabilities.minImageCount + 1;
 
@@ -39,7 +52,7 @@ void RemSwapChain::CreateSwapChain()
     createInfo.imageArrayLayers = 1;
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-    QueueFamilyIndices indices = m_remWindowInstance->FindQueueFamilies(m_physicalDevice);
+    QueueFamilyIndices indices = m_remApplicationInstance->FindQueueFamilies(m_physicalDevice);
     uint32_t queueFamilyIndices[] = {indices.m_graphicsFamily.value(), indices.m_presentFamily.value()};
 
     if (indices.m_graphicsFamily != indices.m_presentFamily) {
@@ -70,10 +83,13 @@ void RemSwapChain::CreateSwapChain()
     vkGetSwapchainImagesKHR(m_logicalDevice, m_swapChain, &imageCount, m_swapChainImages.data());
 }
 
-void RemSwapChain::CreateFrameBuffers() {
-    m_swapChainFramebuffers.resize(m_swapChainImageViews.size());
 
-    for (size_t i = 0; i < m_swapChainImageViews.size(); i++) {
+void RemSwapChain::CreateFrameBuffers()
+{
+    std::cout << "Creating Frame Buffers" << std::endl;
+    m_swapChainFrameBuffers.resize(m_swapChainImageViews.size());
+    for (size_t i = 0; i < m_swapChainImageViews.size(); i++)
+    {
         VkImageView attachments[] = {
                 m_swapChainImageViews[i]
         };
@@ -87,7 +103,7 @@ void RemSwapChain::CreateFrameBuffers() {
         framebufferInfo.height = m_swapChainExtent.height;
         framebufferInfo.layers = 1;
 
-        if (vkCreateFramebuffer(m_logicalDevice, &framebufferInfo, nullptr, &m_swapChainFramebuffers[i]) != VK_SUCCESS) {
+        if (vkCreateFramebuffer(m_logicalDevice, &framebufferInfo, nullptr, &m_swapChainFrameBuffers[i]) != VK_SUCCESS) {
             throw std::runtime_error("failed to create framebuffer!");
         }
     }
@@ -123,7 +139,7 @@ void RemSwapChain::CreateImageViews()
 void RemSwapChain::Cleanup()
 {
     std::cout << "Destroying Frame Buffer" << std::endl;
-    for (auto framebuffer : m_swapChainFramebuffers) {
+    for (auto framebuffer : m_swapChainFrameBuffers) {
         vkDestroyFramebuffer(m_logicalDevice, framebuffer, nullptr);
     }
 
@@ -135,17 +151,57 @@ void RemSwapChain::Cleanup()
     vkDestroySwapchainKHR(m_logicalDevice, m_swapChain, nullptr);
 }
 
-
-
-RemSwapChain::RemSwapChain(VkDevice &mLogicalDevice, VkPhysicalDevice &mPhysicalDevice, VkSurfaceKHR &mSurface,VkRenderPass& renderPass, RemWindow* remWindow)
-        : m_logicalDevice(mLogicalDevice), m_physicalDevice(mPhysicalDevice), m_surface(mSurface), m_renderPass(renderPass), m_remWindowInstance(remWindow)
+void RemSwapChain::CreateRenderPass()
 {
+    std::cout << "Creating Render Pass" << std::endl;
+    VkAttachmentDescription colorAttachment{};
+    colorAttachment.format = m_swapChainImageFormat;
+    colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+    colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+    VkAttachmentReference colorAttachmentRef{};
+    colorAttachmentRef.attachment = 0;
+    colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+    VkSubpassDescription subpass{};
+    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpass.colorAttachmentCount = 1;
+    subpass.pColorAttachments = &colorAttachmentRef;
+
+    VkRenderPassCreateInfo renderPassInfo{};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    renderPassInfo.attachmentCount = 1;
+    renderPassInfo.pAttachments = &colorAttachment;
+    renderPassInfo.subpassCount = 1;
+    renderPassInfo.pSubpasses = &subpass;
+
+    if (vkCreateRenderPass(m_logicalDevice, &renderPassInfo, nullptr, &m_renderPass) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create render pass!");
+    }
+
 }
 
-void RemSwapChain::Initialize()
+void RemSwapChain::Initialize(VkDevice &mLogicalDevice,
+                              VkPhysicalDevice &mPhysicalDevice,
+                              VkSurfaceKHR &mSurface,
+                              VkRenderPass& renderPass,
+                              RemApplication *remWindow)
 {
+    m_logicalDevice = mLogicalDevice;
+    m_physicalDevice = mPhysicalDevice;
+    m_surface = mSurface;
+    m_renderPass = renderPass;
+    m_remApplicationInstance = remWindow;
+
     std::cout << "Constructing Swap Chain" << std::endl;
     CreateSwapChain();
     std::cout << "Constructing Image Views" << std::endl;
     CreateImageViews();
+
+    CreateRenderPass();
 }

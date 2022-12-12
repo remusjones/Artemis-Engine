@@ -12,10 +12,10 @@
 #include "SystemStructs.h"
 class RemSwapChain;
 
-class RemWindow
+class RemApplication
 {
 public:
-    RemWindow(const char* windowName, int windowWidth, int windowHeight);
+    RemApplication(const char* windowName, int windowWidth, int windowHeight);
     void Run();
 
     VkSurfaceFormatKHR  ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
@@ -24,6 +24,11 @@ public:
     SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
     QueueFamilyIndices  FindQueueFamilies(VkPhysicalDevice device);
 
+
+    RemPipeline m_renderPipeline;
+    RemSwapChain m_swapChain;
+    VkInstance m_vulkanInstance;
+    GLFWwindow* m_window{};
 private:
 
     // Init Vulkan & Supporting Systems
@@ -52,22 +57,18 @@ private:
     void CreateGraphicsPipeline();
 
 
-    // Window Variables
-    GLFWwindow* m_window{};
+
     int m_windowWidth;
     int m_windowHeight;
     const char* m_windowName;
-
-    // Vulkan Variables
-    VkInstance m_vulkanInstance;
     uint32_t m_extensionCount{};
     std::vector<VkExtensionProperties> m_extensions;
     VkQueue m_graphicsQueue;
     VkQueue m_presentQueue;
     VkSurfaceKHR m_surface;
-    RemSwapChain* m_swapChain;
-    VkRenderPass m_renderPass;
-    RemPipeline m_renderPipeline{};
+
+    VkRenderPass m_renderPass{};
+
 
 
     const std::vector<const char*> m_deviceExtensions = {
@@ -117,6 +118,7 @@ private:
 #else
     const bool enableValidationLayers = true;
 #endif
+
 
 };
 

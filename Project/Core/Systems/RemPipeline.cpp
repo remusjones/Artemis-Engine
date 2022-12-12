@@ -7,11 +7,7 @@
 #include <Helpers/File Management/RemFileManagement.h>
 void RemPipeline::Initialize(VkDevice& logicalDevice,
                              VkRenderPass& renderPass,
-                              VkSwapchainKHR& swapChainKhr,
-                              VkExtent2D& swapChainExtent,
-                              VkFormat& swapChainImageFormat,
-                              std::vector<VkImageView>& swapChainImageViews,
-                              std::vector<VkImage>& swapChainImages,
+                             RemSwapChain& remSwapChain,
                               VkPhysicalDevice& physicalDevice,
                               VkQueue& graphicsQueue,
                               VkQueue& presentQueue
@@ -20,14 +16,10 @@ void RemPipeline::Initialize(VkDevice& logicalDevice,
     // Register the shader module
     m_logicalDevice = logicalDevice;
     m_renderPass = renderPass;
-    m_swapChain = swapChainKhr;
-    m_swapChainExtent = swapChainExtent;
-    m_swapChainImageFormat = swapChainImageFormat;
-    m_swapChainImageViews = swapChainImageViews;
+    m_remSwapChain = remSwapChain;
     m_graphicsQueue = graphicsQueue;
     m_presentQueue = presentQueue;
-    m_swapChainImages = swapChainImages;
-    CreateRenderPass();
+
 
 
     //
@@ -56,7 +48,7 @@ void RemPipeline::Cleanup()
             throw std::runtime_error("Attempted to Deconstruct Command Pool, but there was none to deconstruct");
         }
 
-        for (auto framebuffer : m_swapChainFrameBuffers)
+        for (auto framebuffer : m_remSwapChain.m_swapChainFrameBuffers)
         {
             vkDestroyFramebuffer(m_logicalDevice, framebuffer, nullptr);
         }
@@ -157,14 +149,14 @@ void RemPipeline::CreatePipelineLayout()
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
-    viewport.width = (float) m_swapChainExtent.width;
-    viewport.height = (float) m_swapChainExtent.height;
+    viewport.width = (float) m_remSwapChain.m_swapChainExtent.width;
+    viewport.height = (float) m_remSwapChain.m_swapChainExtent.height;
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
 
     VkRect2D scissor{};
     scissor.offset = {0, 0};
-    scissor.extent = m_swapChainExtent;
+    scissor.extent = m_remSwapChain.m_swapChainExtent;
 
     VkPipelineViewportStateCreateInfo viewportState{};
     viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -283,71 +275,9 @@ void RemPipeline::CreatePipelineLayout()
         throw std::runtime_error("failed to create graphics pipeline!");
     }
 
-    CreateFrameBuffers();
+    m_remSwapChain.CreateFrameBuffers();
 
     m_hasCreatedPipeline = true;
-}
-
-void RemPipeline::CreateRenderPass()
-{
-    std::cout << "Creating Render Pass" << std::endl;
-    VkAttachmentDescription colorAttachment{};
-    colorAttachment.format = m_swapChainImageFormat;
-    colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-    colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-    VkAttachmentReference colorAttachmentRef{};
-    colorAttachmentRef.attachment = 0;
-    colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-    VkSubpassDescription subpass{};
-    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    subpass.colorAttachmentCount = 1;
-    subpass.pColorAttachments = &colorAttachmentRef;
-
-    VkRenderPassCreateInfo renderPassInfo{};
-    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    renderPassInfo.attachmentCount = 1;
-    renderPassInfo.pAttachments = &colorAttachment;
-    renderPassInfo.subpassCount = 1;
-    renderPassInfo.pSubpasses = &subpass;
-
-    if (vkCreateRenderPass(m_logicalDevice, &renderPassInfo, nullptr, &m_renderPass) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create render pass!");
-    }
-
-
-}
-
-void RemPipeline::CreateFrameBuffers()
-{
-    std::cout << "Creating Frame Buffers" << std::endl;
-    m_swapChainFrameBuffers.resize(m_swapChainImageViews.size());
-    for (size_t i = 0; i < m_swapChainImageViews.size(); i++)
-    {
-        VkImageView attachments[] = {
-                m_swapChainImageViews[i]
-        };
-
-        VkFramebufferCreateInfo framebufferInfo{};
-        framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        framebufferInfo.renderPass = m_renderPass;
-        framebufferInfo.attachmentCount = 1;
-        framebufferInfo.pAttachments = attachments;
-        framebufferInfo.width = m_swapChainExtent.width;
-        framebufferInfo.height = m_swapChainExtent.height;
-        framebufferInfo.layers = 1;
-
-        if (vkCreateFramebuffer(m_logicalDevice, &framebufferInfo, nullptr, &m_swapChainFrameBuffers[i]) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create framebuffer!");
-        }
-    }
-
 }
 
 void RemPipeline::CreateCommandPool(QueueFamilyIndices& queueFamilyIndices)
@@ -370,7 +300,7 @@ void RemPipeline::CreateCommandPool(QueueFamilyIndices& queueFamilyIndices)
 void RemPipeline::CreateCommandBuffer()
 {
     std::cout << "Creating Command Buffer" << std::endl;
-    m_commandBuffers.resize(m_swapChainFrameBuffers.size());
+    m_commandBuffers.resize(m_remSwapChain.m_swapChainFrameBuffers.size());
 
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -395,9 +325,9 @@ void RemPipeline::CreateCommandBuffer()
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         renderPassInfo.renderPass = m_renderPass;
-        renderPassInfo.framebuffer = m_swapChainFrameBuffers[i];
+        renderPassInfo.framebuffer = m_remSwapChain.m_swapChainFrameBuffers[i];
         renderPassInfo.renderArea.offset = {0, 0};
-        renderPassInfo.renderArea.extent = m_swapChainExtent;
+        renderPassInfo.renderArea.extent = m_remSwapChain.m_swapChainExtent;
 
         VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
         renderPassInfo.clearValueCount = 1;
@@ -430,14 +360,23 @@ void RemPipeline::DrawFrame()
     vkWaitForFences(m_logicalDevice, 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
 
 
-
     uint32_t imageIndex;
-    vkAcquireNextImageKHR(m_logicalDevice,
-                          m_swapChain,
-                          UINT64_MAX,
-                          m_imageAvailableSemaphores[m_currentFrame],
-                          VK_NULL_HANDLE,
-                          &imageIndex);
+    VkResult result = vkAcquireNextImageKHR(m_logicalDevice,
+                                            m_remSwapChain.m_swapChain,
+                                            UINT64_MAX,
+                                            m_imageAvailableSemaphores[m_currentFrame],
+                                            VK_NULL_HANDLE,
+                                            &imageIndex);
+
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_framebufferResized) {
+        m_remSwapChain.RecreateSwapChain();
+        m_framebufferResized = false;
+    }else if (result != VK_SUCCESS) {
+        throw std::runtime_error("failed to acquire swap chain image!");
+    }
+
+    // Only reset the fence if we are submitting work
+    vkResetFences(m_logicalDevice, 1, &m_inFlightFences[m_currentFrame]);
 
     // Check if a previous frame is using this image (i.e. there is its fence to wait on)
     if (m_imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
@@ -473,13 +412,20 @@ void RemPipeline::DrawFrame()
     presentInfo.waitSemaphoreCount = 1;
     presentInfo.pWaitSemaphores = signalSemaphores;
 
-    VkSwapchainKHR swapChains[] = {m_swapChain};
+    VkSwapchainKHR swapChains[] = {m_remSwapChain.m_swapChain};
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = swapChains;
     presentInfo.pImageIndices = &imageIndex;
     presentInfo.pResults = nullptr; // Optional
 
-    vkQueuePresentKHR(m_presentQueue, &presentInfo);
+    result = vkQueuePresentKHR(m_presentQueue, &presentInfo);
+
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+        m_remSwapChain.RecreateSwapChain();
+    } else if (result != VK_SUCCESS) {
+        throw std::runtime_error("failed to present swap chain image!");
+    }
+
 
     m_currentFrame = (m_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 
@@ -491,7 +437,7 @@ void RemPipeline::CreateSyncObjects()
     m_imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
     m_renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
     m_inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
-    m_imagesInFlight.resize(m_swapChainImages.size(), VK_NULL_HANDLE);
+    m_imagesInFlight.resize(m_remSwapChain.m_swapChainImages.size(), VK_NULL_HANDLE);
 
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;

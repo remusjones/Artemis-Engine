@@ -8,30 +8,27 @@
 
 #include <vector>
 #include <optional>
-class RemWindow;
+class RemApplication;
 
 class RemSwapChain {
 public:
-    RemSwapChain(VkDevice &mLogicalDevice,
-                 VkPhysicalDevice &mPhysicalDevice,
-                 VkSurfaceKHR &mSurface,
-                 VkRenderPass& renderPass,
-                 RemWindow *remWindow);
 
-    void Initialize();
+
+
+    void Initialize(VkDevice &mLogicalDevice,
+                    VkPhysicalDevice &mPhysicalDevice,
+                    VkSurfaceKHR &mSurface,
+                    VkRenderPass& renderPass,
+                    RemApplication *remWindow);
 
     void RecreateSwapChain();
-
     void CreateSwapChain();
-
     void CreateFrameBuffers();
-
     void CreateImageViews();
-
     void Cleanup();
 
-    VkPhysicalDevice &m_physicalDevice;
-    RemWindow* m_remWindowInstance{};
+    VkPhysicalDevice m_physicalDevice;
+    RemApplication* m_remApplicationInstance{};
     // swapchain
     VkSwapchainKHR m_swapChain{};
     VkFormat m_swapChainImageFormat;
@@ -40,8 +37,10 @@ public:
     std::vector<VkImageView> m_swapChainImageViews;
     VkDevice m_logicalDevice;
     VkSurfaceKHR m_surface;
-    std::vector<VkFramebuffer> m_swapChainFramebuffers;
-    VkRenderPass& m_renderPass;
+    std::vector<VkFramebuffer> m_swapChainFrameBuffers;
+    VkRenderPass m_renderPass;
+
+    void CreateRenderPass();
 };
 
 #endif //INC_3DENGINE_REMSWAPCHAIN_H

@@ -12,17 +12,15 @@
 #include <map>
 #include "SystemStructs.h"
 #include "RemShaderComponent.h"
+#include "RemSwapChain.h"
+
 class RemPipeline
 {
 public:
 
     void Initialize(VkDevice& logicalDevice,
                     VkRenderPass& renderPass,
-                    VkSwapchainKHR& swapChainKhr,
-                    VkExtent2D& swapChainExtent,
-                    VkFormat& swapChainImageFormat,
-                    std::vector<VkImageView>& swapChainImageViews,
-                    std::vector<VkImage>& swapChainImages,
+                    RemSwapChain& remSwapChain,
                     VkPhysicalDevice& physicalDevice,
                     VkQueue& graphicsQueue,
                     VkQueue& presentQueue
@@ -32,8 +30,6 @@ public:
 
     VkResult LoadShader(const std::string& shaderName);
     void CreatePipelineLayout();
-    void CreateRenderPass();
-    void CreateFrameBuffers();
     void CreateCommandPool(QueueFamilyIndices& queueFamilyIndices);
     void CreateCommandBuffer();
     void DrawFrame();
@@ -43,19 +39,16 @@ public:
     void DestroyShader(RemShaderComponent* shaderComponent);
 
     std::vector<VkFence> m_inFlightFences;
+    bool m_framebufferResized = false;
     std::vector<VkFence> m_imagesInFlight;
 private:
+
+    RemSwapChain m_remSwapChain;
     std::vector<RemShaderComponent*> m_loadedShaders{};
     VkDevice m_logicalDevice;
     VkRenderPass m_renderPass;
     VkPipelineLayout m_pipelineLayout;
-    VkSwapchainKHR m_swapChain;
-    VkExtent2D m_swapChainExtent;
-    VkFormat m_swapChainImageFormat;
     VkPipeline m_graphicsPipeline;
-    std::vector<VkImageView> m_swapChainImageViews{};
-    std::vector<VkImage> m_swapChainImages;
-    std::vector<VkFramebuffer> m_swapChainFrameBuffers{};
     VkCommandPool m_commandPool;
     std::vector<VkCommandBuffer> m_commandBuffers{};
     bool m_hasCreatedPipeline = false;
