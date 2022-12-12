@@ -1,1 +1,1 @@
-for /r %%i in (*.frag, *.vert) do C:\VulkanSDK\1.2.189.2\Bin\glslc %%i -o cmake-build-debug/Shaders/%%~ni.spv
+for /r %%i in (*.frag, *.vert) do C:\VulkanSDK\1.3.231.1Bin\glslc %%i -o cmake-build-debug/Shaders/%%~ni.spv

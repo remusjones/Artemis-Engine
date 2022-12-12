@@ -20,13 +20,10 @@ void RemSwapChain::RecreateSwapChain()
     }
     vkDeviceWaitIdle(m_logicalDevice);
     Cleanup();
-    glfwWaitEvents();
 
     CreateSwapChain();
     CreateImageViews();
     CreateFrameBuffers();
-
-    vkDeviceWaitIdle(m_logicalDevice);
 }
 
 void RemSwapChain::CreateSwapChain()
