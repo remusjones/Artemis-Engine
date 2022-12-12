@@ -7,8 +7,8 @@
 2. Modify CMakeLists.txt to reflect install directory:
 
 ```cpp 
-include_directories("C:/VulkanSDK/1.2.189.2/Include")
-target_link_libraries(3DEngine glfw C:/VulkanSDK/1.2.189.2/Lib/vulkan-1.lib glm)
+include_directories("C:/VulkanSDK/1.3.231.1/Include")
+target_link_libraries(3DEngine glfw C:/VulkanSDK/1.3.231.1/Lib/vulkan-1.lib glm)
 ```
 
 
