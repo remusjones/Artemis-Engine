@@ -5,6 +5,7 @@
 #ifndef INC_3DENGINE_SYSTEMSTRUCTS_H
 #define INC_3DENGINE_SYSTEMSTRUCTS_H
 
+#include <optional>
 
 struct QueueFamilyIndices
 {

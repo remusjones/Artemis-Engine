@@ -18,7 +18,7 @@ target_link_libraries(3DEngine glfw C:/VulkanSDK/1.3.231.1/Lib/vulkan-1.lib glm)
 ## Install MinGW Toolchain for CLion
 
 1. Install MSys2 ([http://www.msys2.org/])
-2. Install a toolchain: pacman -S mingw-w64-x86_64-toolchain
+2. Install a toolchain: pacman -S mingw-w64-x86_64-toolchain (inside of the msys2.exe console)
 3. Select the mingw installation in CLion:
 4. File | Settings | Build ,Execution... | Toolchains
 5. Set MinGW Home to {MSys2 installation dir}\mingw64

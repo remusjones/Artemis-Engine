@@ -458,22 +458,22 @@ void RemPipeline::CreateSyncObjects()
 
 void RemPipeline::DestroyShader(RemShaderComponent* shaderComponent)
 {
-    if ( std::find(m_loadedShaders.begin(), m_loadedShaders.end(), shaderComponent) != m_loadedShaders.end() )
-    {
-        std::remove(m_loadedShaders.begin(), m_loadedShaders.end(), shaderComponent);
-
-        if (shaderComponent->m_fragment != nullptr)
-            vkDestroyShaderModule(m_logicalDevice, shaderComponent->m_fragment, nullptr);
-        if (shaderComponent->m_vertex != nullptr)
-            vkDestroyShaderModule(m_logicalDevice, shaderComponent->m_vertex, nullptr);
-
-        delete shaderComponent;
-        m_loadedShaders.shrink_to_fit();
-
-    }else
-    {
-        throw std::runtime_error("Shader not registered");
-    }
+    //if ( std::find(m_loadedShaders.begin(), m_loadedShaders.end(), shaderComponent) != m_loadedShaders.end() )
+    //{
+    //    std::remove(m_loadedShaders.begin(), m_loadedShaders.end(), shaderComponent);
+//
+    //    if (shaderComponent->m_fragment != nullptr)
+    //        vkDestroyShaderModule(m_logicalDevice, shaderComponent->m_fragment, nullptr);
+    //    if (shaderComponent->m_vertex != nullptr)
+    //        vkDestroyShaderModule(m_logicalDevice, shaderComponent->m_vertex, nullptr);
+//
+    //    delete shaderComponent;
+    //    m_loadedShaders.shrink_to_fit();
+//
+    //}else
+    //{
+    //    throw std::runtime_error("Shader not registered");
+    //}
 }
 
 
