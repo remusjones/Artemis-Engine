@@ -15,6 +15,7 @@ void RemApplication::Run()
     InitializeWindow();
     InitializeVulkan();
     Update();
+    vkDeviceWaitIdle(m_logicalDevice);
     Cleanup();
 }
 
@@ -25,7 +26,8 @@ void RemApplication::InitializeVulkan()
     CreateSurface();
     InitializePhysicalDevice();
     CreateLogicalDevice();
-    m_swapChain.Initialize(m_logicalDevice,
+    m_swapChain = new RemSwapChain();
+    m_swapChain->Initialize(m_logicalDevice,
                             m_physicalDevice,
                             m_surface,
                             m_renderPass,
@@ -40,13 +42,14 @@ void RemApplication::Update()
         glfwPollEvents();
         this->m_renderPipeline.DrawFrame();
     }
-    vkDeviceWaitIdle(m_logicalDevice);
 }
 
 void RemApplication::Cleanup()
 {
-    m_swapChain.Cleanup();
+
     m_renderPipeline.Cleanup();
+    m_swapChain->Cleanup();
+    delete m_swapChain;
     vkDestroyDevice(m_logicalDevice, nullptr);
 
     if (enableValidationLayers) {
@@ -154,7 +157,6 @@ void RemApplication::CreateGraphicsPipeline()
 
 
     m_renderPipeline.Initialize(m_logicalDevice,
-                                m_swapChain.m_renderPass,
                                 m_swapChain,
                                 m_physicalDevice,
                                 m_graphicsQueue,

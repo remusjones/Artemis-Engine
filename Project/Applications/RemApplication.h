@@ -26,7 +26,7 @@ public:
 
 
     RemPipeline m_renderPipeline;
-    RemSwapChain m_swapChain;
+    RemSwapChain* m_swapChain;
     VkInstance m_vulkanInstance;
     GLFWwindow* m_window{};
 private:

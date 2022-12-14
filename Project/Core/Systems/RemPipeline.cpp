@@ -6,16 +6,16 @@
 #include <iostream>
 #include <Helpers/File Management/RemFileManagement.h>
 void RemPipeline::Initialize(VkDevice& logicalDevice,
-                             VkRenderPass& renderPass,
-                             RemSwapChain& remSwapChain,
+                             RemSwapChain* remSwapChain,
                               VkPhysicalDevice& physicalDevice,
                               VkQueue& graphicsQueue,
                               VkQueue& presentQueue
                               )
 {
+
+
     // Register the shader module
     m_logicalDevice = logicalDevice;
-    m_renderPass = renderPass;
     m_remSwapChain = remSwapChain;
     m_graphicsQueue = graphicsQueue;
     m_presentQueue = presentQueue;
@@ -29,17 +29,16 @@ void RemPipeline::Initialize(VkDevice& logicalDevice,
     vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
 }
 
-
 void RemPipeline::Cleanup()
 {
     if (m_hasCreatedPipeline)
     {
+        CleanupOldSyncObjects();
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
             vkDestroySemaphore(m_logicalDevice, m_renderFinishedSemaphores[i], nullptr);
             vkDestroySemaphore(m_logicalDevice, m_imageAvailableSemaphores[i], nullptr);
             vkDestroyFence(m_logicalDevice, m_inFlightFences[i], nullptr);
         }
-
         if (m_commandPool != nullptr)
         {
             vkDestroyCommandPool(m_logicalDevice, m_commandPool, nullptr);
@@ -48,10 +47,6 @@ void RemPipeline::Cleanup()
             throw std::runtime_error("Attempted to Deconstruct Command Pool, but there was none to deconstruct");
         }
 
-        for (auto framebuffer : m_remSwapChain.m_swapChainFrameBuffers)
-        {
-            vkDestroyFramebuffer(m_logicalDevice, framebuffer, nullptr);
-        }
 
         vkDestroyPipeline(m_logicalDevice, m_graphicsPipeline, nullptr);
         vkDestroyPipelineLayout(m_logicalDevice, m_pipelineLayout, nullptr);
@@ -59,7 +54,7 @@ void RemPipeline::Cleanup()
     {
         throw std::runtime_error("Attempted to Deconstruct Render Pipeline, but there was none to deconstruct");
     }
-    vkDestroyRenderPass(m_logicalDevice, m_renderPass, nullptr);
+    vkDestroyRenderPass(m_logicalDevice, m_remSwapChain->m_renderPass, nullptr);
     // release all loaded shaders
 
     for(int i = 0; i < m_loadedShaders.size(); i++)
@@ -149,14 +144,14 @@ void RemPipeline::CreatePipelineLayout()
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
-    viewport.width = (float) m_remSwapChain.m_swapChainExtent.width;
-    viewport.height = (float) m_remSwapChain.m_swapChainExtent.height;
+    viewport.width = (float) m_remSwapChain->m_swapChainExtent.width;
+    viewport.height = (float) m_remSwapChain->m_swapChainExtent.height;
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
 
     VkRect2D scissor{};
     scissor.offset = {0, 0};
-    scissor.extent = m_remSwapChain.m_swapChainExtent;
+    scissor.extent = m_remSwapChain->m_swapChainExtent;
 
     VkPipelineViewportStateCreateInfo viewportState{};
     viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -265,7 +260,7 @@ void RemPipeline::CreatePipelineLayout()
     pipelineInfo.pDynamicState = nullptr; // Optional
 
     pipelineInfo.layout = m_pipelineLayout;
-    pipelineInfo.renderPass = m_renderPass;
+    pipelineInfo.renderPass = m_remSwapChain->m_renderPass;
     pipelineInfo.subpass = 0;
 
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
@@ -275,7 +270,7 @@ void RemPipeline::CreatePipelineLayout()
         throw std::runtime_error("failed to create graphics pipeline!");
     }
 
-    m_remSwapChain.CreateFrameBuffers();
+    m_remSwapChain->CreateFrameBuffers();
 
     m_hasCreatedPipeline = true;
 }
@@ -294,13 +289,14 @@ void RemPipeline::CreateCommandPool(QueueFamilyIndices& queueFamilyIndices)
     }
 
     CreateCommandBuffer();
+    CreateSyncObjects();
 
 }
 
 void RemPipeline::CreateCommandBuffer()
 {
     std::cout << "Creating Command Buffer" << std::endl;
-    m_commandBuffers.resize(m_remSwapChain.m_swapChainFrameBuffers.size());
+    m_commandBuffers.resize(m_remSwapChain->m_swapChainFrameBuffers.size());
 
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -324,10 +320,10 @@ void RemPipeline::CreateCommandBuffer()
 
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = m_renderPass;
-        renderPassInfo.framebuffer = m_remSwapChain.m_swapChainFrameBuffers[i];
+        renderPassInfo.renderPass = m_remSwapChain->m_renderPass;
+        renderPassInfo.framebuffer = m_remSwapChain->m_swapChainFrameBuffers[i];
         renderPassInfo.renderArea.offset = {0, 0};
-        renderPassInfo.renderArea.extent = m_remSwapChain.m_swapChainExtent;
+        renderPassInfo.renderArea.extent = m_remSwapChain->m_swapChainExtent;
 
         VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
         renderPassInfo.clearValueCount = 1;
@@ -351,29 +347,44 @@ void RemPipeline::CreateCommandBuffer()
 
     }
 
-    CreateSyncObjects();
-
 }
 
+bool semaphoresNeedToBeRecreated = false;
 void RemPipeline::DrawFrame()
 {
     vkWaitForFences(m_logicalDevice, 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
 
-
     uint32_t imageIndex;
+
+    //
+    // Avoid max timout due to weird issue (after swap chain recreation) - https://www.reddit.com/r/vulkan/comments/wfugbz/weird_behaviour_of_vkacquireimagekhr/
+    // 14/12/2022
+    //
     VkResult result = vkAcquireNextImageKHR(m_logicalDevice,
-                                            m_remSwapChain.m_swapChain,
-                                            UINT64_MAX,
+                                            m_remSwapChain->m_swapChain,
+                                            0,
                                             m_imageAvailableSemaphores[m_currentFrame],
                                             VK_NULL_HANDLE,
                                             &imageIndex);
 
+
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_framebufferResized) {
-        m_remSwapChain.RecreateSwapChain();
+        m_remSwapChain->RecreateSwapChain();
+
+        //
+        // Note causes an validation issue when recreating the command buffer, causing frames in flight to become invalid .. ?
+        //
+        CreateCommandBuffer();
+
+        //
+        // Sync objects aren't atomic, so we have to regenerate them at the end of the current frame
+        //
+        semaphoresNeedToBeRecreated = true;
         m_framebufferResized = false;
     }else if (result != VK_SUCCESS) {
         throw std::runtime_error("failed to acquire swap chain image!");
     }
+
 
     // Only reset the fence if we are submitting work
     vkResetFences(m_logicalDevice, 1, &m_inFlightFences[m_currentFrame]);
@@ -412,7 +423,7 @@ void RemPipeline::DrawFrame()
     presentInfo.waitSemaphoreCount = 1;
     presentInfo.pWaitSemaphores = signalSemaphores;
 
-    VkSwapchainKHR swapChains[] = {m_remSwapChain.m_swapChain};
+    VkSwapchainKHR swapChains[] = {m_remSwapChain->m_swapChain};
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = swapChains;
     presentInfo.pImageIndices = &imageIndex;
@@ -421,23 +432,54 @@ void RemPipeline::DrawFrame()
     result = vkQueuePresentKHR(m_presentQueue, &presentInfo);
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
-        m_remSwapChain.RecreateSwapChain();
+        m_remSwapChain->RecreateSwapChain();
     } else if (result != VK_SUCCESS) {
         throw std::runtime_error("failed to present swap chain image!");
     }
 
+    if (semaphoresNeedToBeRecreated)
+    {
+        CreateSyncObjects();
+        semaphoresNeedToBeRecreated = false;
+    }
 
     m_currentFrame = (m_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 
-}
 
+}
+void RemPipeline::CleanupOldSyncObjects()
+{
+    for (size_t i = 0; i < m_renderFinishedSemaphoresToDestroy.size(); i++) {
+        vkDestroySemaphore(m_logicalDevice, m_renderFinishedSemaphoresToDestroy[i], nullptr);
+    }
+    m_renderFinishedSemaphoresToDestroy.clear();
+
+    for (size_t i = 0; i < m_inFlightFencesToDestroy.size(); i++) {
+        vkDestroyFence(m_logicalDevice, m_inFlightFencesToDestroy[i], nullptr);
+    }
+    m_inFlightFencesToDestroy.clear();
+
+    for (size_t i = 0; i < m_imageAvailableSemaphoresToDestroy.size(); i++) {
+        vkDestroySemaphore(m_logicalDevice, m_imageAvailableSemaphoresToDestroy[i], nullptr);
+    }
+    m_imageAvailableSemaphoresToDestroy.clear();
+}
 void RemPipeline::CreateSyncObjects()
 {
+
+    //
+    // Add out of date fences for destruction when gpu free releases frame
+    //
+    m_inFlightFencesToDestroy.insert(m_inFlightFencesToDestroy.end(), std::begin(m_inFlightFences), std::end(m_inFlightFences));     // C++11
+    m_imageAvailableSemaphoresToDestroy.insert(m_imageAvailableSemaphoresToDestroy.end(), std::begin(m_imageAvailableSemaphores), std::end(m_imageAvailableSemaphores));     // C++11
+    m_renderFinishedSemaphoresToDestroy.insert(m_renderFinishedSemaphoresToDestroy.end(), std::begin(m_renderFinishedSemaphores), std::end(m_renderFinishedSemaphores));     // C++11
+
+
     std::cout << "Creating Semaphores and Fences" << std::endl;
     m_imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
     m_renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
     m_inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
-    m_imagesInFlight.resize(m_remSwapChain.m_swapChainImages.size(), VK_NULL_HANDLE);
+    m_imagesInFlight.resize(m_remSwapChain->m_swapChainImages.size(), VK_NULL_HANDLE);
 
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;

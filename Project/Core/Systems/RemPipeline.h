@@ -19,8 +19,7 @@ class RemPipeline
 public:
 
     void Initialize(VkDevice& logicalDevice,
-                    VkRenderPass& renderPass,
-                    RemSwapChain& remSwapChain,
+                    RemSwapChain* remSwapChain,
                     VkPhysicalDevice& physicalDevice,
                     VkQueue& graphicsQueue,
                     VkQueue& presentQueue
@@ -42,11 +41,11 @@ public:
     bool m_framebufferResized = false;
     std::vector<VkFence> m_imagesInFlight;
 private:
+    void CleanupOldSyncObjects();
 
-    RemSwapChain m_remSwapChain;
+    RemSwapChain* m_remSwapChain;
     std::vector<RemShaderComponent*> m_loadedShaders{};
     VkDevice m_logicalDevice;
-    VkRenderPass m_renderPass;
     VkPipelineLayout m_pipelineLayout;
     VkPipeline m_graphicsPipeline;
     VkCommandPool m_commandPool;
@@ -58,6 +57,12 @@ private:
 
     std::vector<VkSemaphore>  m_imageAvailableSemaphores;
     std::vector<VkSemaphore>  m_renderFinishedSemaphores;
+
+
+    std::vector<VkFence> m_inFlightFencesToDestroy;
+    std::vector<VkSemaphore>  m_imageAvailableSemaphoresToDestroy;
+    std::vector<VkSemaphore>  m_renderFinishedSemaphoresToDestroy;
+
 
     size_t m_currentFrame = 0;
 

@@ -18,9 +18,9 @@ void RemSwapChain::RecreateSwapChain()
         glfwWaitEvents();
         std::cout << "Application Minimized" << std::endl;
     }
+
     vkDeviceWaitIdle(m_logicalDevice);
     Cleanup();
-
     CreateSwapChain();
     CreateImageViews();
     CreateFrameBuffers();
@@ -75,7 +75,6 @@ void RemSwapChain::CreateSwapChain()
     }
     m_swapChainImageFormat = surfaceFormat.format;
     m_swapChainExtent = extent;
-    vkGetSwapchainImagesKHR(m_logicalDevice, m_swapChain, &imageCount, nullptr);
     m_swapChainImages.resize(imageCount);
     vkGetSwapchainImagesKHR(m_logicalDevice, m_swapChain, &imageCount, m_swapChainImages.data());
 }
@@ -136,14 +135,12 @@ void RemSwapChain::CreateImageViews()
 void RemSwapChain::Cleanup()
 {
     std::cout << "Destroying Frame Buffer" << std::endl;
-    for (auto framebuffer : m_swapChainFrameBuffers) {
-        vkDestroyFramebuffer(m_logicalDevice, framebuffer, nullptr);
+    for (auto & m_swapChainFrameBuffer : m_swapChainFrameBuffers) {
+        vkDestroyFramebuffer(m_logicalDevice, m_swapChainFrameBuffer, nullptr);
     }
 
-    std::cout << "Destroying Swap Chain" << std::endl;
-
-    for (auto imageView : m_swapChainImageViews) {
-        vkDestroyImageView(m_logicalDevice, imageView, nullptr);
+    for (auto & m_swapChainImageView : m_swapChainImageViews) {
+        vkDestroyImageView(m_logicalDevice, m_swapChainImageView, nullptr);
     }
     vkDestroySwapchainKHR(m_logicalDevice, m_swapChain, nullptr);
 }
