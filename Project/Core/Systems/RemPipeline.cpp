@@ -75,20 +75,23 @@ VkResult RemPipeline::LoadShader(const std::string& shaderName)
 
     std::cout << "Creating Shader: " << shaderName << std::endl;
 
+
     //
     // Attempts to automatically load vert + frag with req suffixes
     //
     std::string vertex = shaderName;
+    std::string frag = shaderName;
+
+    FileManagementShaderInfo fileSettings;
 
     //
     // Append required suffixes to locate file
     //
-    vertex.append(SHADER_VERTEX_SUFFIX);
-    vertex.append(SHADER_FILE_EXTENSION);
+    vertex.append(fileSettings.pShaderVertexSuffix);
+    vertex.append(fileSettings.pShaderFileExtension);
 
-    std::string frag = shaderName;
-    frag.append(SHADER_FRAGMENT_SUFFIX);
-    frag.append(SHADER_FILE_EXTENSION);
+    frag.append(fileSettings.pShaderFragmentSuffix);
+    frag.append(fileSettings.pShaderFileExtension);
 
 
 

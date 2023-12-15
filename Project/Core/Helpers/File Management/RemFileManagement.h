@@ -3,19 +3,25 @@
 //
 
 
-#define SHADER_SUB_DIRECTORY "\\Shaders\\"
-#define SHADER_VERTEX_SUFFIX "_v"
-#define SHADER_FRAGMENT_SUFFIX "_f"
-#define SHADER_FILE_EXTENSION ".spv"
-#define SHADER_DIRECTORY "\\Shaders\\"
-
+#pragma once
 #include <vector>
 #include <string>
+#include "FileManagementInfo.h"
+
 
 class RemFileManagement {
+private:
+    RemFileManagement() = default;
 public:
+
     static std::vector<char> GetShaderFileData(const std::string& filename);
+    static void SetShaderInfoSettings(const FileManagementShaderInfo&
+    shaderInfo);
+    static const FileManagementShaderInfo& GetShaderInfoSettings();
+
     static std::string GetCurrentDirectory();
+private:
+    static inline FileManagementShaderInfo ShaderFileSettings;
 };
 
 

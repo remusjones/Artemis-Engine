@@ -7,10 +7,11 @@
 #include <minwindef.h>
 #include <libloaderapi.h>
 
+
 std::vector<char> RemFileManagement::GetShaderFileData(const std::string &filename)
 {
     std::string finalDirectory = GetCurrentDirectory();
-    finalDirectory.append(SHADER_DIRECTORY);
+    finalDirectory.append(ShaderFileSettings.pShaderDirectory);
     finalDirectory.append(filename);
 
     std::ifstream file(finalDirectory, std::ios::ate | std::ios::binary);
@@ -34,4 +35,13 @@ std::string RemFileManagement::GetCurrentDirectory()
     std::string::size_type pos = std::string(buffer).find_last_of("\\/");
 
     return std::string(buffer).substr(0, pos);
+}
+
+void RemFileManagement::SetShaderInfoSettings(
+        const FileManagementShaderInfo &shaderInfo) {
+    ShaderFileSettings = shaderInfo;
+}
+
+const FileManagementShaderInfo &RemFileManagement::GetShaderInfoSettings() {
+    return ShaderFileSettings;
 }
