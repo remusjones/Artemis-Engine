@@ -1,1 +1,4 @@
-for /r %%i in (*.frag, *.vert) do C:\VulkanSDK\1.3.231.1\Bin\glslc %%i -o cmake-build-debug/Shaders/%%~ni.spv
+set VULKAN_SDK=%VULKAN_SDK%
+set OUTPUT_FOLDER=cmake-build-debug/Shaders
+if not exist "%OUTPUT_FOLDER%" md "%OUTPUT_FOLDER%"
+for /r %%i in (*.frag, *.vert) do %VULKAN_SDK%\Bin\glslc %%i -o %OUTPUT_FOLDER%/%%~ni.spv
