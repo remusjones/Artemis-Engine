@@ -4,19 +4,16 @@
 
 
 1. Install Vulkan SDK https://www.lunarg.com/vulkan-sdk/
-2. Modify CMakeLists.txt to reflect install directory:
+2. Modify CMakeLists.txt to reflect SDK install directory:
 
 ```cpp 
-include_directories("C:/VulkanSDK/1.3.231.1/Include")
-target_link_libraries(3DEngine glfw C:/VulkanSDK/1.3.231.1/Lib/vulkan-1.lib glm)
+set(ENV{VULKAN_SDK} "C:/VulkanSDK/1.3.268.0")
 ```
-
-
-3. git clone https://github.com/glfw/glfw.git
-4. git clone https://github.com/g-truc/glm.git
+## Clone Dependencies
+1. git clone https://github.com/glfw/glfw.git
+2. git clone https://github.com/g-truc/glm.git
 
 ## Install MinGW Toolchain for CLion
-
 1. Install MSys2 ([http://www.msys2.org/])
 2. Install a toolchain: pacman -S mingw-w64-x86_64-toolchain (inside of the msys2.exe console)
 3. Select the mingw installation in CLion:

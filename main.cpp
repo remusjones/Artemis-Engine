@@ -12,7 +12,7 @@
 int main() {
 
 
-    RemApplication app = RemApplication("YahBoi", 800,600);
+    RemApplication app = RemApplication("Vulkan 3D Engine", 800,600);
 
     try {
         app.Run();
@@ -23,3 +23,4 @@ int main() {
 
     return EXIT_SUCCESS;
 }
+
