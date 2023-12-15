@@ -2,14 +2,14 @@
 
 ## Setup using CLion (Windows)
 
-
+### Update CMakeLists
 1. Install Vulkan SDK https://www.lunarg.com/vulkan-sdk/
 2. Modify CMakeLists.txt to reflect SDK install directory:
 
 ```cpp 
 set(ENV{VULKAN_SDK} "C:/VulkanSDK/1.3.268.0")
 ```
-## Clone Dependencies
+### Clone Dependencies
 1. git clone https://github.com/glfw/glfw.git
 2. git clone https://github.com/g-truc/glm.git
 
