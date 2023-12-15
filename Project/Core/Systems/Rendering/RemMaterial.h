@@ -15,7 +15,7 @@
 #include "SystemStructs.h"
 #include "Systems/Rendering/Data/Vertex.h"
 
-class RemShaderComponent {
+class RemMaterial {
 public:
     std::vector<VkPipelineShaderStageCreateInfo> m_shaderStages{};
 
@@ -23,10 +23,10 @@ public:
     VkShaderModule  m_fragment;
     VkShaderModule  m_vertex;
 
-    RemShaderComponent() = default;
-    RemShaderComponent(VkShaderModule& frag,
-                       VkShaderModule& vert,
-                       const char* shaderName = "default"
+    RemMaterial() = default;
+    RemMaterial(VkShaderModule& frag,
+                VkShaderModule& vert,
+                const char* shaderName = "default"
                        )
     {
         m_shaderName = shaderName;

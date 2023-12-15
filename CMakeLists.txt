@@ -13,8 +13,8 @@ add_executable(${PROJECT_NAME} main.cpp
         Project/Core/Systems/RemPipeline.cpp
         Project/Core/Systems/RemPipeline.h
         Project/Core/Systems/SystemStructs.h
-        Project/Core/Systems/Rendering/RemShaderComponent.cpp
-        Project/Core/Systems/Rendering/RemShaderComponent.h
+        Project/Core/Systems/Rendering/RemMaterial.cpp
+        Project/Core/Systems/Rendering/RemMaterial.h
         "Project/Core/Helpers/File Management/RemFileManagement.cpp"
         "Project/Core/Helpers/File Management/RemFileManagement.h"
         Project/Core/Systems/RemSwapChain.cpp

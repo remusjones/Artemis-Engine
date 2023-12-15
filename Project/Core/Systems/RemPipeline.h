@@ -11,7 +11,7 @@
 #include <string>
 #include <map>
 #include "SystemStructs.h"
-#include "Systems/Rendering/RemShaderComponent.h"
+#include "Systems/Rendering/RemMaterial.h"
 #include "RemSwapChain.h"
 
 class RemPipeline
@@ -28,10 +28,10 @@ public:
     VkShaderModule CreateShaderModule(const std::vector<char>& code);
     VkBuffer CreateVertexBuffer(const std::vector<Vertex>& verticies);
 
-    VkResult LoadShader(const std::string& shaderName, RemShaderComponent&
+    VkResult LoadShader(const std::string& shaderName, RemMaterial&
     shaderComponent);
 
-    VkResult VertexBuffer(const RemShaderComponent& shaderComponent,
+    VkResult VertexBuffer(const RemMaterial& shaderComponent,
                           const std::vector<Vertex>& verticies);
     void CreatePipelineLayout();
     void CreateCommandPool(QueueFamilyIndices& queueFamilyIndices);
@@ -40,7 +40,7 @@ public:
     void CreateSyncObjects();
 
     void Cleanup();
-    void DestroyShader(RemShaderComponent* shaderComponent);
+    void DestroyShader(RemMaterial* shaderComponent);
 
     std::vector<VkFence> m_inFlightFences;
     bool m_framebufferResized = false;
@@ -49,7 +49,7 @@ private:
     void CleanupOldSyncObjects();
 
     RemSwapChain* m_remSwapChain;
-    std::vector<RemShaderComponent*> m_loadedShaders{};
+    std::vector<RemMaterial*> m_loadedShaders{};
     VkDevice m_logicalDevice;
     VkPipelineLayout m_pipelineLayout;
     VkPipeline m_graphicsPipeline;

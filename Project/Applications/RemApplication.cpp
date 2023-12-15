@@ -166,7 +166,7 @@ void RemApplication::CreateGraphicsPipeline()
 
 
     // Create Triangle Shader
-    RemShaderComponent Triangle;
+    RemMaterial Triangle;
     m_renderPipeline.LoadShader("triangle", Triangle);
 
     // Parse Triangle shader to triangle renderer

@@ -72,7 +72,7 @@ void RemPipeline::Cleanup()
 }
 
 VkResult RemPipeline::LoadShader(const std::string& shaderName,
-                                 RemShaderComponent& shaderComponent)
+                                 RemMaterial& shaderComponent)
 {
 
     std::cout << "Creating Shader: " << shaderName << std::endl;
@@ -105,11 +105,11 @@ VkResult RemPipeline::LoadShader(const std::string& shaderName,
     auto vertData = CreateShaderModule(RemFileManagement::GetShaderFileData(vertex));
 
     //
-    // Merge the two into a RemShaderComponent for easy lookup
+    // Merge the two into a RemMaterial for easy lookup
     //
 
-    RemShaderComponent* createdShader = new RemShaderComponent(fragData,
-                                                               vertData);
+    RemMaterial* createdShader = new RemMaterial(fragData,
+                                                 vertData);
 
     m_loadedShaders.push_back(createdShader);
     shaderComponent = *createdShader;
@@ -528,7 +528,7 @@ void RemPipeline::CreateSyncObjects()
     }
 }
 
-void RemPipeline::DestroyShader(RemShaderComponent* shaderComponent)
+void RemPipeline::DestroyShader(RemMaterial* shaderComponent)
 {
     //if ( std::find(m_loadedShaders.begin(), m_loadedShaders.end(), shaderComponent) != m_loadedShaders.end() )
     //{

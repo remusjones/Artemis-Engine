@@ -8,9 +8,9 @@
 #include <vector>
 #include "Rendering/Data/Vertex.h"
 
-class RemShaderComponent;
+class RemMaterial;
 class RemRenderer {
 
     std::vector<Vertex> m_verticies;
-    RemShaderComponent* m_shaderComponent;
+    RemMaterial* m_shaderComponent;
 };
