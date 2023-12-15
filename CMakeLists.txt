@@ -13,12 +13,12 @@ add_executable(${PROJECT_NAME} main.cpp
         Project/Core/Systems/RemPipeline.cpp
         Project/Core/Systems/RemPipeline.h
         Project/Core/Systems/SystemStructs.h
-        Project/Core/Systems/RemShaderComponent.cpp
-        Project/Core/Systems/RemShaderComponent.h
+        Project/Core/Systems/Rendering/RemShaderComponent.cpp
+        Project/Core/Systems/Rendering/RemShaderComponent.h
         "Project/Core/Helpers/File Management/RemFileManagement.cpp"
         "Project/Core/Helpers/File Management/RemFileManagement.h"
         Project/Core/Systems/RemSwapChain.cpp
-        Project/Core/Systems/RemSwapChain.h "Project/Core/Helpers/File Management/FileManagementInfo.h")
+        Project/Core/Systems/RemSwapChain.h "Project/Core/Helpers/File Management/FileManagementInfo.h" Project/Core/Systems/Rendering/Data/Vertex.h Project/Core/Systems/Rendering/RemRenderer.cpp Project/Core/Systems/Rendering/RemRenderer.h)
 
 # Include Vulkan Headers
 include_directories("${VULKAN_SDK}/Include")

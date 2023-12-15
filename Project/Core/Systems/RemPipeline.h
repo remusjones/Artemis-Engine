@@ -11,7 +11,7 @@
 #include <string>
 #include <map>
 #include "SystemStructs.h"
-#include "RemShaderComponent.h"
+#include "Systems/Rendering/RemShaderComponent.h"
 #include "RemSwapChain.h"
 
 class RemPipeline
@@ -26,8 +26,13 @@ public:
                     );
 
     VkShaderModule CreateShaderModule(const std::vector<char>& code);
+    VkBuffer CreateVertexBuffer(const std::vector<Vertex>& verticies);
 
-    VkResult LoadShader(const std::string& shaderName);
+    VkResult LoadShader(const std::string& shaderName, RemShaderComponent&
+    shaderComponent);
+
+    VkResult VertexBuffer(const RemShaderComponent& shaderComponent,
+                          const std::vector<Vertex>& verticies);
     void CreatePipelineLayout();
     void CreateCommandPool(QueueFamilyIndices& queueFamilyIndices);
     void CreateCommandBuffer();

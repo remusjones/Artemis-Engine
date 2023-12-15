@@ -15,7 +15,6 @@ void RemApplication::Run()
     InitializeWindow();
     InitializeVulkan();
     Update();
-    vkDeviceWaitIdle(m_logicalDevice);
     Cleanup();
 }
 
@@ -47,6 +46,7 @@ void RemApplication::Update()
 void RemApplication::Cleanup()
 {
 
+    vkDeviceWaitIdle(m_logicalDevice);
     m_renderPipeline.Cleanup();
     m_swapChain->Cleanup();
     delete m_swapChain;
@@ -164,13 +164,15 @@ void RemApplication::CreateGraphicsPipeline()
                               );
 
 
-    m_renderPipeline.LoadShader("shader");
+
+    // Create Triangle Shader
+    RemShaderComponent Triangle;
+    m_renderPipeline.LoadShader("triangle", Triangle);
+
+    // Parse Triangle shader to triangle renderer
 
 
-    // this needs to be created AFTER LoadShader(s)
     m_renderPipeline.CreatePipelineLayout();
-
-
     auto queueFamilies = FindQueueFamilies(m_physicalDevice);
     m_renderPipeline.CreateCommandPool(queueFamilies);
 
@@ -272,7 +274,9 @@ VkBool32 RemApplication::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT me
                                             const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData)
 {
     if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
-        std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+        std::cerr << messageType << " Validation layer: " <<
+        pCallbackData->pMessage <<
+        std::endl;
     }
     return VK_FALSE;
 }
@@ -385,7 +389,7 @@ bool RemApplication::checkDeviceExtensionSupport(VkPhysicalDevice physicalDevice
     return requiredExtensions.empty();
 }
 
-QueueFamilyIndices  RemApplication::FindQueueFamilies(VkPhysicalDevice device)
+QueueFamilyIndices RemApplication::FindQueueFamilies(VkPhysicalDevice device)
 {
     QueueFamilyIndices indices;
 

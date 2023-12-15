@@ -3,6 +3,7 @@
 //
 #include <fstream>
 #include "RemPipeline.h"
+#include "Systems/Rendering/Data/Vertex.h"
 #include <iostream>
 #include <Helpers/File Management/RemFileManagement.h>
 void RemPipeline::Initialize(VkDevice& logicalDevice,
@@ -70,7 +71,8 @@ void RemPipeline::Cleanup()
     m_loadedShaders.resize(0,nullptr);
 }
 
-VkResult RemPipeline::LoadShader(const std::string& shaderName)
+VkResult RemPipeline::LoadShader(const std::string& shaderName,
+                                 RemShaderComponent& shaderComponent)
 {
 
     std::cout << "Creating Shader: " << shaderName << std::endl;
@@ -98,13 +100,19 @@ VkResult RemPipeline::LoadShader(const std::string& shaderName)
     //
     // Load and create module
     //
+
     auto fragData = CreateShaderModule(RemFileManagement::GetShaderFileData(frag));
     auto vertData = CreateShaderModule(RemFileManagement::GetShaderFileData(vertex));
 
     //
     // Merge the two into a RemShaderComponent for easy lookup
     //
-    m_loadedShaders.push_back(new RemShaderComponent(fragData, vertData));
+
+    RemShaderComponent* createdShader = new RemShaderComponent(fragData,
+                                                               vertData);
+
+    m_loadedShaders.push_back(createdShader);
+    shaderComponent = *createdShader;
 
     return VK_SUCCESS;
 }
@@ -126,7 +134,23 @@ VkShaderModule RemPipeline::CreateShaderModule(const std::vector<char> &code)
 
 }
 
-//TODO: Move this into Shader->Setup
+VkBuffer RemPipeline::CreateVertexBuffer(const std::vector<Vertex>& verticies)
+{
+    VkBufferCreateInfo bufferInfo{};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = sizeof(verticies[0]) * verticies.size();
+    bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    VkBuffer buffer;
+
+    if (vkCreateBuffer(m_logicalDevice, &bufferInfo, nullptr, &buffer) !=
+        VK_SUCCESS) {
+        throw std::runtime_error("failed to create vertex buffer!");
+    }
+
+    return buffer;
+}
 
 void RemPipeline::CreatePipelineLayout()
 {
@@ -134,10 +158,14 @@ void RemPipeline::CreatePipelineLayout()
 
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertexInputInfo.vertexBindingDescriptionCount = 0;
-    vertexInputInfo.pVertexBindingDescriptions = nullptr; // Optional
-    vertexInputInfo.vertexAttributeDescriptionCount = 0;
-    vertexInputInfo.pVertexAttributeDescriptions = nullptr; // Optional
+    auto bindingDescription = Vertex::GetBindingDescription();
+    auto attributeDescriptions = Vertex::GetAttributeDescriptions();
+
+    vertexInputInfo.vertexBindingDescriptionCount = 1;
+    vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+    vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+    vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -277,7 +305,6 @@ void RemPipeline::CreatePipelineLayout()
 
     m_hasCreatedPipeline = true;
 }
-
 void RemPipeline::CreateCommandPool(QueueFamilyIndices& queueFamilyIndices)
 {
     std::cout << "Creating Command Pool" << std::endl;

@@ -43,7 +43,7 @@ private:
     // Deconstructor
     void Cleanup();
 
-    // Create Instance of Vulkan SDK
+    // Create Instance of Vulkan
     void CreateInstance();
 
     // Setup Debug Messenger for debug conditions

@@ -7,7 +7,6 @@
 #include <minwindef.h>
 #include <libloaderapi.h>
 
-
 std::vector<char> RemFileManagement::GetShaderFileData(const std::string &filename)
 {
     std::string finalDirectory = GetCurrentDirectory();
@@ -19,6 +18,7 @@ std::vector<char> RemFileManagement::GetShaderFileData(const std::string &filena
     if (!file.is_open()) {
         throw std::runtime_error("failed to open file " + filename);
     }
+
     size_t fileSize = (size_t) file.tellg();
     std::vector<char> buffer(fileSize);
     file.seekg(0);
