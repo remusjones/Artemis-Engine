@@ -3,11 +3,11 @@
 //
 
 #include <fstream>
-#include "RemFileManagement.h"
+#include "FileManagement.h"
 #include <minwindef.h>
 #include <libloaderapi.h>
 
-std::vector<char> RemFileManagement::GetShaderFileData(const std::string &filename)
+std::vector<char> FileManagement::GetShaderFileData(const std::string &filename)
 {
     std::string finalDirectory = GetCurrentDirectory();
     finalDirectory.append(ShaderFileSettings.pShaderDirectory);
@@ -28,7 +28,7 @@ std::vector<char> RemFileManagement::GetShaderFileData(const std::string &filena
     return buffer;
 }
 
-std::string RemFileManagement::GetCurrentDirectory()
+std::string FileManagement::GetCurrentDirectory()
 {
     char buffer[MAX_PATH];
     GetModuleFileNameA(nullptr, buffer, MAX_PATH);
@@ -37,11 +37,11 @@ std::string RemFileManagement::GetCurrentDirectory()
     return std::string(buffer).substr(0, pos);
 }
 
-void RemFileManagement::SetShaderInfoSettings(
+void FileManagement::SetShaderInfoSettings(
         const FileManagementShaderInfo &shaderInfo) {
     ShaderFileSettings = shaderInfo;
 }
 
-const FileManagementShaderInfo &RemFileManagement::GetShaderInfoSettings() {
+const FileManagementShaderInfo &FileManagement::GetShaderInfoSettings() {
     return ShaderFileSettings;
 }

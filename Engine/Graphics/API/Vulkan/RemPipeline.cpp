@@ -3,7 +3,7 @@
 //
 #include <fstream>
 #include "RemPipeline.h"
-#include "../../../IO/File Management/RemFileManagement.h"
+#include "../../../IO/File Management/FileManagement.h"
 #include <iostream>
 void RemPipeline::Initialize(VkDevice& logicalDevice,
                              RemSwapChain* remSwapChain,
@@ -94,8 +94,8 @@ RemMaterial* RemPipeline::LoadShader(const std::string& shaderName)
     // Load and create module
     //
 
-    auto fragData = CreateShaderModule(RemFileManagement::GetShaderFileData(frag));
-    auto vertData = CreateShaderModule(RemFileManagement::GetShaderFileData(vertex));
+    auto fragData = CreateShaderModule(FileManagement::GetShaderFileData(frag));
+    auto vertData = CreateShaderModule(FileManagement::GetShaderFileData(vertex));
 
     //
     // Merge the two into a RemMaterial for easy lookup

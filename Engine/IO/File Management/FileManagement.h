@@ -9,9 +9,9 @@
 #include "FileManagementInfo.h"
 
 
-class RemFileManagement {
+class FileManagement {
 private:
-    RemFileManagement() = default;
+    FileManagement() = default;
 public:
 
     static std::vector<char> GetShaderFileData(const std::string& filename);

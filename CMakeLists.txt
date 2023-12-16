@@ -15,8 +15,8 @@ add_executable(${PROJECT_NAME} main.cpp
         "Engine/Graphics/API/Vulkan/SystemStructs.h"
         "Engine/Graphics/API/Vulkan/Wrappers/RemMaterial.cpp"
         "Engine/Graphics/API/Vulkan/Wrappers/RemMaterial.h"
-        "Engine/IO/File Management/RemFileManagement.cpp"
-        "Engine/IO/File Management/RemFileManagement.h"
+        "Engine/IO/File Management/FileManagement.cpp"
+        "Engine/IO/File Management/FileManagement.h"
         "Engine/Graphics/API/Vulkan/RemSwapChain.cpp"
         "Engine/Graphics/API/Vulkan/RemSwapChain.h" "Engine/IO/File Management/FileManagementInfo.h" "Engine/Graphics/API/Vulkan/Wrappers/Data/Vertex.h" "Engine/Graphics/API/Vulkan/Wrappers/RemRenderer.cpp" "Engine/Graphics/API/Vulkan/Wrappers/RemRenderer.h")
 
