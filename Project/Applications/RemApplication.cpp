@@ -176,13 +176,12 @@ void RemApplication::CreateGraphicsPipeline()
             {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
     };
 
-    m_renderPipeline.CreateVertexBuffer(vertices, m_renderPipeline.m_vertexBuffer, m_renderPipeline.m_vertexBufferMemory);
-
-
     m_renderPipeline.CreatePipelineLayout();
     auto queueFamilies = FindQueueFamilies(m_physicalDevice);
     m_renderPipeline.CreateCommandPool(queueFamilies);
-
+    m_renderPipeline.CreateVertexBuffer(vertices, m_renderPipeline.m_vertexBuffer, m_renderPipeline.m_vertexBufferMemory);
+    m_renderPipeline.CreateCommandBuffer();
+    m_renderPipeline.CreateSyncObjects();
 }
 
 bool RemApplication::CheckValidationLayerSupport() {

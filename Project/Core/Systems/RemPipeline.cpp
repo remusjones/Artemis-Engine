@@ -134,48 +134,96 @@ VkResult RemPipeline::CreateVertexBuffer(const std::vector<Vertex>& vertices,
                                          VkDeviceMemory& allocatedMemory)
 {
 
-    std::cout << "Creating Vertex Buffer" << std::endl;
+    std::cout << "Creating vertex buffer" << std::endl;
+    VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+
+    std::cout << "\tCreating vertex staging buffer" << std::endl;
+    CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+    VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+    void* data;
+    vkMapMemory(m_logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+    memcpy(data, vertices.data(), (size_t) bufferSize);
+    vkUnmapMemory(m_logicalDevice, stagingBufferMemory);
+
+    std::cout << "\tAllocating vertex buffer" << std::endl;
+    CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, allocatedMemory);
+
+    CopyBuffer(stagingBuffer, vertexBuffer, bufferSize);
+
+    vkDestroyBuffer(m_logicalDevice, stagingBuffer, nullptr);
+    vkFreeMemory(m_logicalDevice, stagingBufferMemory, nullptr);
+
+    return VK_SUCCESS;
+}
+
+void RemPipeline::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
+                               VkMemoryPropertyFlags properties, VkBuffer&buffer, VkDeviceMemory &bufferMemory)
+{
     VkBufferCreateInfo bufferInfo{};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = sizeof(vertices[0]) * vertices.size();
-    bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    bufferInfo.size = size;
+    bufferInfo.usage = usage;
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-
-    if (vkCreateBuffer(m_logicalDevice, &bufferInfo, nullptr, &vertexBuffer) !=
-        VK_SUCCESS) {
-        throw std::runtime_error("failed to create vertex buffer!");
+    if (vkCreateBuffer(m_logicalDevice, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create buffer!");
     }
 
-
-    std::cout << "\tAlloc Vertex Buffer Memory" << std::endl;
     VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(m_logicalDevice, vertexBuffer, &memRequirements);
+    vkGetBufferMemoryRequirements(m_logicalDevice, buffer, &memRequirements);
+
     VkMemoryAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-    VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties);
 
-    if (vkAllocateMemory(m_logicalDevice, &allocInfo, nullptr, &allocatedMemory) != VK_SUCCESS) {
-        throw std::runtime_error("failed to allocate vertex buffer memory!");
+    if (vkAllocateMemory(m_logicalDevice, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
+        throw std::runtime_error("failed to allocate buffer memory!");
     }
 
-    std::cout << "\tBinding Vertex Buffer Memory" << std::endl;
-    if (vkBindBufferMemory(m_logicalDevice, vertexBuffer, allocatedMemory, 0) != VK_SUCCESS){
+    vkBindBufferMemory(m_logicalDevice, buffer, bufferMemory, 0);
 
-        throw std::runtime_error("failed to bind vertex buffer memory!");
-    }
+}
 
-    void* data;
-    if (vkMapMemory(m_logicalDevice, allocatedMemory, 0, bufferInfo.size, 0, &data) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to map vertex buffer memory!");
-    }
-    memcpy(data, vertices.data(), (size_t) bufferInfo.size);
-    vkUnmapMemory(m_logicalDevice, allocatedMemory);
+void RemPipeline::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+{
+    VkCommandBufferAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocInfo.commandPool = m_commandPool;
+    allocInfo.commandBufferCount = 1;
 
-    return VK_SUCCESS;
+    VkCommandBuffer commandBuffer;
+    vkAllocateCommandBuffers(m_logicalDevice, &allocInfo, &commandBuffer);
+
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+    vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+    VkBufferCopy copyRegion{};
+    copyRegion.srcOffset = 0; // Optional
+    copyRegion.dstOffset = 0; // Optional
+    copyRegion.size = size;
+    vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+
+    vkEndCommandBuffer(commandBuffer);
+
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &commandBuffer;
+
+    vkQueueSubmit(m_graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+    vkQueueWaitIdle(m_graphicsQueue);
+
+    vkFreeCommandBuffers(m_logicalDevice, m_commandPool, 1, &commandBuffer);
+
 }
 
 void RemPipeline::CreatePipelineLayout()
@@ -345,8 +393,7 @@ void RemPipeline::CreateCommandPool(QueueFamilyIndices& queueFamilyIndices)
         throw std::runtime_error("failed to create command pool!");
     }
 
-    CreateCommandBuffer();
-    CreateSyncObjects();
+
 
 }
 
@@ -437,14 +484,9 @@ void RemPipeline::DrawFrame()
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_framebufferResized) {
         m_remSwapChain->RecreateSwapChain();
 
-        //
-        // Note causes an validation issue when recreating the command buffer, causing frames in flight to become invalid .. ?
-        //
         CreateCommandBuffer();
 
-        //
         // Sync objects aren't atomic, so we have to regenerate them at the end of the current frame
-        //
         semaphoresNeedToBeRecreated = true;
         m_framebufferResized = false;
     }else if (result != VK_SUCCESS) {
@@ -530,6 +572,7 @@ void RemPipeline::CleanupOldSyncObjects()
     }
     m_imageAvailableSemaphoresToDestroy.clear();
 }
+
 void RemPipeline::CreateSyncObjects()
 {
 
@@ -603,4 +646,6 @@ void RemPipeline::CleanupVertexBuffer() {
         vkFreeMemory(m_logicalDevice, m_vertexBufferMemory, nullptr);
     }
 }
+
+
 

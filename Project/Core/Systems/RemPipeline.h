@@ -30,6 +30,11 @@ public:
                                 VkBuffer& vertexBuffer,
                                 VkDeviceMemory& allocatedMemory);
 
+    void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties,
+                      VkBuffer& buffer,
+                      VkDeviceMemory& bufferMemory);
+    void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+
     RemMaterial* LoadShader(const std::string& shaderName);
     uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
