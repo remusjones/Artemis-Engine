@@ -17,19 +17,18 @@ class VulkanSwapChain;
 class VulkanApplicationImpl : public IApplication
 {
 public:
-    VulkanApplicationImpl(const char* windowName, int windowWidth, int windowHeight);
     void Run() override;
 
-    VkSurfaceFormatKHR  ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& aAvailableFormats);
+    VulkanApplicationImpl(const char* aWindowName, int aWindowWidth, int aWindowHeight);
+    VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& aAvailableFormats);
     VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& aAvailablePresentModes);
     VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& aCapabilities);
     SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice aDevice);
     QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice aDevice);
 
-    VulkanRendererPipeline mRenderPipeline;
-    VulkanSwapChain* m_swapChain;
-    VkInstance m_vulkanInstance;
-    GLFWwindow* m_window{};
+
+
+
 private:
 
     // Init Vulkan & Supporting Vulkan
@@ -58,64 +57,68 @@ private:
 
     void CreateGraphicsPipeline();
 
+    static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
+            VkDebugUtilsMessageSeverityFlagBitsEXT aMessageSeverity,
+            VkDebugUtilsMessageTypeFlagsEXT aMessageType,
+            const VkDebugUtilsMessengerCallbackDataEXT* aCallbackData,
+            void* aUserData);
+
+    std::vector<const char*> GetRequiredExtensions() const;
+
+    VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* aCreateInfo,
+                                          const VkAllocationCallbacks* aAllocator,
+                                          VkDebugUtilsMessengerEXT* aDebugMessenger);
+
+    void DestroyDebugUtilsMessengerEXT(VkInstance aInstance, VkDebugUtilsMessengerEXT aDebugMessenger, const VkAllocationCallbacks* aAllocator);
+    void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& aCreateInfo);
+    bool CheckValidationLayerSupport();
+
+public:
+    VulkanRendererPipeline mRenderPipeline;
+    VulkanSwapChain* mSwapChain;
+    VkInstance mVulkanInstance;
+    GLFWwindow* mWindow{}; // TODO: Move to interface
+
+private:
+
+    // TODO: Move these to IApplication
     int mWindowWidth;
     int mWindowHeight;
     const char* mWindowName;
-    std::vector<VkExtensionProperties> mExtensions;
 
+
+    // Vulkan Impls
+    std::vector<VkExtensionProperties> mExtensions;
     VkQueue mGraphicsQueue;
     VkQueue mPresentQueue;
     VkSurfaceKHR mSurface;
     VkRenderPass mRenderPass{};
-
     const std::vector<const char*> m_deviceExtensions = {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME
     };
 
-
-
     // =======Hardware=====
     void InitializePhysicalDevice();
-    bool isDeviceSuitable(VkPhysicalDevice physicalDevice);
-    bool checkDeviceExtensionSupport(VkPhysicalDevice device);
-
-
+    bool IsDeviceSuitable(VkPhysicalDevice aPhysicalDevice);
+    bool CheckDeviceExtensionSupport(VkPhysicalDevice aPhysicalDevice);
 
     // Reference to our target device
-    VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
+    VkPhysicalDevice mPhysicalDevice = VK_NULL_HANDLE;
     // our logical device handle to interface
-    VkDevice  m_logicalDevice{};
-    VkPhysicalDeviceFeatures m_deviceFeatures{};
+    VkDevice  mLogicalDevice{};
+    VkPhysicalDeviceFeatures mDeviceFeatures{};
 
-
-
-    // =======Validation=====
-
-    bool CheckValidationLayerSupport();
-
-    const std::vector<const char*> m_validationLayers = {
+    const std::vector<const char*> mValidationLayers = {
             "VK_LAYER_KHRONOS_validation"
     };
-    static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
-            VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-            VkDebugUtilsMessageTypeFlagsEXT messageType,
-            const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-            void* pUserData);
-    std::vector<const char*> GetRequiredExtensions();
 
-    VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
-                                          const VkAllocationCallbacks* pAllocator,
-                                          VkDebugUtilsMessengerEXT* pDebugMessenger);
-    void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
-    void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
+    VkDebugUtilsMessengerEXT mDebugMessenger;
 
-    VkDebugUtilsMessengerEXT m_debugMessenger;
 #ifdef NDEBUG
     const bool enableValidationLayers = false;
 #else
     const bool enableValidationLayers = true;
 #endif
-
 
 };
 

@@ -576,9 +576,9 @@ void VulkanRendererPipeline::DestroyShader(VulkanMaterial* shaderComponent)
     //    std::remove(m_loadedMaterials.begin(), m_loadedMaterials.end(), shaderComponent);
 //
     //    if (shaderComponent->m_fragment != nullptr)
-    //        vkDestroyShaderModule(m_logicalDevice, shaderComponent->m_fragment, nullptr);
+    //        vkDestroyShaderModule(mLogicalDevice, shaderComponent->m_fragment, nullptr);
     //    if (shaderComponent->m_vertex != nullptr)
-    //        vkDestroyShaderModule(m_logicalDevice, shaderComponent->m_vertex, nullptr);
+    //        vkDestroyShaderModule(mLogicalDevice, shaderComponent->m_vertex, nullptr);
 //
     //    delete shaderComponent;
     //    m_loadedMaterials.shrink_to_fit();

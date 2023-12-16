@@ -11,10 +11,10 @@
 void VulkanSwapChain::RecreateSwapChain()
 {
     int width = 0, height = 0;
-    glfwGetFramebufferSize(m_remApplicationInstance->m_window, &width, &height);
+    glfwGetFramebufferSize(m_remApplicationInstance->mWindow, &width, &height);
     while (width == 0 || height == 0) {
 
-        glfwGetFramebufferSize(m_remApplicationInstance->m_window, &width, &height);
+        glfwGetFramebufferSize(m_remApplicationInstance->mWindow, &width, &height);
         glfwWaitEvents();
         std::cout << "VulkanApplicationImpl Minimized" << std::endl;
     }
