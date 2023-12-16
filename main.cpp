@@ -7,7 +7,7 @@
 #include <glm/mat4x4.hpp>
 
 #include <iostream>
-#include "Project/Applications/RemApplication.h"
+#include "RemApplication.h"
 
 int main() {
 

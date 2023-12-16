@@ -11,7 +11,6 @@
 #include <map>
 #include <stdexcept>
 #include "SystemStructs.h"
-#include "Systems/Rendering/Data/Vertex.h"
 
 class RemMaterial {
 public:

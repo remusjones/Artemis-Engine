@@ -3,9 +3,8 @@
 //
 #include <fstream>
 #include "RemPipeline.h"
-#include "Systems/Rendering/Data/Vertex.h"
+#include "../../../IO/File Management/RemFileManagement.h"
 #include <iostream>
-#include <Helpers/File Management/RemFileManagement.h>
 void RemPipeline::Initialize(VkDevice& logicalDevice,
                              RemSwapChain* remSwapChain,
                               VkPhysicalDevice& physicalDevice,

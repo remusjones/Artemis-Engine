@@ -11,8 +11,9 @@
 #include <string>
 #include <map>
 #include "SystemStructs.h"
-#include "Systems/Rendering/RemMaterial.h"
 #include "RemSwapChain.h"
+#include "Wrappers/Data/Vertex.h"
+#include "Wrappers/RemMaterial.h"
 
 class RemPipeline
 {
@@ -78,7 +79,6 @@ private:
 
     std::vector<VkSemaphore>  m_imageAvailableSemaphores;
     std::vector<VkSemaphore>  m_renderFinishedSemaphores;
-
 
     std::vector<VkFence> m_inFlightFencesToDestroy;
     std::vector<VkSemaphore>  m_imageAvailableSemaphoresToDestroy;

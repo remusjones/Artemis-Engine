@@ -2,7 +2,7 @@
 // Created by Remus on 4/11/2021.
 //
 #include "RemApplication.h"
-#include "Rendering/RemRenderer.h"
+#include "Wrappers/RemRenderer.h"
 #include <stdexcept>
 #include <cstring>
 #include <iostream>

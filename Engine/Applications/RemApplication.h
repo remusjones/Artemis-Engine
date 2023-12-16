@@ -30,7 +30,7 @@ public:
     GLFWwindow* m_window{};
 private:
 
-    // Init Vulkan & Supporting Systems
+    // Init Vulkan & Supporting Vulkan
     void InitializeVulkan();
 
     // Create GLFW Window

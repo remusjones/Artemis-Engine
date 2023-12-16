@@ -6,7 +6,7 @@
 #pragma once
 
 #include <vector>
-#include "Rendering/Data/Vertex.h"
+#include "Wrappers/Data/Vertex.h"
 
 class RemMaterial;
 class RemRenderer {
