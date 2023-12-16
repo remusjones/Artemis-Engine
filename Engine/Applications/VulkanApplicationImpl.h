@@ -2,10 +2,9 @@
 // Created by Remus on 4/11/2021.
 // Generic VulkanApplicationImpl process to run the "project"
 //
+#pragma once
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-#ifndef INC_3DENGINE_DEFAULTAPPLICATION_H
-#define INC_3DENGINE_DEFAULTAPPLICATION_H
 #include <vector>
 #include <optional>
 #include "VulkanRendererPipeline.h"
@@ -25,9 +24,6 @@ public:
     VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& aCapabilities);
     SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice aDevice);
     QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice aDevice);
-
-
-
 
 private:
 
@@ -97,14 +93,11 @@ private:
             VK_KHR_SWAPCHAIN_EXTENSION_NAME
     };
 
-    // =======Hardware=====
     void InitializePhysicalDevice();
     bool IsDeviceSuitable(VkPhysicalDevice aPhysicalDevice);
     bool CheckDeviceExtensionSupport(VkPhysicalDevice aPhysicalDevice);
 
-    // Reference to our target device
     VkPhysicalDevice mPhysicalDevice = VK_NULL_HANDLE;
-    // our logical device handle to interface
     VkDevice  mLogicalDevice{};
     VkPhysicalDeviceFeatures mDeviceFeatures{};
 
@@ -121,5 +114,3 @@ private:
 #endif
 
 };
-
-#endif

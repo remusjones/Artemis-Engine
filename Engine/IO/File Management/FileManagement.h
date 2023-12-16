@@ -8,9 +8,7 @@
 #include <string>
 #include "FileManagementInfo.h"
 
-//
 // TODO: Make less specific to Vulkan
-//
 class FileManagement {
 private:
     FileManagement() = default;
