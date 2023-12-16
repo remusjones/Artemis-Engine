@@ -10,7 +10,7 @@
 #include <string>
 #include <map>
 #include <stdexcept>
-#include "SystemStructs.h"
+#include "VulkanSystemStructs.h"
 #include "API/Base/Wrappers/Material.h"
 
 class VulkanMaterial : public Material {

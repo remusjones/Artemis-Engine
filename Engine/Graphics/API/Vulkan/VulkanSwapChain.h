@@ -8,9 +8,9 @@
 
 #include <vector>
 #include <optional>
-class RemApplication;
+class Application;
 
-class RemSwapChain {
+class VulkanSwapChain {
 public:
 
 
@@ -19,7 +19,7 @@ public:
                     VkPhysicalDevice &mPhysicalDevice,
                     VkSurfaceKHR &mSurface,
                     VkRenderPass& renderPass,
-                    RemApplication *remWindow);
+                    Application *remWindow);
 
     void RecreateSwapChain();
     void CreateSwapChain();
@@ -28,7 +28,7 @@ public:
     void Cleanup();
 
     VkPhysicalDevice m_physicalDevice;
-    RemApplication* m_remApplicationInstance{};
+    Application* m_remApplicationInstance{};
     // swapchain
     VkSwapchainKHR m_swapChain{};
     VkFormat m_swapChainImageFormat;

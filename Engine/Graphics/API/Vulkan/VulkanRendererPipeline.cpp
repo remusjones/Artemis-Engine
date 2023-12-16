@@ -2,14 +2,14 @@
 // Created by Remus on 6/11/2021.
 //
 #include <fstream>
-#include "RemPipeline.h"
+#include "VulkanRendererPipeline.h"
 #include "../../../IO/File Management/FileManagement.h"
 #include <iostream>
-void RemPipeline::Initialize(VkDevice& logicalDevice,
-                             RemSwapChain* remSwapChain,
-                              VkPhysicalDevice& physicalDevice,
-                              VkQueue& graphicsQueue,
-                              VkQueue& presentQueue
+void VulkanRendererPipeline::Initialize(VkDevice& logicalDevice,
+                                        VulkanSwapChain* remSwapChain,
+                                        VkPhysicalDevice& physicalDevice,
+                                        VkQueue& graphicsQueue,
+                                        VkQueue& presentQueue
                               )
 {
 
@@ -27,7 +27,7 @@ void RemPipeline::Initialize(VkDevice& logicalDevice,
     vkGetPhysicalDeviceProperties(m_physicalDevice, &deviceProperties);
 }
 
-void RemPipeline::Cleanup()
+void VulkanRendererPipeline::Cleanup()
 {
     if (m_hasCreatedPipeline)
     {
@@ -66,7 +66,7 @@ void RemPipeline::Cleanup()
     m_loadedMaterials.resize(0, nullptr);
 }
 
-VulkanMaterial* RemPipeline::LoadShader(const std::string& shaderName)
+VulkanMaterial* VulkanRendererPipeline::LoadShader(const std::string& shaderName)
 {
 
     std::cout << "Creating Shader: " << shaderName << std::endl;
@@ -109,7 +109,7 @@ VulkanMaterial* RemPipeline::LoadShader(const std::string& shaderName)
     return material;
 }
 
-VkShaderModule RemPipeline::CreateShaderModule(const std::vector<char> &code)
+VkShaderModule VulkanRendererPipeline::CreateShaderModule(const std::vector<char> &code)
 {
     VkShaderModuleCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -125,7 +125,7 @@ VkShaderModule RemPipeline::CreateShaderModule(const std::vector<char> &code)
 
 }
 
-VkResult RemPipeline::CreateVertexBuffer(const std::vector<Vertex>& vertices)
+VkResult VulkanRendererPipeline::CreateVertexBuffer(const std::vector<Vertex>& vertices)
 {
 
     std::cout << "Creating vertex buffer\n";
@@ -155,7 +155,7 @@ VkResult RemPipeline::CreateVertexBuffer(const std::vector<Vertex>& vertices)
     return VK_SUCCESS;
 }
 
-VkResult RemPipeline::CreateIndexBuffer()
+VkResult VulkanRendererPipeline::CreateIndexBuffer()
 {
     std::cout << "Creating index buffer\n";
     VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
@@ -182,8 +182,8 @@ VkResult RemPipeline::CreateIndexBuffer()
     return VK_SUCCESS;
 }
 
-void RemPipeline::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
-                               VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
+void VulkanRendererPipeline::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
+                                          VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
 {
     VkBufferCreateInfo bufferInfo{};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -211,7 +211,7 @@ void RemPipeline::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
 
 }
 
-void RemPipeline::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+void VulkanRendererPipeline::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
 {
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -246,7 +246,7 @@ void RemPipeline::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSiz
 
 }
 
-void RemPipeline::CreatePipelineLayout()
+void VulkanRendererPipeline::CreatePipelineLayout()
 {
     std::cout << "Creating Graphics Pipeline Layout\n";
 
@@ -392,7 +392,7 @@ void RemPipeline::CreatePipelineLayout()
     m_hasCreatedPipeline = true;
 }
 
-void RemPipeline::CreateCommandPool(QueueFamilyIndices& queueFamilyIndices)
+void VulkanRendererPipeline::CreateCommandPool(QueueFamilyIndices& queueFamilyIndices)
 {
     std::cout << "Creating Command Pool" << std::endl;
 
@@ -407,7 +407,7 @@ void RemPipeline::CreateCommandPool(QueueFamilyIndices& queueFamilyIndices)
     CreateCommandBuffers();
 }
 
-void RemPipeline::CreateCommandBuffers()
+void VulkanRendererPipeline::CreateCommandBuffers()
 {
     std::cout << "\tCreating Command Buffers" << std::endl;
     m_commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
@@ -425,7 +425,7 @@ void RemPipeline::CreateCommandBuffers()
 
 bool semaphoresNeedToBeRecreated = false;
 
-void RemPipeline::DrawFrame()
+void VulkanRendererPipeline::DrawFrame()
 {
     vkWaitForFences(m_logicalDevice, 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
 
@@ -521,7 +521,7 @@ void RemPipeline::DrawFrame()
 
 }
 
-void RemPipeline::CleanupOldSyncObjects()
+void VulkanRendererPipeline::CleanupOldSyncObjects()
 {
     for (size_t i = 0; i < m_renderFinishedSemaphoresToDestroy.size(); i++) {
         vkDestroySemaphore(m_logicalDevice, m_renderFinishedSemaphoresToDestroy[i], nullptr);
@@ -539,7 +539,7 @@ void RemPipeline::CleanupOldSyncObjects()
     m_imageAvailableSemaphoresToDestroy.clear();
 }
 
-void RemPipeline::CreateSyncObjects()
+void VulkanRendererPipeline::CreateSyncObjects()
 {
     m_inFlightFencesToDestroy.insert(m_inFlightFencesToDestroy.end(), std::begin(m_inFlightFences), std::end(m_inFlightFences));     // C++11
     m_imageAvailableSemaphoresToDestroy.insert(m_imageAvailableSemaphoresToDestroy.end(), std::begin(m_imageAvailableSemaphores), std::end(m_imageAvailableSemaphores));     // C++11
@@ -569,7 +569,7 @@ void RemPipeline::CreateSyncObjects()
     }
 }
 
-void RemPipeline::DestroyShader(VulkanMaterial* shaderComponent)
+void VulkanRendererPipeline::DestroyShader(VulkanMaterial* shaderComponent)
 {
     //if ( std::find(m_loadedMaterials.begin(), m_loadedMaterials.end(), shaderComponent) != m_loadedMaterials.end() )
     //{
@@ -589,7 +589,7 @@ void RemPipeline::DestroyShader(VulkanMaterial* shaderComponent)
     //}
 }
 
-uint32_t RemPipeline::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
+uint32_t VulkanRendererPipeline::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
 {
     VkPhysicalDeviceMemoryProperties memProperties;
     vkGetPhysicalDeviceMemoryProperties(m_physicalDevice, &memProperties);
@@ -602,7 +602,7 @@ uint32_t RemPipeline::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags 
     throw std::runtime_error("failed to find suitable memory type!");
 }
 
-void RemPipeline::CleanupBuffers() {
+void VulkanRendererPipeline::CleanupBuffers() {
     if (m_vertexBuffer && m_vertexBufferMemory) {
         vkDestroyBuffer(m_logicalDevice, m_vertexBuffer, nullptr);
         vkFreeMemory(m_logicalDevice, m_vertexBufferMemory, nullptr);
@@ -613,7 +613,7 @@ void RemPipeline::CleanupBuffers() {
     }
 }
 
-void RemPipeline::RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
+void VulkanRendererPipeline::RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 

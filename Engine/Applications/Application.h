@@ -8,14 +8,14 @@
 #define INC_3DENGINE_DEFAULTAPPLICATION_H
 #include <vector>
 #include <optional>
-#include "RemPipeline.h"
-#include "SystemStructs.h"
-class RemSwapChain;
+#include "VulkanRendererPipeline.h"
+#include "VulkanSystemStructs.h"
+class VulkanSwapChain;
 
-class RemApplication
+class Application
 {
 public:
-    RemApplication(const char* windowName, int windowWidth, int windowHeight);
+    Application(const char* windowName, int windowWidth, int windowHeight);
     void Run();
 
     VkSurfaceFormatKHR  ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
@@ -24,8 +24,8 @@ public:
     SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
     QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
 
-    RemPipeline m_renderPipeline;
-    RemSwapChain* m_swapChain;
+    VulkanRendererPipeline m_renderPipeline;
+    VulkanSwapChain* m_swapChain;
     VkInstance m_vulkanInstance;
     GLFWwindow* m_window{};
 private:

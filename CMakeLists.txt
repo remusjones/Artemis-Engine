@@ -8,22 +8,23 @@ set(ENV{VULKAN_SDK} "C:/VulkanSDK/1.3.268.0")
 find_package(Vulkan REQUIRED)
 
 add_executable(${PROJECT_NAME} main.cpp
-        Engine/Applications/RemApplication.cpp
-        Engine/Applications/RemApplication.h
-        "Engine/Graphics/API/Vulkan/RemPipeline.cpp"
-        "Engine/Graphics/API/Vulkan/RemPipeline.h"
-        "Engine/Graphics/API/Vulkan/SystemStructs.h"
+        Engine/Applications/Application.cpp
+        Engine/Applications/Application.h
+        "Engine/Graphics/API/Vulkan/VulkanRendererPipeline.cpp"
+        "Engine/Graphics/API/Vulkan/VulkanRendererPipeline.h"
+        "Engine/Graphics/API/Vulkan/VulkanSystemStructs.h"
         "Engine/Graphics/API/Vulkan/Wrappers/VulkanMaterial.cpp"
         "Engine/Graphics/API/Vulkan/Wrappers/VulkanMaterial.h"
         "Engine/IO/File Management/FileManagement.cpp"
         "Engine/IO/File Management/FileManagement.h"
-        "Engine/Graphics/API/Vulkan/RemSwapChain.cpp"
-        "Engine/Graphics/API/Vulkan/RemSwapChain.h"
+        "Engine/Graphics/API/Vulkan/VulkanSwapChain.cpp"
+        "Engine/Graphics/API/Vulkan/VulkanSwapChain.h"
         "Engine/IO/File Management/FileManagementInfo.h"
-        "Engine/Graphics/API/Vulkan/Wrappers/Data/Vertex.h"
-        "Engine/Graphics/API/Vulkan/Wrappers/RemRenderer.cpp"
-        "Engine/Graphics/API/Vulkan/Wrappers/RemRenderer.h"
-        Engine/Graphics/API/Base/Wrappers/Material.h)
+        "Engine/Graphics/API/Base/Wrappers/Data/Vertex.h"
+        "Engine/Graphics/API/Vulkan/Wrappers/VulkanRenderer.cpp"
+        "Engine/Graphics/API/Vulkan/Wrappers/VulkanRenderer.h"
+        Engine/Graphics/API/Base/Wrappers/Material.h
+        Engine/Graphics/API/Base/Wrappers/Renderer.h)
 
 # Include Vulkan Headers
 include_directories("${VULKAN_SDK}/Include")

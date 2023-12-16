@@ -7,12 +7,12 @@
 #include <glm/mat4x4.hpp>
 
 #include <iostream>
-#include "RemApplication.h"
+#include "Application.h"
 
 int main() {
 
 
-    RemApplication app = RemApplication("Vulkan 3D Engine", 800,600);
+    Application app = Application("Vulkan 3D Engine", 800, 600);
 
     try {
         app.Run();

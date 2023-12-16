@@ -1,17 +1,17 @@
 //
 // Created by Remus on 4/11/2021.
 //
-#include "RemApplication.h"
-#include "Wrappers/RemRenderer.h"
+#include "Application.h"
+#include "Wrappers/VulkanRenderer.h"
 #include <stdexcept>
 #include <cstring>
 #include <iostream>
 #include <set>
 #include <cstdint>
 #include <algorithm>
-#include <RemSwapChain.h>
+#include <VulkanSwapChain.h>
 
-void RemApplication::Run()
+void Application::Run()
 {
     InitializeWindow();
     InitializeVulkan();
@@ -19,14 +19,14 @@ void RemApplication::Run()
     Cleanup();
 }
 
-void RemApplication::InitializeVulkan()
+void Application::InitializeVulkan()
 {
     CreateInstance();
     SetupDebugMessenger();
     CreateSurface();
     InitializePhysicalDevice();
     CreateLogicalDevice();
-    m_swapChain = new RemSwapChain();
+    m_swapChain = new VulkanSwapChain();
     m_swapChain->Initialize(m_logicalDevice,
                             m_physicalDevice,
                             m_surface,
@@ -35,7 +35,7 @@ void RemApplication::InitializeVulkan()
     CreateGraphicsPipeline();
 }
 
-void RemApplication::Update()
+void Application::Update()
 {
     while (!glfwWindowShouldClose(m_window))
     {
@@ -44,7 +44,7 @@ void RemApplication::Update()
     }
 }
 
-void RemApplication::Cleanup()
+void Application::Cleanup()
 {
 
     vkDeviceWaitIdle(m_logicalDevice);
@@ -65,7 +65,7 @@ void RemApplication::Cleanup()
 
 }
 
-RemApplication::RemApplication(const char *windowName, int windowWidth, int windowHeight)
+Application::Application(const char *windowName, int windowWidth, int windowHeight)
 {
     m_windowName = windowName;
     m_windowWidth = windowWidth;
@@ -73,13 +73,13 @@ RemApplication::RemApplication(const char *windowName, int windowWidth, int wind
 }
 
 static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
-    auto app = reinterpret_cast<RemApplication*>(glfwGetWindowUserPointer(window));
+    auto app = reinterpret_cast<Application*>(glfwGetWindowUserPointer(window));
     app->m_renderPipeline.m_framebufferResized = true;
 
     std::cout << "Window Resized: x: " << width << " y: " << height << std::endl;
 }
 
-void RemApplication::InitializeWindow()
+void Application::InitializeWindow()
 {
     std::cout << "Creating Window" << std::endl;
 
@@ -93,7 +93,7 @@ void RemApplication::InitializeWindow()
 
 }
 
-void RemApplication::CreateInstance()
+void Application::CreateInstance()
 {
     std::cout << "Creating Vulkan Instance" << std::endl;
 
@@ -144,7 +144,7 @@ void RemApplication::CreateInstance()
 
 }
 
-void RemApplication::CreateSurface()
+void Application::CreateSurface()
 {
     if (glfwCreateWindowSurface(m_vulkanInstance, m_window, nullptr, &m_surface) != VK_SUCCESS) {
         throw std::runtime_error("failed to create window surface!");
@@ -153,7 +153,7 @@ void RemApplication::CreateSurface()
 
 
 // Have this function virtual for extension??
-void RemApplication::CreateGraphicsPipeline()
+void Application::CreateGraphicsPipeline()
 {
 
 
@@ -167,8 +167,8 @@ void RemApplication::CreateGraphicsPipeline()
 
 
     // Create Triangle Renderer
-    RemRenderer triangleRenderer;
-    triangleRenderer.m_material = m_renderPipeline.LoadShader("triangleInput"); // Create Material
+    VulkanRenderer triangleRenderer;
+    triangleRenderer.material = m_renderPipeline.LoadShader("triangleInput"); // Create Material
 
     const std::vector<Vertex> vertices = {
             {{-0.5f, -0.5f}, {.0f, 0.0f, 1.0f}},
@@ -188,7 +188,7 @@ void RemApplication::CreateGraphicsPipeline()
     m_renderPipeline.CreateSyncObjects();
 }
 
-bool RemApplication::CheckValidationLayerSupport() {
+bool Application::CheckValidationLayerSupport() {
     uint32_t layerCount;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
@@ -213,7 +213,7 @@ bool RemApplication::CheckValidationLayerSupport() {
     return true;
 }
 
-std::vector<const char *> RemApplication::GetRequiredExtensions() {
+std::vector<const char *> Application::GetRequiredExtensions() {
     uint32_t glfwExtensionCount = 0;
     const char** glfwExtensions;
     glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -229,7 +229,7 @@ std::vector<const char *> RemApplication::GetRequiredExtensions() {
 }
 
 
-void RemApplication::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
+void Application::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
     createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
     createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
@@ -238,7 +238,7 @@ void RemApplication::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreat
 }
 
 
-void RemApplication::SetupDebugMessenger()
+void Application::SetupDebugMessenger()
 {
     if (!enableValidationLayers) return;
 
@@ -251,10 +251,10 @@ void RemApplication::SetupDebugMessenger()
     }
 
 }
-VkResult RemApplication::CreateDebugUtilsMessengerEXT(VkInstance instance,
-                                                          const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
-                                                          const VkAllocationCallbacks *pAllocator,
-                                                          VkDebugUtilsMessengerEXT *pDebugMessenger)
+VkResult Application::CreateDebugUtilsMessengerEXT(VkInstance instance,
+                                                   const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
+                                                   const VkAllocationCallbacks *pAllocator,
+                                                   VkDebugUtilsMessengerEXT *pDebugMessenger)
 {
 
     PFN_vkCreateDebugUtilsMessengerEXT func =
@@ -270,8 +270,8 @@ VkResult RemApplication::CreateDebugUtilsMessengerEXT(VkInstance instance,
 
 }
 
-void RemApplication::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
-                                                       const VkAllocationCallbacks *pAllocator)
+void Application::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
+                                                const VkAllocationCallbacks *pAllocator)
 {
     auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
     if (func != nullptr) {
@@ -279,9 +279,9 @@ void RemApplication::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugU
     }
 }
 
-VkBool32 RemApplication::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-                                            VkDebugUtilsMessageTypeFlagsEXT messageType,
-                                            const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData)
+VkBool32 Application::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+                                    VkDebugUtilsMessageTypeFlagsEXT messageType,
+                                    const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData)
 {
     if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
         std::cerr << messageType << " Validation layer: " <<
@@ -291,7 +291,7 @@ VkBool32 RemApplication::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT me
     return VK_FALSE;
 }
 
-void RemApplication::InitializePhysicalDevice()
+void Application::InitializePhysicalDevice()
 {
     uint32_t deviceCount = 0;
     vkEnumeratePhysicalDevices(m_vulkanInstance, &deviceCount, nullptr);
@@ -323,7 +323,7 @@ void RemApplication::InitializePhysicalDevice()
     }
 }
 
-bool RemApplication::isDeviceSuitable(VkPhysicalDevice physicalDevice)
+bool Application::isDeviceSuitable(VkPhysicalDevice physicalDevice)
 {
     QueueFamilyIndices indices = FindQueueFamilies(physicalDevice);
 
@@ -339,7 +339,7 @@ bool RemApplication::isDeviceSuitable(VkPhysicalDevice physicalDevice)
     return indices.isComplete() && extensionsSupported && swapChainAdequate;
 }
 
-VkSurfaceFormatKHR  RemApplication::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
+VkSurfaceFormatKHR  Application::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
 {
     for (const auto& availableFormat : availableFormats) {
         if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
@@ -349,7 +349,7 @@ VkSurfaceFormatKHR  RemApplication::ChooseSwapSurfaceFormat(const std::vector<Vk
 
     return availableFormats[0];
 }
-VkPresentModeKHR RemApplication::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
+VkPresentModeKHR Application::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
 {
     for (const auto& availablePresentMode : availablePresentModes) {
         if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
@@ -359,7 +359,7 @@ VkPresentModeKHR RemApplication::ChooseSwapPresentMode(const std::vector<VkPrese
 
     return VK_PRESENT_MODE_FIFO_KHR;
 }
-VkExtent2D RemApplication::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
+VkExtent2D Application::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
 {
     if (capabilities.currentExtent.width != UINT32_MAX)
     {
@@ -382,7 +382,7 @@ VkExtent2D RemApplication::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capa
     }
 }
 
-bool RemApplication::checkDeviceExtensionSupport(VkPhysicalDevice physicalDevice)
+bool Application::checkDeviceExtensionSupport(VkPhysicalDevice physicalDevice)
 {
     uint32_t extensionCount;
     vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, nullptr);
@@ -399,7 +399,7 @@ bool RemApplication::checkDeviceExtensionSupport(VkPhysicalDevice physicalDevice
     return requiredExtensions.empty();
 }
 
-QueueFamilyIndices RemApplication::FindQueueFamilies(VkPhysicalDevice device)
+QueueFamilyIndices Application::FindQueueFamilies(VkPhysicalDevice device)
 {
     QueueFamilyIndices indices;
 
@@ -436,7 +436,7 @@ QueueFamilyIndices RemApplication::FindQueueFamilies(VkPhysicalDevice device)
     return indices;
 }
 
-SwapChainSupportDetails RemApplication::QuerySwapChainSupport(VkPhysicalDevice device)
+SwapChainSupportDetails Application::QuerySwapChainSupport(VkPhysicalDevice device)
 {
     SwapChainSupportDetails details;
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, m_surface, &details.m_capabilities);
@@ -461,7 +461,7 @@ SwapChainSupportDetails RemApplication::QuerySwapChainSupport(VkPhysicalDevice d
 
 }
 
-void RemApplication::CreateLogicalDevice()
+void Application::CreateLogicalDevice()
 {
     std::cout << "Creating Logical Device" << std::endl;
     QueueFamilyIndices indices = FindQueueFamilies(m_physicalDevice);

@@ -4,11 +4,11 @@
 
 #include <stdexcept>
 #include <iostream>
-#include "RemSwapChain.h"
-#include "SystemStructs.h"
-#include "RemApplication.h"
+#include "VulkanSwapChain.h"
+#include "VulkanSystemStructs.h"
+#include "Application.h"
 
-void RemSwapChain::RecreateSwapChain()
+void VulkanSwapChain::RecreateSwapChain()
 {
     int width = 0, height = 0;
     glfwGetFramebufferSize(m_remApplicationInstance->m_window, &width, &height);
@@ -26,7 +26,7 @@ void RemSwapChain::RecreateSwapChain()
     CreateFrameBuffers();
 }
 
-void RemSwapChain::CreateSwapChain()
+void VulkanSwapChain::CreateSwapChain()
 {
     SwapChainSupportDetails swapChainSupport = m_remApplicationInstance->QuerySwapChainSupport(m_physicalDevice);
 
@@ -81,7 +81,7 @@ void RemSwapChain::CreateSwapChain()
 }
 
 
-void RemSwapChain::CreateFrameBuffers()
+void VulkanSwapChain::CreateFrameBuffers()
 {
     std::cout << "\tCreating Frame Buffers" << std::endl;
     m_swapChainFrameBuffers.resize(m_swapChainImageViews.size());
@@ -107,7 +107,7 @@ void RemSwapChain::CreateFrameBuffers()
 
 }
 
-void RemSwapChain::CreateImageViews()
+void VulkanSwapChain::CreateImageViews()
 {
     m_swapChainImageViews.resize(m_swapChainImages.size());
     for (size_t i = 0; i < m_swapChainImages.size(); i++)
@@ -133,7 +133,7 @@ void RemSwapChain::CreateImageViews()
     }
 }
 
-void RemSwapChain::Cleanup()
+void VulkanSwapChain::Cleanup()
 {
     std::cout << "Destroying Frame Buffer" << std::endl;
     for (auto & m_swapChainFrameBuffer : m_swapChainFrameBuffers) {
@@ -146,7 +146,7 @@ void RemSwapChain::Cleanup()
     vkDestroySwapchainKHR(m_logicalDevice, m_swapChain, nullptr);
 }
 
-void RemSwapChain::CreateRenderPass()
+void VulkanSwapChain::CreateRenderPass()
 {
     std::cout << "Creating Render Pass" << std::endl;
     VkAttachmentDescription colorAttachment{};
@@ -181,11 +181,11 @@ void RemSwapChain::CreateRenderPass()
 
 }
 
-void RemSwapChain::Initialize(VkDevice &mLogicalDevice,
-                              VkPhysicalDevice &mPhysicalDevice,
-                              VkSurfaceKHR &mSurface,
-                              VkRenderPass& renderPass,
-                              RemApplication *remWindow)
+void VulkanSwapChain::Initialize(VkDevice &mLogicalDevice,
+                                 VkPhysicalDevice &mPhysicalDevice,
+                                 VkSurfaceKHR &mSurface,
+                                 VkRenderPass& renderPass,
+                                 Application *remWindow)
 {
     m_logicalDevice = mLogicalDevice;
     m_physicalDevice = mPhysicalDevice;

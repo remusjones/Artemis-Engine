@@ -10,17 +10,17 @@
 #include <vector>
 #include <string>
 #include <map>
-#include "SystemStructs.h"
-#include "RemSwapChain.h"
-#include "Wrappers/Data/Vertex.h"
+#include "VulkanSystemStructs.h"
+#include "VulkanSwapChain.h"
 #include "Wrappers/VulkanMaterial.h"
+#include "API/Base/Wrappers/Data/Vertex.h"
 
-class RemPipeline
+class VulkanRendererPipeline
 {
 public:
 
     void Initialize(VkDevice& logicalDevice,
-                    RemSwapChain* remSwapChain,
+                    VulkanSwapChain* remSwapChain,
                     VkPhysicalDevice& physicalDevice,
                     VkQueue& graphicsQueue,
                     VkQueue& presentQueue
@@ -63,7 +63,7 @@ public:
 private:
 
     void CleanupOldSyncObjects();
-    RemSwapChain* m_remSwapChain;
+    VulkanSwapChain* m_remSwapChain;
     std::vector<VulkanMaterial*> m_loadedMaterials{};
     VkDevice m_logicalDevice;
     VkPhysicalDevice m_physicalDevice;

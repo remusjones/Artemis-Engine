@@ -2,8 +2,8 @@
 // Created by Remus on 7/11/2021.
 //
 
-#ifndef INC_3DENGINE_SYSTEMSTRUCTS_H
-#define INC_3DENGINE_SYSTEMSTRUCTS_H
+#ifndef INC_3DENGINE_VULKANSYSTEMSTRUCTS_H
+#define INC_3DENGINE_VULKANSYSTEMSTRUCTS_H
 
 #include <optional>
 
@@ -25,5 +25,5 @@ struct SwapChainSupportDetails
     std::vector<VkPresentModeKHR> m_presentModes;
 };
 
-#endif //INC_3DENGINE_SYSTEMSTRUCTS_H
+#endif //INC_3DENGINE_VULKANSYSTEMSTRUCTS_H
 
