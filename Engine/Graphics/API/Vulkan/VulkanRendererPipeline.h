@@ -12,8 +12,8 @@
 #include <map>
 #include "VulkanSystemStructs.h"
 #include "VulkanSwapChain.h"
-#include "Wrappers/VulkanMaterial.h"
-#include "API/Base/Wrappers/Data/Vertex.h"
+#include "Common/VulkanMaterial.h"
+#include "API/Base/Common/Data/Vertex.h"
 
 class VulkanRendererPipeline
 {

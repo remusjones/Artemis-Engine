@@ -8,7 +8,7 @@
 
 #include <vector>
 #include <optional>
-class Application;
+class VulkanApplicationImpl;
 
 class VulkanSwapChain {
 public:
@@ -19,7 +19,7 @@ public:
                     VkPhysicalDevice &mPhysicalDevice,
                     VkSurfaceKHR &mSurface,
                     VkRenderPass& renderPass,
-                    Application *remWindow);
+                    VulkanApplicationImpl *remWindow);
 
     void RecreateSwapChain();
     void CreateSwapChain();
@@ -28,7 +28,7 @@ public:
     void Cleanup();
 
     VkPhysicalDevice m_physicalDevice;
-    Application* m_remApplicationInstance{};
+    VulkanApplicationImpl* m_remApplicationInstance{};
     // swapchain
     VkSwapchainKHR m_swapChain{};
     VkFormat m_swapChainImageFormat;

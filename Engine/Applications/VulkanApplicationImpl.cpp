@@ -1,8 +1,8 @@
 //
 // Created by Remus on 4/11/2021.
 //
-#include "Application.h"
-#include "Wrappers/VulkanRenderer.h"
+#include "VulkanApplicationImpl.h"
+#include "Common/VulkanRenderer.h"
 #include <stdexcept>
 #include <cstring>
 #include <iostream>
@@ -11,7 +11,7 @@
 #include <algorithm>
 #include <VulkanSwapChain.h>
 
-void Application::Run()
+void VulkanApplicationImpl::Run()
 {
     InitializeWindow();
     InitializeVulkan();
@@ -19,7 +19,7 @@ void Application::Run()
     Cleanup();
 }
 
-void Application::InitializeVulkan()
+void VulkanApplicationImpl::InitializeVulkan()
 {
     CreateInstance();
     SetupDebugMessenger();
@@ -29,26 +29,26 @@ void Application::InitializeVulkan()
     m_swapChain = new VulkanSwapChain();
     m_swapChain->Initialize(m_logicalDevice,
                             m_physicalDevice,
-                            m_surface,
-                            m_renderPass,
+                            mSurface,
+                            mRenderPass,
                             this);
     CreateGraphicsPipeline();
 }
 
-void Application::Update()
+void VulkanApplicationImpl::Update()
 {
     while (!glfwWindowShouldClose(m_window))
     {
         glfwPollEvents();
-        this->m_renderPipeline.DrawFrame();
+        this->mRenderPipeline.DrawFrame();
     }
 }
 
-void Application::Cleanup()
+void VulkanApplicationImpl::Cleanup()
 {
 
     vkDeviceWaitIdle(m_logicalDevice);
-    m_renderPipeline.Cleanup();
+    mRenderPipeline.Cleanup();
     m_swapChain->Cleanup();
     delete m_swapChain;
     vkDestroyDevice(m_logicalDevice, nullptr);
@@ -56,30 +56,30 @@ void Application::Cleanup()
     if (enableValidationLayers) {
         DestroyDebugUtilsMessengerEXT(m_vulkanInstance, m_debugMessenger, nullptr);
     }
-    vkDestroySurfaceKHR(m_vulkanInstance, m_surface, nullptr);
+    vkDestroySurfaceKHR(m_vulkanInstance, mSurface, nullptr);
     vkDestroyInstance(m_vulkanInstance, nullptr);
 
-    std::cout << "Destroying Application" << std::endl;
+    std::cout << "Destroying VulkanApplicationImpl" << std::endl;
     glfwDestroyWindow(m_window);
     glfwTerminate();
 
 }
 
-Application::Application(const char *windowName, int windowWidth, int windowHeight)
+VulkanApplicationImpl::VulkanApplicationImpl(const char *windowName, int windowWidth, int windowHeight)
 {
-    m_windowName = windowName;
-    m_windowWidth = windowWidth;
-    m_windowHeight = windowHeight;
+    mWindowName = windowName;
+    mWindowWidth = windowWidth;
+    mWindowHeight = windowHeight;
 }
 
 static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
-    auto app = reinterpret_cast<Application*>(glfwGetWindowUserPointer(window));
-    app->m_renderPipeline.m_framebufferResized = true;
+    auto app = reinterpret_cast<VulkanApplicationImpl*>(glfwGetWindowUserPointer(window));
+    app->mRenderPipeline.m_framebufferResized = true;
 
     std::cout << "Window Resized: x: " << width << " y: " << height << std::endl;
 }
 
-void Application::InitializeWindow()
+void VulkanApplicationImpl::InitializeWindow()
 {
     std::cout << "Creating Window" << std::endl;
 
@@ -87,13 +87,13 @@ void Application::InitializeWindow()
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-    m_window = glfwCreateWindow(m_windowWidth, m_windowHeight, m_windowName, nullptr, nullptr);
+    m_window = glfwCreateWindow(mWindowWidth, mWindowHeight, mWindowName, nullptr, nullptr);
     glfwSetWindowUserPointer(m_window, this);
     glfwSetFramebufferSizeCallback(m_window, framebufferResizeCallback);
 
 }
 
-void Application::CreateInstance()
+void VulkanApplicationImpl::CreateInstance()
 {
     std::cout << "Creating Vulkan Instance" << std::endl;
 
@@ -102,7 +102,7 @@ void Application::CreateInstance()
     }
     VkApplicationInfo appInfo{};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    appInfo.pApplicationName = m_windowName;
+    appInfo.pApplicationName = mWindowName;
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.pEngineName = "";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
@@ -144,31 +144,31 @@ void Application::CreateInstance()
 
 }
 
-void Application::CreateSurface()
+void VulkanApplicationImpl::CreateSurface()
 {
-    if (glfwCreateWindowSurface(m_vulkanInstance, m_window, nullptr, &m_surface) != VK_SUCCESS) {
+    if (glfwCreateWindowSurface(m_vulkanInstance, m_window, nullptr, &mSurface) != VK_SUCCESS) {
         throw std::runtime_error("failed to create window surface!");
     }
 }
 
 
 // Have this function virtual for extension??
-void Application::CreateGraphicsPipeline()
+void VulkanApplicationImpl::CreateGraphicsPipeline()
 {
 
 
-    m_renderPipeline.Initialize(m_logicalDevice,
-                                m_swapChain,
-                                m_physicalDevice,
-                                m_graphicsQueue,
-                                m_presentQueue
+    mRenderPipeline.Initialize(m_logicalDevice,
+                               m_swapChain,
+                               m_physicalDevice,
+                               mGraphicsQueue,
+                               mPresentQueue
                               );
 
 
 
     // Create Triangle Renderer
     VulkanRenderer triangleRenderer;
-    triangleRenderer.material = m_renderPipeline.LoadShader("triangleInput"); // Create Material
+    triangleRenderer.material = mRenderPipeline.LoadShader("triangleInput"); // Create Material
 
     const std::vector<Vertex> vertices = {
             {{-0.5f, -0.5f}, {.0f, 0.0f, 1.0f}},
@@ -178,17 +178,17 @@ void Application::CreateGraphicsPipeline()
     };
 
 
-    m_renderPipeline.CreatePipelineLayout();
+    mRenderPipeline.CreatePipelineLayout();
     auto queueFamilies = FindQueueFamilies(m_physicalDevice);
-    m_renderPipeline.CreateCommandPool(queueFamilies);
-    m_renderPipeline.CreateVertexBuffer(vertices);
-    m_renderPipeline.CreateIndexBuffer();
+    mRenderPipeline.CreateCommandPool(queueFamilies);
+    mRenderPipeline.CreateVertexBuffer(vertices);
+    mRenderPipeline.CreateIndexBuffer();
 
 
-    m_renderPipeline.CreateSyncObjects();
+    mRenderPipeline.CreateSyncObjects();
 }
 
-bool Application::CheckValidationLayerSupport() {
+bool VulkanApplicationImpl::CheckValidationLayerSupport() {
     uint32_t layerCount;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
@@ -213,7 +213,7 @@ bool Application::CheckValidationLayerSupport() {
     return true;
 }
 
-std::vector<const char *> Application::GetRequiredExtensions() {
+std::vector<const char *> VulkanApplicationImpl::GetRequiredExtensions() {
     uint32_t glfwExtensionCount = 0;
     const char** glfwExtensions;
     glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -229,7 +229,7 @@ std::vector<const char *> Application::GetRequiredExtensions() {
 }
 
 
-void Application::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
+void VulkanApplicationImpl::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
     createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
     createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
@@ -238,7 +238,7 @@ void Application::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateIn
 }
 
 
-void Application::SetupDebugMessenger()
+void VulkanApplicationImpl::SetupDebugMessenger()
 {
     if (!enableValidationLayers) return;
 
@@ -251,10 +251,10 @@ void Application::SetupDebugMessenger()
     }
 
 }
-VkResult Application::CreateDebugUtilsMessengerEXT(VkInstance instance,
-                                                   const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
-                                                   const VkAllocationCallbacks *pAllocator,
-                                                   VkDebugUtilsMessengerEXT *pDebugMessenger)
+VkResult VulkanApplicationImpl::CreateDebugUtilsMessengerEXT(VkInstance instance,
+                                                             const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
+                                                             const VkAllocationCallbacks *pAllocator,
+                                                             VkDebugUtilsMessengerEXT *pDebugMessenger)
 {
 
     PFN_vkCreateDebugUtilsMessengerEXT func =
@@ -270,8 +270,8 @@ VkResult Application::CreateDebugUtilsMessengerEXT(VkInstance instance,
 
 }
 
-void Application::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
-                                                const VkAllocationCallbacks *pAllocator)
+void VulkanApplicationImpl::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
+                                                          const VkAllocationCallbacks *pAllocator)
 {
     auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
     if (func != nullptr) {
@@ -279,9 +279,9 @@ void Application::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtil
     }
 }
 
-VkBool32 Application::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-                                    VkDebugUtilsMessageTypeFlagsEXT messageType,
-                                    const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData)
+VkBool32 VulkanApplicationImpl::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+                                              VkDebugUtilsMessageTypeFlagsEXT messageType,
+                                              const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData)
 {
     if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
         std::cerr << messageType << " Validation layer: " <<
@@ -291,7 +291,7 @@ VkBool32 Application::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messa
     return VK_FALSE;
 }
 
-void Application::InitializePhysicalDevice()
+void VulkanApplicationImpl::InitializePhysicalDevice()
 {
     uint32_t deviceCount = 0;
     vkEnumeratePhysicalDevices(m_vulkanInstance, &deviceCount, nullptr);
@@ -323,7 +323,7 @@ void Application::InitializePhysicalDevice()
     }
 }
 
-bool Application::isDeviceSuitable(VkPhysicalDevice physicalDevice)
+bool VulkanApplicationImpl::isDeviceSuitable(VkPhysicalDevice physicalDevice)
 {
     QueueFamilyIndices indices = FindQueueFamilies(physicalDevice);
 
@@ -333,13 +333,13 @@ bool Application::isDeviceSuitable(VkPhysicalDevice physicalDevice)
 
     if (extensionsSupported) {
         SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(physicalDevice);
-        swapChainAdequate = !swapChainSupport.m_formats.empty() && !swapChainSupport.m_presentModes.empty();
+        swapChainAdequate = !swapChainSupport.mFormats.empty() && !swapChainSupport.mPresentModes.empty();
     }
 
     return indices.isComplete() && extensionsSupported && swapChainAdequate;
 }
 
-VkSurfaceFormatKHR  Application::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
+VkSurfaceFormatKHR  VulkanApplicationImpl::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
 {
     for (const auto& availableFormat : availableFormats) {
         if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
@@ -349,7 +349,7 @@ VkSurfaceFormatKHR  Application::ChooseSwapSurfaceFormat(const std::vector<VkSur
 
     return availableFormats[0];
 }
-VkPresentModeKHR Application::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
+VkPresentModeKHR VulkanApplicationImpl::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
 {
     for (const auto& availablePresentMode : availablePresentModes) {
         if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
@@ -359,7 +359,7 @@ VkPresentModeKHR Application::ChooseSwapPresentMode(const std::vector<VkPresentM
 
     return VK_PRESENT_MODE_FIFO_KHR;
 }
-VkExtent2D Application::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
+VkExtent2D VulkanApplicationImpl::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
 {
     if (capabilities.currentExtent.width != UINT32_MAX)
     {
@@ -382,7 +382,7 @@ VkExtent2D Application::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabil
     }
 }
 
-bool Application::checkDeviceExtensionSupport(VkPhysicalDevice physicalDevice)
+bool VulkanApplicationImpl::checkDeviceExtensionSupport(VkPhysicalDevice physicalDevice)
 {
     uint32_t extensionCount;
     vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, nullptr);
@@ -399,7 +399,7 @@ bool Application::checkDeviceExtensionSupport(VkPhysicalDevice physicalDevice)
     return requiredExtensions.empty();
 }
 
-QueueFamilyIndices Application::FindQueueFamilies(VkPhysicalDevice device)
+QueueFamilyIndices VulkanApplicationImpl::FindQueueFamilies(VkPhysicalDevice device)
 {
     QueueFamilyIndices indices;
 
@@ -413,16 +413,16 @@ QueueFamilyIndices Application::FindQueueFamilies(VkPhysicalDevice device)
     for (const auto& queueFamily : queueFamilies)
     {
         VkBool32 presentSupport = false;
-        vkGetPhysicalDeviceSurfaceSupportKHR(device, i, m_surface, &presentSupport);
+        vkGetPhysicalDeviceSurfaceSupportKHR(device, i, mSurface, &presentSupport);
 
         if (presentSupport)
         {
-            indices.m_presentFamily = i;
+            indices.mPresentFamily = i;
         }
 
         if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
         {
-            indices.m_graphicsFamily = i;
+            indices.mGraphicsFamily = i;
         }
 
         if (indices.isComplete())
@@ -436,38 +436,38 @@ QueueFamilyIndices Application::FindQueueFamilies(VkPhysicalDevice device)
     return indices;
 }
 
-SwapChainSupportDetails Application::QuerySwapChainSupport(VkPhysicalDevice device)
+SwapChainSupportDetails VulkanApplicationImpl::QuerySwapChainSupport(VkPhysicalDevice device)
 {
     SwapChainSupportDetails details;
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, m_surface, &details.m_capabilities);
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, mSurface, &details.mCapabilities);
 
     uint32_t formatCount;
-    vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_surface, &formatCount, nullptr);
+    vkGetPhysicalDeviceSurfaceFormatsKHR(device, mSurface, &formatCount, nullptr);
 
     if (formatCount != 0) {
-        details.m_formats.resize(formatCount);
-        vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_surface, &formatCount, details.m_formats.data());
+        details.mFormats.resize(formatCount);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(device, mSurface, &formatCount, details.mFormats.data());
     }
 
     uint32_t presentModeCount;
-    vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_surface, &presentModeCount, nullptr);
+    vkGetPhysicalDeviceSurfacePresentModesKHR(device, mSurface, &presentModeCount, nullptr);
 
     if (presentModeCount != 0) {
-        details.m_presentModes.resize(presentModeCount);
-        vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_surface, &presentModeCount, details.m_presentModes.data());
+        details.mPresentModes.resize(presentModeCount);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(device, mSurface, &presentModeCount, details.mPresentModes.data());
     }
 
     return details;
 
 }
 
-void Application::CreateLogicalDevice()
+void VulkanApplicationImpl::CreateLogicalDevice()
 {
     std::cout << "Creating Logical Device" << std::endl;
     QueueFamilyIndices indices = FindQueueFamilies(m_physicalDevice);
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-    std::set<uint32_t> uniqueQueueFamilies = {indices.m_graphicsFamily.value(), indices.m_presentFamily.value()};
+    std::set<uint32_t> uniqueQueueFamilies = {indices.mGraphicsFamily.value(), indices.mPresentFamily.value()};
 
     float queuePriority = 1.0f;
     for (uint32_t queueFamily : uniqueQueueFamilies) {
@@ -482,7 +482,7 @@ void Application::CreateLogicalDevice()
 
     VkDeviceQueueCreateInfo queueCreateInfo{};
     queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-    uint32_t graphicsFamilyIndex = indices.m_graphicsFamily.value();
+    uint32_t graphicsFamilyIndex = indices.mGraphicsFamily.value();
 
     queueCreateInfo.queueFamilyIndex = graphicsFamilyIndex;
     queueCreateInfo.queueCount = 1;
@@ -511,8 +511,8 @@ void Application::CreateLogicalDevice()
         throw std::runtime_error("failed to create logical device!");
     }
 
-    vkGetDeviceQueue(m_logicalDevice, indices.m_presentFamily.value(), 0, &m_presentQueue);
-    vkGetDeviceQueue(m_logicalDevice, graphicsFamilyIndex, 0, &m_graphicsQueue);
+    vkGetDeviceQueue(m_logicalDevice, indices.mPresentFamily.value(), 0, &mPresentQueue);
+    vkGetDeviceQueue(m_logicalDevice, graphicsFamilyIndex, 0, &mGraphicsQueue);
 
 }
 

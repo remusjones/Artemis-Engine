@@ -7,20 +7,21 @@
 #include <glm/mat4x4.hpp>
 
 #include <iostream>
-#include "Application.h"
+#include "VulkanApplicationImpl.h"
 
 int main() {
 
 
-    Application app = Application("Vulkan 3D Engine", 800, 600);
+    IApplication* app = new VulkanApplicationImpl("Vulkan 3D Engine", 800, 600);
 
     try {
-        app.Run();
+        app->Run();
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
         return EXIT_FAILURE;
     }
 
+    delete app;
     return EXIT_SUCCESS;
 }
 

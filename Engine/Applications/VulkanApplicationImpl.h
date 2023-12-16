@@ -1,6 +1,6 @@
 //
 // Created by Remus on 4/11/2021.
-// Generic Application process to run the "project"
+// Generic VulkanApplicationImpl process to run the "project"
 //
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -10,21 +10,23 @@
 #include <optional>
 #include "VulkanRendererPipeline.h"
 #include "VulkanSystemStructs.h"
+#include "IApplication.h"
+
 class VulkanSwapChain;
 
-class Application
+class VulkanApplicationImpl : public IApplication
 {
 public:
-    Application(const char* windowName, int windowWidth, int windowHeight);
-    void Run();
+    VulkanApplicationImpl(const char* windowName, int windowWidth, int windowHeight);
+    void Run() override;
 
-    VkSurfaceFormatKHR  ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-    VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
-    VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
-    SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
-    QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
+    VkSurfaceFormatKHR  ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& aAvailableFormats);
+    VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& aAvailablePresentModes);
+    VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& aCapabilities);
+    SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice aDevice);
+    QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice aDevice);
 
-    VulkanRendererPipeline m_renderPipeline;
+    VulkanRendererPipeline mRenderPipeline;
     VulkanSwapChain* m_swapChain;
     VkInstance m_vulkanInstance;
     GLFWwindow* m_window{};
@@ -56,18 +58,15 @@ private:
 
     void CreateGraphicsPipeline();
 
-    int m_windowWidth;
-    int m_windowHeight;
-    const char* m_windowName;
-    uint32_t m_extensionCount{};
-    std::vector<VkExtensionProperties> m_extensions;
-    VkQueue m_graphicsQueue;
-    VkQueue m_presentQueue;
-    VkSurfaceKHR m_surface;
+    int mWindowWidth;
+    int mWindowHeight;
+    const char* mWindowName;
+    std::vector<VkExtensionProperties> mExtensions;
 
-    VkRenderPass m_renderPass{};
-
-
+    VkQueue mGraphicsQueue;
+    VkQueue mPresentQueue;
+    VkSurfaceKHR mSurface;
+    VkRenderPass mRenderPass{};
 
     const std::vector<const char*> m_deviceExtensions = {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME

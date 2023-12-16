@@ -11,7 +11,7 @@
 #include <map>
 #include <stdexcept>
 #include "VulkanSystemStructs.h"
-#include "API/Base/Wrappers/Material.h"
+#include "API/Base/Common/Material.h"
 
 class VulkanMaterial : public Material {
 public:

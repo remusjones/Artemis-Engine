@@ -9,20 +9,20 @@
 
 struct QueueFamilyIndices
 {
-    std::optional<uint32_t> m_graphicsFamily;
-    std::optional<uint32_t> m_presentFamily;
+    std::optional<uint32_t> mGraphicsFamily;
+    std::optional<uint32_t> mPresentFamily;
 
     bool isComplete()
     {
-        return m_graphicsFamily.has_value() && m_presentFamily.has_value();
+        return mGraphicsFamily.has_value() && mPresentFamily.has_value();
     }
 };
 
 struct SwapChainSupportDetails
 {
-    VkSurfaceCapabilitiesKHR m_capabilities;
-    std::vector<VkSurfaceFormatKHR> m_formats;
-    std::vector<VkPresentModeKHR> m_presentModes;
+    VkSurfaceCapabilitiesKHR mCapabilities;
+    std::vector<VkSurfaceFormatKHR> mFormats;
+    std::vector<VkPresentModeKHR> mPresentModes;
 };
 
 #endif //INC_3DENGINE_VULKANSYSTEMSTRUCTS_H

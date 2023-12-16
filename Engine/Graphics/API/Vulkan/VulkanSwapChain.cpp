@@ -6,7 +6,7 @@
 #include <iostream>
 #include "VulkanSwapChain.h"
 #include "VulkanSystemStructs.h"
-#include "Application.h"
+#include "VulkanApplicationImpl.h"
 
 void VulkanSwapChain::RecreateSwapChain()
 {
@@ -16,7 +16,7 @@ void VulkanSwapChain::RecreateSwapChain()
 
         glfwGetFramebufferSize(m_remApplicationInstance->m_window, &width, &height);
         glfwWaitEvents();
-        std::cout << "Application Minimized" << std::endl;
+        std::cout << "VulkanApplicationImpl Minimized" << std::endl;
     }
 
     vkDeviceWaitIdle(m_logicalDevice);
@@ -30,14 +30,14 @@ void VulkanSwapChain::CreateSwapChain()
 {
     SwapChainSupportDetails swapChainSupport = m_remApplicationInstance->QuerySwapChainSupport(m_physicalDevice);
 
-    VkSurfaceFormatKHR surfaceFormat = m_remApplicationInstance->ChooseSwapSurfaceFormat(swapChainSupport.m_formats);
-    VkPresentModeKHR presentMode = m_remApplicationInstance->ChooseSwapPresentMode(swapChainSupport.m_presentModes);
-    VkExtent2D extent = m_remApplicationInstance->ChooseSwapExtent(swapChainSupport.m_capabilities);
+    VkSurfaceFormatKHR surfaceFormat = m_remApplicationInstance->ChooseSwapSurfaceFormat(swapChainSupport.mFormats);
+    VkPresentModeKHR presentMode = m_remApplicationInstance->ChooseSwapPresentMode(swapChainSupport.mPresentModes);
+    VkExtent2D extent = m_remApplicationInstance->ChooseSwapExtent(swapChainSupport.mCapabilities);
 
-    uint32_t imageCount = swapChainSupport.m_capabilities.minImageCount + 1;
+    uint32_t imageCount = swapChainSupport.mCapabilities.minImageCount + 1;
 
-    if (swapChainSupport.m_capabilities.maxImageCount > 0 && imageCount > swapChainSupport.m_capabilities.maxImageCount) {
-        imageCount = swapChainSupport.m_capabilities.maxImageCount;
+    if (swapChainSupport.mCapabilities.maxImageCount > 0 && imageCount > swapChainSupport.mCapabilities.maxImageCount) {
+        imageCount = swapChainSupport.mCapabilities.maxImageCount;
     }
     VkSwapchainCreateInfoKHR createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -51,9 +51,9 @@ void VulkanSwapChain::CreateSwapChain()
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
     QueueFamilyIndices indices = m_remApplicationInstance->FindQueueFamilies(m_physicalDevice);
-    uint32_t queueFamilyIndices[] = {indices.m_graphicsFamily.value(), indices.m_presentFamily.value()};
+    uint32_t queueFamilyIndices[] = {indices.mGraphicsFamily.value(), indices.mPresentFamily.value()};
 
-    if (indices.m_graphicsFamily != indices.m_presentFamily) {
+    if (indices.mGraphicsFamily != indices.mPresentFamily) {
         createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
         createInfo.queueFamilyIndexCount = 2;
         createInfo.pQueueFamilyIndices = queueFamilyIndices;
@@ -63,7 +63,7 @@ void VulkanSwapChain::CreateSwapChain()
         createInfo.pQueueFamilyIndices = nullptr;
     }
 
-    createInfo.preTransform = swapChainSupport.m_capabilities.currentTransform;
+    createInfo.preTransform = swapChainSupport.mCapabilities.currentTransform;
     createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
     createInfo.presentMode = presentMode;
     createInfo.clipped = VK_TRUE;
@@ -185,7 +185,7 @@ void VulkanSwapChain::Initialize(VkDevice &mLogicalDevice,
                                  VkPhysicalDevice &mPhysicalDevice,
                                  VkSurfaceKHR &mSurface,
                                  VkRenderPass& renderPass,
-                                 Application *remWindow)
+                                 VulkanApplicationImpl *remWindow)
 {
     m_logicalDevice = mLogicalDevice;
     m_physicalDevice = mPhysicalDevice;

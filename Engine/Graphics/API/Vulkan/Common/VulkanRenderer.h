@@ -6,8 +6,8 @@
 #pragma once
 
 #include <vector>
-#include "API/Base/Wrappers/Renderer.h"
-#include "API/Base/Wrappers/Data/Vertex.h"
+#include "API/Base/Common/Renderer.h"
+#include "API/Base/Common/Data/Vertex.h"
 
 class Material;
 class VulkanRenderer : Renderer{
