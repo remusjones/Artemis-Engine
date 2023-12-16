@@ -8,10 +8,10 @@
 #include <vector>
 #include "Wrappers/Data/Vertex.h"
 
-class RemMaterial;
+class VulkanMaterial;
 class RemRenderer {
 public:
 
     std::vector<Vertex> m_verticies;
-    RemMaterial* m_material;
+    VulkanMaterial* m_material;
 };

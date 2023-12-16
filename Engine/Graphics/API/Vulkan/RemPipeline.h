@@ -13,7 +13,7 @@
 #include "SystemStructs.h"
 #include "RemSwapChain.h"
 #include "Wrappers/Data/Vertex.h"
-#include "Wrappers/RemMaterial.h"
+#include "Wrappers/VulkanMaterial.h"
 
 class RemPipeline
 {
@@ -36,7 +36,7 @@ public:
                       VkDeviceMemory& bufferMemory);
     void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
-    RemMaterial* LoadShader(const std::string& shaderName);
+    VulkanMaterial* LoadShader(const std::string& shaderName);
     uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
     void CreatePipelineLayout();
@@ -48,7 +48,7 @@ public:
 
     void CleanupBuffers();
     void Cleanup();
-    void DestroyShader(RemMaterial* shaderComponent);
+    void DestroyShader(VulkanMaterial* shaderComponent);
 
     std::vector<VkFence> m_inFlightFences;
     bool m_framebufferResized = false;
@@ -64,7 +64,7 @@ private:
 
     void CleanupOldSyncObjects();
     RemSwapChain* m_remSwapChain;
-    std::vector<RemMaterial*> m_loadedMaterials{};
+    std::vector<VulkanMaterial*> m_loadedMaterials{};
     VkDevice m_logicalDevice;
     VkPhysicalDevice m_physicalDevice;
 

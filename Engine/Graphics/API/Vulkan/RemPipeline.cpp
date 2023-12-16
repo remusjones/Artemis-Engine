@@ -57,7 +57,7 @@ void RemPipeline::Cleanup()
 
     for(auto & loadedMaterial : m_loadedMaterials)
     {
-        RemMaterial* targetMaterial = loadedMaterial;
+        VulkanMaterial* targetMaterial = loadedMaterial;
 
         targetMaterial->CleanupShaderModules(m_logicalDevice);
         delete loadedMaterial;
@@ -66,7 +66,7 @@ void RemPipeline::Cleanup()
     m_loadedMaterials.resize(0, nullptr);
 }
 
-RemMaterial* RemPipeline::LoadShader(const std::string& shaderName)
+VulkanMaterial* RemPipeline::LoadShader(const std::string& shaderName)
 {
 
     std::cout << "Creating Shader: " << shaderName << std::endl;
@@ -98,10 +98,10 @@ RemMaterial* RemPipeline::LoadShader(const std::string& shaderName)
     auto vertData = CreateShaderModule(FileManagement::GetShaderFileData(vertex));
 
     //
-    // Merge the two into a RemMaterial for easy lookup
+    // Merge the two into a VulkanMaterial for easy lookup
     //
 
-    RemMaterial* material = new RemMaterial(fragData,vertData);
+    VulkanMaterial* material = new VulkanMaterial(fragData, vertData);
 
     m_loadedMaterials.push_back(material);
 
@@ -569,7 +569,7 @@ void RemPipeline::CreateSyncObjects()
     }
 }
 
-void RemPipeline::DestroyShader(RemMaterial* shaderComponent)
+void RemPipeline::DestroyShader(VulkanMaterial* shaderComponent)
 {
     //if ( std::find(m_loadedMaterials.begin(), m_loadedMaterials.end(), shaderComponent) != m_loadedMaterials.end() )
     //{

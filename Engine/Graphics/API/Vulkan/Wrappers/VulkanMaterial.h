@@ -11,18 +11,19 @@
 #include <map>
 #include <stdexcept>
 #include "SystemStructs.h"
+#include "API/Base/Wrappers/Material.h"
 
-class RemMaterial {
+class VulkanMaterial : public Material {
 public:
     std::vector<VkPipelineShaderStageCreateInfo> m_shaderStages{};
 
     VkShaderModule  m_fragment;
     VkShaderModule  m_vertex;
 
-    RemMaterial() = default;
-    RemMaterial(VkShaderModule& frag,
-                VkShaderModule& vert,
-                const char* shaderEntryName = "main")
+    VulkanMaterial() = default;
+    VulkanMaterial(VkShaderModule& frag,
+                   VkShaderModule& vert,
+                   const char* shaderEntryName = "main")
     {
         m_fragment = frag;
         m_vertex = vert;
