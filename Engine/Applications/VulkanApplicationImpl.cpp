@@ -75,7 +75,7 @@ VulkanApplicationImpl::VulkanApplicationImpl(const char *aWindowName, int aWindo
 static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
 
     auto app = reinterpret_cast<VulkanApplicationImpl*>(glfwGetWindowUserPointer(window));
-    app->mRenderPipeline.m_framebufferResized = true;
+    app->mRenderPipeline.mFramebufferResized = true;
 
     std::cout << "Window Resized: x: " << width << " y: " << height << std::endl;
 }
@@ -337,7 +337,7 @@ bool VulkanApplicationImpl::IsDeviceSuitable(VkPhysicalDevice aPhysicalDevice)
         swapChainAdequate = !swapChainSupport.mFormats.empty() && !swapChainSupport.mPresentModes.empty();
     }
 
-    return indices.isComplete() && extensionsSupported && swapChainAdequate;
+    return indices.IsComplete() && extensionsSupported && swapChainAdequate;
 }
 
 VkSurfaceFormatKHR VulkanApplicationImpl::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
@@ -426,7 +426,7 @@ QueueFamilyIndices VulkanApplicationImpl::FindQueueFamilies(VkPhysicalDevice dev
             indices.mGraphicsFamily = i;
         }
 
-        if (indices.isComplete())
+        if (indices.IsComplete())
         {
             break;
         }

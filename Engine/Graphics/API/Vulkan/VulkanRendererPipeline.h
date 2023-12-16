@@ -1,11 +1,9 @@
 //
 // Created by Remus on 6/11/2021.
 //
+#pragma once
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-
-#ifndef INC_3DENGINE_SHADERMODULE_H
-#define INC_3DENGINE_SHADERMODULE_H
 
 #include <vector>
 #include <string>
@@ -19,73 +17,71 @@ class VulkanRendererPipeline
 {
 public:
 
-    void Initialize(VkDevice& logicalDevice,
-                    VulkanSwapChain* remSwapChain,
-                    VkPhysicalDevice& physicalDevice,
-                    VkQueue& graphicsQueue,
-                    VkQueue& presentQueue
+    void Initialize(VkDevice& aLogicalDevice,
+                    VulkanSwapChain* aSwapChain,
+                    VkPhysicalDevice& aPhysicalDevice,
+                    VkQueue& aGraphicsQueue,
+                    VkQueue& aPresentQueue
                     );
 
-    VkShaderModule CreateShaderModule(const std::vector<char>& code);
-    VkResult CreateVertexBuffer(const std::vector<Vertex>& vertices);
-
+    VkShaderModule CreateShaderModule(const std::vector<char>& aCode);
+    VulkanMaterial* LoadShader(const std::string& aShaderName);
+    VkResult CreateVertexBuffer(const std::vector<Vertex>& aVertices);
     VkResult CreateIndexBuffer();
 
-    void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties,
-                      VkBuffer& buffer,
-                      VkDeviceMemory& bufferMemory);
-    void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+    void CreateBuffer(VkDeviceSize aSize, VkBufferUsageFlags aUsage, VkMemoryPropertyFlags aProperties,
+                      VkBuffer& aBuffer,
+                      VkDeviceMemory& aBufferMemory);
 
-    VulkanMaterial* LoadShader(const std::string& shaderName);
-    uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+    void CopyBuffer(VkBuffer aSrcBuffer, VkBuffer aDstBuffer, VkDeviceSize aSize);
 
+    uint32_t FindMemoryType(uint32_t aTypeFilter, VkMemoryPropertyFlags aProperties);
     void CreatePipelineLayout();
-    void CreateCommandPool(QueueFamilyIndices& queueFamilyIndices);
+    void CreateCommandPool(const QueueFamilyIndices& aQueueFamilyIndices);
     void CreateCommandBuffers();
-    void RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+    void RecordCommandBuffer(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex);
     void DrawFrame();
     void CreateSyncObjects();
-
     void CleanupBuffers();
     void Cleanup();
-    void DestroyShader(VulkanMaterial* shaderComponent);
 
-    std::vector<VkFence> m_inFlightFences;
-    bool m_framebufferResized = false;
-    std::vector<VkFence> m_imagesInFlight;
+private:
+    void CleanupOldSyncObjects();
 
+public:
+    std::vector<VkFence> mInFlightFences;
+    bool mFramebufferResized = false;
+    std::vector<VkFence> mImagesInFlight;
 
     // TODO: House the vert buffer somewhere else
-    VkBuffer m_vertexBuffer;
-    VkDeviceMemory m_vertexBufferMemory;
-    VkBuffer m_indexBuffer;
-    VkDeviceMemory indexBufferMemory;
+    VkBuffer mVertexBuffer;
+    VkDeviceMemory mVertexBufferMemory;
+    VkBuffer mIndexBuffer;
+    VkDeviceMemory mIndexBufferMemory;
+    VulkanSwapChain* mSwapChain;
+    std::vector<VulkanMaterial*> mLoadedMaterials{};
+
 private:
-
-    void CleanupOldSyncObjects();
-    VulkanSwapChain* m_remSwapChain;
-    std::vector<VulkanMaterial*> m_loadedMaterials{};
-    VkDevice m_logicalDevice;
-    VkPhysicalDevice m_physicalDevice;
-
-    VkPipelineLayout m_pipelineLayout;
-    VkPipeline m_graphicsPipeline;
-    VkCommandPool m_commandPool;
-    std::vector<VkCommandBuffer> m_commandBuffers;
-    bool m_hasCreatedPipeline = false;
-
-    VkQueue m_graphicsQueue;
-    VkQueue m_presentQueue;
-
-    std::vector<VkSemaphore>  m_imageAvailableSemaphores;
-    std::vector<VkSemaphore>  m_renderFinishedSemaphores;
-
-    std::vector<VkFence> m_inFlightFencesToDestroy;
-    std::vector<VkSemaphore>  m_imageAvailableSemaphoresToDestroy;
-    std::vector<VkSemaphore>  m_renderFinishedSemaphoresToDestroy;
+    // Cached Variables for layouts
+    VkDevice mLogicalDevice;
+    VkPhysicalDevice mPhysicalDevice;
+    VkPipelineLayout mPipelineLayout;
+    VkPipeline mGraphicsPipeline;
+    VkCommandPool mCommandPool;
 
 
-    size_t m_currentFrame = 0;
+    VkQueue mGraphicsQueue;
+    VkQueue mPresentQueue;
+
+    std::vector<VkCommandBuffer> mCommandBuffers;
+    // Semaphores and Fences
+    std::vector<VkSemaphore>  mImageAvailableSemaphores;
+    std::vector<VkSemaphore>  mRenderFinishedSemaphores;
+    std::vector<VkFence> mInFlightFencesToDestroy;
+    std::vector<VkSemaphore>  mImageAvailableSemaphoresToDestroy;
+    std::vector<VkSemaphore>  mRenderFinishedSemaphoresToDestroy;
+
+    size_t mCurrentFrame = 0;
 
     //TODO: move these into a specific object
     const std::vector<uint16_t> indices = {
@@ -95,6 +91,3 @@ private:
     const int MAX_FRAMES_IN_FLIGHT = 2;
 
 };
-
-
-#endif //INC_3DENGINE_SHADERMODULE_H

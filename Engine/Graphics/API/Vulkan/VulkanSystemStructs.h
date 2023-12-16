@@ -1,18 +1,18 @@
 //
 // Created by Remus on 7/11/2021.
 //
-
-#ifndef INC_3DENGINE_VULKANSYSTEMSTRUCTS_H
-#define INC_3DENGINE_VULKANSYSTEMSTRUCTS_H
-
+#pragma once
 #include <optional>
+#include <cstdint>
+#include <vulkan/vulkan_core.h>
+#include <vector>
 
 struct QueueFamilyIndices
 {
     std::optional<uint32_t> mGraphicsFamily;
     std::optional<uint32_t> mPresentFamily;
 
-    bool isComplete()
+    bool IsComplete() const
     {
         return mGraphicsFamily.has_value() && mPresentFamily.has_value();
     }
@@ -24,6 +24,3 @@ struct SwapChainSupportDetails
     std::vector<VkSurfaceFormatKHR> mFormats;
     std::vector<VkPresentModeKHR> mPresentModes;
 };
-
-#endif //INC_3DENGINE_VULKANSYSTEMSTRUCTS_H
-
