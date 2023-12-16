@@ -1,4 +1,4 @@
-# VulkanProject
+# Engine
 
 ## Setup using CLion (Windows)
 
