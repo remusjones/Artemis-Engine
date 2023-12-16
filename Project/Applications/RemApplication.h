@@ -22,7 +22,7 @@ public:
     VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
     VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
     SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
-    QueueFamilyIndices  FindQueueFamilies(VkPhysicalDevice device);
+    QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
 
     RemPipeline m_renderPipeline;
     RemSwapChain* m_swapChain;

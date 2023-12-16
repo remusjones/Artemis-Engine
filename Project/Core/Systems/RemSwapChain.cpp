@@ -42,6 +42,7 @@ void RemSwapChain::CreateSwapChain()
     VkSwapchainCreateInfoKHR createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
     createInfo.surface = m_surface;
+
     createInfo.minImageCount = imageCount;
     createInfo.imageFormat = surfaceFormat.format;
     createInfo.imageColorSpace = surfaceFormat.colorSpace;
@@ -82,7 +83,7 @@ void RemSwapChain::CreateSwapChain()
 
 void RemSwapChain::CreateFrameBuffers()
 {
-    std::cout << "Creating Frame Buffers" << std::endl;
+    std::cout << "\tCreating Frame Buffers" << std::endl;
     m_swapChainFrameBuffers.resize(m_swapChainImageViews.size());
     for (size_t i = 0; i < m_swapChainImageViews.size(); i++)
     {

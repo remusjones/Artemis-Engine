@@ -52,6 +52,7 @@ public:
         if (m_fragment != nullptr)
             vkDestroyShaderModule(device, m_fragment, nullptr);
     }
+
 };
 
 

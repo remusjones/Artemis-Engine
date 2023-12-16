@@ -7,8 +7,8 @@
 #include <cstring>
 #include <iostream>
 #include <set>
-#include <cstdint> // Necessary for UINT32_MAX
-#include <algorithm> // Necessary for std::min/std::max
+#include <cstdint>
+#include <algorithm>
 #include <RemSwapChain.h>
 
 void RemApplication::Run()
@@ -171,16 +171,20 @@ void RemApplication::CreateGraphicsPipeline()
     triangleRenderer.m_material = m_renderPipeline.LoadShader("triangleInput"); // Create Material
 
     const std::vector<Vertex> vertices = {
-            {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-            {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-            {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+            {{-0.5f, -0.5f}, {.0f, 0.0f, 1.0f}},
+            {{0.5f, -0.5f}, {0.0f, 1.0f, 1.0f}},
+            {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+            {{-0.5f, 0.5f}, {1.0f, 0.5f, 1.0f}}
     };
+
 
     m_renderPipeline.CreatePipelineLayout();
     auto queueFamilies = FindQueueFamilies(m_physicalDevice);
     m_renderPipeline.CreateCommandPool(queueFamilies);
-    m_renderPipeline.CreateVertexBuffer(vertices, m_renderPipeline.m_vertexBuffer, m_renderPipeline.m_vertexBufferMemory);
-    m_renderPipeline.CreateCommandBuffer();
+    m_renderPipeline.CreateVertexBuffer(vertices);
+    m_renderPipeline.CreateIndexBuffer();
+
+
     m_renderPipeline.CreateSyncObjects();
 }
 

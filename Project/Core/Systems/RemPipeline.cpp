@@ -23,9 +23,7 @@ void RemPipeline::Initialize(VkDevice& logicalDevice,
     m_physicalDevice = physicalDevice;
 
 
-    //
     // Configuration info population
-    //
     VkPhysicalDeviceProperties deviceProperties;
     vkGetPhysicalDeviceProperties(m_physicalDevice, &deviceProperties);
 }
@@ -65,7 +63,7 @@ void RemPipeline::Cleanup()
         targetMaterial->CleanupShaderModules(m_logicalDevice);
         delete loadedMaterial;
     }
-    CleanupVertexBuffer();
+    CleanupBuffers();
     m_loadedMaterials.resize(0, nullptr);
 }
 
@@ -112,7 +110,6 @@ RemMaterial* RemPipeline::LoadShader(const std::string& shaderName)
     return material;
 }
 
-
 VkShaderModule RemPipeline::CreateShaderModule(const std::vector<char> &code)
 {
     VkShaderModuleCreateInfo createInfo{};
@@ -129,17 +126,15 @@ VkShaderModule RemPipeline::CreateShaderModule(const std::vector<char> &code)
 
 }
 
-VkResult RemPipeline::CreateVertexBuffer(const std::vector<Vertex>& vertices,
-                                         VkBuffer& vertexBuffer,
-                                         VkDeviceMemory& allocatedMemory)
+VkResult RemPipeline::CreateVertexBuffer(const std::vector<Vertex>& vertices)
 {
 
-    std::cout << "Creating vertex buffer" << std::endl;
+    std::cout << "Creating vertex buffer\n";
     VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
 
-    std::cout << "\tCreating vertex staging buffer" << std::endl;
+    std::cout << "\tCreating vertex staging buffer\n";
     CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
     VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
@@ -148,12 +143,40 @@ VkResult RemPipeline::CreateVertexBuffer(const std::vector<Vertex>& vertices,
     memcpy(data, vertices.data(), (size_t) bufferSize);
     vkUnmapMemory(m_logicalDevice, stagingBufferMemory);
 
-    std::cout << "\tAllocating vertex buffer" << std::endl;
+    std::cout << "\tAllocating vertex buffer\n";
     CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, allocatedMemory);
+                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_vertexBuffer, m_vertexBufferMemory);
 
-    CopyBuffer(stagingBuffer, vertexBuffer, bufferSize);
+    CopyBuffer(stagingBuffer, m_vertexBuffer, bufferSize);
 
+    std::cout <<"\tReleasing Copy Buffers" << std::endl;
+    vkDestroyBuffer(m_logicalDevice, stagingBuffer, nullptr);
+    vkFreeMemory(m_logicalDevice, stagingBufferMemory, nullptr);
+
+    return VK_SUCCESS;
+}
+
+VkResult RemPipeline::CreateIndexBuffer()
+{
+    std::cout << "Creating index buffer\n";
+    VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+    std::cout << "\tCreating index staging buffer\n";
+    CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+    VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+    void* data;
+    vkMapMemory(m_logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+    memcpy(data, indices.data(), (size_t) bufferSize);
+    vkUnmapMemory(m_logicalDevice, stagingBufferMemory);
+    std::cout << "\tAllocating index buffer\n";
+    CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_indexBuffer, indexBufferMemory);
+
+    CopyBuffer(stagingBuffer, m_indexBuffer, bufferSize);
+    std::cout <<"\tReleasing Copy Buffers" << std::endl;
     vkDestroyBuffer(m_logicalDevice, stagingBuffer, nullptr);
     vkFreeMemory(m_logicalDevice, stagingBufferMemory, nullptr);
 
@@ -161,7 +184,7 @@ VkResult RemPipeline::CreateVertexBuffer(const std::vector<Vertex>& vertices,
 }
 
 void RemPipeline::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
-                               VkMemoryPropertyFlags properties, VkBuffer&buffer, VkDeviceMemory &bufferMemory)
+                               VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
 {
     VkBufferCreateInfo bufferInfo{};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -207,8 +230,6 @@ void RemPipeline::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSiz
     vkBeginCommandBuffer(commandBuffer, &beginInfo);
 
     VkBufferCopy copyRegion{};
-    copyRegion.srcOffset = 0; // Optional
-    copyRegion.dstOffset = 0; // Optional
     copyRegion.size = size;
     vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 
@@ -228,7 +249,7 @@ void RemPipeline::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSiz
 
 void RemPipeline::CreatePipelineLayout()
 {
-    std::cout << "Creating Graphics Pipeline Layout" << std::endl;
+    std::cout << "Creating Graphics Pipeline Layout\n";
 
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -317,15 +338,24 @@ void RemPipeline::CreatePipelineLayout()
     colorBlending.blendConstants[2] = 0.0f; // Optional
     colorBlending.blendConstants[3] = 0.0f; // Optional
 
-    VkDynamicState dynamicStates[] = {
+    std::vector<VkPipelineShaderStageCreateInfo> shaderStages{};
+    for (auto & m_loadedMaterial : m_loadedMaterials)
+    {
+        for(const auto & m_shaderStage : m_loadedMaterial->m_shaderStages)
+        {
+            shaderStages.push_back(m_shaderStage);
+        }
+    }
+
+    std::vector<VkDynamicState> dynamicStates = {
             VK_DYNAMIC_STATE_VIEWPORT,
-            VK_DYNAMIC_STATE_LINE_WIDTH
+            VK_DYNAMIC_STATE_SCISSOR
     };
 
     VkPipelineDynamicStateCreateInfo dynamicState{};
     dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
     dynamicState.dynamicStateCount = 2;
-    dynamicState.pDynamicStates = dynamicStates;
+    dynamicState.pDynamicStates = dynamicStates.data();
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -339,68 +369,49 @@ void RemPipeline::CreatePipelineLayout()
         throw std::runtime_error("failed to create pipeline layout!");
     }
 
-    std::cout << "Creating Graphics Pipeline" << std::endl;
+    std::cout << "\tCreating Graphics Pipeline\n";
     VkGraphicsPipelineCreateInfo pipelineInfo{};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
     pipelineInfo.stageCount = 2;
-
-
-    std::vector<VkPipelineShaderStageCreateInfo> shaderStages{};
-    for (int i = 0; i < m_loadedMaterials.size(); i++)
-    {
-        for(int j = 0; j < m_loadedMaterials[i]->m_shaderStages.size(); j++)
-        {
-            shaderStages.push_back(m_loadedMaterials[i]->m_shaderStages[j]);
-        }
-    }
-
     pipelineInfo.pStages = shaderStages.data();
-
     pipelineInfo.pVertexInputState = &vertexInputInfo;
     pipelineInfo.pInputAssemblyState = &inputAssembly;
     pipelineInfo.pViewportState = &viewportState;
     pipelineInfo.pRasterizationState = &rasterizer;
     pipelineInfo.pMultisampleState = &multisampling;
-    pipelineInfo.pDepthStencilState = nullptr; // Optional
     pipelineInfo.pColorBlendState = &colorBlending;
-    pipelineInfo.pDynamicState = nullptr; // Optional
-
+    pipelineInfo.pDynamicState = &dynamicState;
     pipelineInfo.layout = m_pipelineLayout;
     pipelineInfo.renderPass = m_remSwapChain->m_renderPass;
     pipelineInfo.subpass = 0;
-
-    pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
-    pipelineInfo.basePipelineIndex = -1; // Optional
-
+    pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
     if (vkCreateGraphicsPipelines(m_logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_graphicsPipeline) != VK_SUCCESS) {
         throw std::runtime_error("failed to create graphics pipeline!");
     }
 
     m_remSwapChain->CreateFrameBuffers();
-
     m_hasCreatedPipeline = true;
 }
+
 void RemPipeline::CreateCommandPool(QueueFamilyIndices& queueFamilyIndices)
 {
     std::cout << "Creating Command Pool" << std::endl;
 
     VkCommandPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     poolInfo.queueFamilyIndex = queueFamilyIndices.m_graphicsFamily.value();
-    poolInfo.flags = 0; // Optional
 
     if (vkCreateCommandPool(m_logicalDevice, &poolInfo, nullptr, &m_commandPool) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create command pool!");
+        throw std::runtime_error("failed to create command pool");
     }
-
-
-
+    CreateCommandBuffers();
 }
 
-void RemPipeline::CreateCommandBuffer()
+void RemPipeline::CreateCommandBuffers()
 {
-    std::cout << "Creating Command Buffer" << std::endl;
-    m_commandBuffers.resize(m_remSwapChain->m_swapChainFrameBuffers.size());
+    std::cout << "\tCreating Command Buffers" << std::endl;
+    m_commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
 
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -409,60 +420,12 @@ void RemPipeline::CreateCommandBuffer()
     allocInfo.commandBufferCount = (uint32_t) m_commandBuffers.size();
 
     if (vkAllocateCommandBuffers(m_logicalDevice, &allocInfo, m_commandBuffers.data()) != VK_SUCCESS) {
-        throw std::runtime_error("failed to allocate command buffers!");
+        throw std::runtime_error("failed to allocate command buffers");
     }
-
-    for (size_t i = 0; i < m_commandBuffers.size(); i++) {
-
-        VkCommandBuffer commandBuffer = m_commandBuffers[i];
-
-        VkCommandBufferBeginInfo beginInfo{};
-        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        beginInfo.flags = 0; // Optional
-        beginInfo.pInheritanceInfo = nullptr; // Optional
-
-        if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
-            throw std::runtime_error("failed to begin recording command buffer!");
-        }
-
-        VkRenderPassBeginInfo renderPassInfo{};
-        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = m_remSwapChain->m_renderPass;
-        renderPassInfo.framebuffer = m_remSwapChain->m_swapChainFrameBuffers[i];
-        renderPassInfo.renderArea.offset = {0, 0};
-        renderPassInfo.renderArea.extent = m_remSwapChain->m_swapChainExtent;
-
-        VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
-        renderPassInfo.clearValueCount = 1;
-        renderPassInfo.pClearValues = &clearColor;
-
-        VkSubpassDependency dependency{};
-        dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-        dependency.dstSubpass = 0;
-        dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        dependency.srcAccessMask = 0;
-        dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-        vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
-
-        VkBuffer vertexBuffers[] = {m_vertexBuffer};
-        VkDeviceSize offsets[] = {0};
-        vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-
-        vkCmdDraw(commandBuffer, 3, 1, 0, 0);
-
-        vkCmdEndRenderPass(commandBuffer);
-        if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
-            throw std::runtime_error("failed to record command buffer!");
-        }
-
-    }
-
 }
 
 bool semaphoresNeedToBeRecreated = false;
+
 void RemPipeline::DrawFrame()
 {
     vkWaitForFences(m_logicalDevice, 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
@@ -484,7 +447,7 @@ void RemPipeline::DrawFrame()
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_framebufferResized) {
         m_remSwapChain->RecreateSwapChain();
 
-        CreateCommandBuffer();
+        CreateCommandBuffers();
 
         // Sync objects aren't atomic, so we have to regenerate them at the end of the current frame
         semaphoresNeedToBeRecreated = true;
@@ -497,12 +460,18 @@ void RemPipeline::DrawFrame()
     // Only reset the fence if we are submitting work
     vkResetFences(m_logicalDevice, 1, &m_inFlightFences[m_currentFrame]);
 
+    vkResetCommandBuffer(m_commandBuffers[m_currentFrame], /*VkCommandBufferResetFlagBits*/ 0);
+    // VUID-vkCmdDrawIndexed-None-08608
+    RecordCommandBuffer(m_commandBuffers[m_currentFrame], imageIndex);
+
     // Check if a previous frame is using this image (i.e. there is its fence to wait on)
     if (m_imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
         vkWaitForFences(m_logicalDevice, 1, &m_imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
     }
     // Mark the image as now being in use by this frame
     m_imagesInFlight[imageIndex] = m_inFlightFences[m_currentFrame];
+
+
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
@@ -513,14 +482,12 @@ void RemPipeline::DrawFrame()
     submitInfo.pWaitDstStageMask = waitStages;
 
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &m_commandBuffers[imageIndex];
-
+    submitInfo.pCommandBuffers = &m_commandBuffers[m_currentFrame];
 
     VkSemaphore signalSemaphores[] = {m_renderFinishedSemaphores[m_currentFrame]};
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
-    vkResetFences(m_logicalDevice, 1, &m_inFlightFences[m_currentFrame]);
     if (vkQueueSubmit(m_graphicsQueue, 1, &submitInfo, m_inFlightFences[m_currentFrame]) != VK_SUCCESS) {
         throw std::runtime_error("failed to submit draw command buffer!");
     }
@@ -535,7 +502,6 @@ void RemPipeline::DrawFrame()
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = swapChains;
     presentInfo.pImageIndices = &imageIndex;
-    presentInfo.pResults = nullptr; // Optional
 
     result = vkQueuePresentKHR(m_presentQueue, &presentInfo);
 
@@ -555,6 +521,7 @@ void RemPipeline::DrawFrame()
 
 
 }
+
 void RemPipeline::CleanupOldSyncObjects()
 {
     for (size_t i = 0; i < m_renderFinishedSemaphoresToDestroy.size(); i++) {
@@ -575,10 +542,6 @@ void RemPipeline::CleanupOldSyncObjects()
 
 void RemPipeline::CreateSyncObjects()
 {
-
-    //
-    // Add out of date fences for destruction when gpu free releases frame
-    //
     m_inFlightFencesToDestroy.insert(m_inFlightFencesToDestroy.end(), std::begin(m_inFlightFences), std::end(m_inFlightFences));     // C++11
     m_imageAvailableSemaphoresToDestroy.insert(m_imageAvailableSemaphoresToDestroy.end(), std::begin(m_imageAvailableSemaphores), std::end(m_imageAvailableSemaphores));     // C++11
     m_renderFinishedSemaphoresToDestroy.insert(m_renderFinishedSemaphoresToDestroy.end(), std::begin(m_renderFinishedSemaphores), std::end(m_renderFinishedSemaphores));     // C++11
@@ -640,12 +603,69 @@ uint32_t RemPipeline::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags 
     throw std::runtime_error("failed to find suitable memory type!");
 }
 
-void RemPipeline::CleanupVertexBuffer() {
+void RemPipeline::CleanupBuffers() {
     if (m_vertexBuffer && m_vertexBufferMemory) {
         vkDestroyBuffer(m_logicalDevice, m_vertexBuffer, nullptr);
         vkFreeMemory(m_logicalDevice, m_vertexBufferMemory, nullptr);
     }
+    if (m_indexBuffer && indexBufferMemory) {
+        vkDestroyBuffer(m_logicalDevice, m_indexBuffer, nullptr);
+        vkFreeMemory(m_logicalDevice, indexBufferMemory, nullptr);
+    }
 }
+
+void RemPipeline::RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+    if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
+        throw std::runtime_error("failed to begin recording command buffer!");
+    }
+
+    VkRenderPassBeginInfo renderPassInfo{};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassInfo.renderPass = m_remSwapChain->m_renderPass;
+    renderPassInfo.framebuffer =  m_remSwapChain->m_swapChainFrameBuffers[imageIndex];
+    renderPassInfo.renderArea.offset = {0, 0};
+    renderPassInfo.renderArea.extent = m_remSwapChain->m_swapChainExtent;
+
+    VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
+    renderPassInfo.clearValueCount = 1;
+    renderPassInfo.pClearValues = &clearColor;
+
+    vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
+
+    VkViewport viewport{};
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.width = (float) m_remSwapChain->m_swapChainExtent.width;
+    viewport.height = (float) m_remSwapChain->m_swapChainExtent.height;
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+    VkRect2D scissor{};
+    scissor.offset = {0, 0};
+    scissor.extent = m_remSwapChain->m_swapChainExtent;
+    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+    VkBuffer vertexBuffers[] = {m_vertexBuffer};
+    VkDeviceSize offsets[] = {0};
+    vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+
+    vkCmdBindIndexBuffer(commandBuffer, m_indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+
+    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+
+    vkCmdEndRenderPass(commandBuffer);
+
+    if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
+        throw std::runtime_error("failed to record command buffer!");
+    }
+}
+
 
 
 

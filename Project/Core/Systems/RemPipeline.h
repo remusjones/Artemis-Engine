@@ -26,9 +26,9 @@ public:
                     );
 
     VkShaderModule CreateShaderModule(const std::vector<char>& code);
-    VkResult CreateVertexBuffer(const std::vector<Vertex>& vertices,
-                                VkBuffer& vertexBuffer,
-                                VkDeviceMemory& allocatedMemory);
+    VkResult CreateVertexBuffer(const std::vector<Vertex>& vertices);
+
+    VkResult CreateIndexBuffer();
 
     void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties,
                       VkBuffer& buffer,
@@ -40,11 +40,12 @@ public:
 
     void CreatePipelineLayout();
     void CreateCommandPool(QueueFamilyIndices& queueFamilyIndices);
-    void CreateCommandBuffer();
+    void CreateCommandBuffers();
+    void RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
     void DrawFrame();
     void CreateSyncObjects();
 
-    void CleanupVertexBuffer();
+    void CleanupBuffers();
     void Cleanup();
     void DestroyShader(RemMaterial* shaderComponent);
 
@@ -56,6 +57,8 @@ public:
     // TODO: House the vert buffer somewhere else
     VkBuffer m_vertexBuffer;
     VkDeviceMemory m_vertexBufferMemory;
+    VkBuffer m_indexBuffer;
+    VkDeviceMemory indexBufferMemory;
 private:
 
     void CleanupOldSyncObjects();
@@ -67,7 +70,7 @@ private:
     VkPipelineLayout m_pipelineLayout;
     VkPipeline m_graphicsPipeline;
     VkCommandPool m_commandPool;
-    std::vector<VkCommandBuffer> m_commandBuffers{};
+    std::vector<VkCommandBuffer> m_commandBuffers;
     bool m_hasCreatedPipeline = false;
 
     VkQueue m_graphicsQueue;
@@ -84,7 +87,10 @@ private:
 
     size_t m_currentFrame = 0;
 
-
+    //TODO: move these into a specific object
+    const std::vector<uint16_t> indices = {
+            0, 1, 2, 2, 3, 0
+    };
 
     const int MAX_FRAMES_IN_FLIGHT = 2;
 
