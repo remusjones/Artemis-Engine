@@ -26,31 +26,39 @@ public:
                     );
 
     VkShaderModule CreateShaderModule(const std::vector<char>& code);
-    VkBuffer CreateVertexBuffer(const std::vector<Vertex>& verticies);
+    VkResult CreateVertexBuffer(const std::vector<Vertex>& vertices,
+                                VkBuffer& vertexBuffer,
+                                VkDeviceMemory& allocatedMemory);
 
-    VkResult LoadShader(const std::string& shaderName, RemMaterial&
-    shaderComponent);
+    RemMaterial* LoadShader(const std::string& shaderName);
+    uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
-    VkResult VertexBuffer(const RemMaterial& shaderComponent,
-                          const std::vector<Vertex>& verticies);
     void CreatePipelineLayout();
     void CreateCommandPool(QueueFamilyIndices& queueFamilyIndices);
     void CreateCommandBuffer();
     void DrawFrame();
     void CreateSyncObjects();
 
+    void CleanupVertexBuffer();
     void Cleanup();
     void DestroyShader(RemMaterial* shaderComponent);
 
     std::vector<VkFence> m_inFlightFences;
     bool m_framebufferResized = false;
     std::vector<VkFence> m_imagesInFlight;
-private:
-    void CleanupOldSyncObjects();
 
+
+    // TODO: House the vert buffer somewhere else
+    VkBuffer m_vertexBuffer;
+    VkDeviceMemory m_vertexBufferMemory;
+private:
+
+    void CleanupOldSyncObjects();
     RemSwapChain* m_remSwapChain;
-    std::vector<RemMaterial*> m_loadedShaders{};
+    std::vector<RemMaterial*> m_loadedMaterials{};
     VkDevice m_logicalDevice;
+    VkPhysicalDevice m_physicalDevice;
+
     VkPipelineLayout m_pipelineLayout;
     VkPipeline m_graphicsPipeline;
     VkCommandPool m_commandPool;
@@ -70,6 +78,7 @@ private:
 
 
     size_t m_currentFrame = 0;
+
 
 
     const int MAX_FRAMES_IN_FLIGHT = 2;

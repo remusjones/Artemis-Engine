@@ -20,14 +20,14 @@ void RemPipeline::Initialize(VkDevice& logicalDevice,
     m_remSwapChain = remSwapChain;
     m_graphicsQueue = graphicsQueue;
     m_presentQueue = presentQueue;
-
+    m_physicalDevice = physicalDevice;
 
 
     //
     // Configuration info population
     //
     VkPhysicalDeviceProperties deviceProperties;
-    vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
+    vkGetPhysicalDeviceProperties(m_physicalDevice, &deviceProperties);
 }
 
 void RemPipeline::Cleanup()
@@ -58,25 +58,21 @@ void RemPipeline::Cleanup()
     vkDestroyRenderPass(m_logicalDevice, m_remSwapChain->m_renderPass, nullptr);
     // release all loaded shaders
 
-    for(int i = 0; i < m_loadedShaders.size(); i++)
+    for(auto & loadedMaterial : m_loadedMaterials)
     {
-        if (m_loadedShaders[i]->m_fragment != nullptr)
-            vkDestroyShaderModule(m_logicalDevice, m_loadedShaders[i]->m_fragment, nullptr);
-        if (m_loadedShaders[i]->m_vertex != nullptr)
-            vkDestroyShaderModule(m_logicalDevice, m_loadedShaders[i]->m_vertex, nullptr);
+        RemMaterial* targetMaterial = loadedMaterial;
 
-        delete m_loadedShaders[i];
+        targetMaterial->CleanupShaderModules(m_logicalDevice);
+        delete loadedMaterial;
     }
-
-    m_loadedShaders.resize(0,nullptr);
+    CleanupVertexBuffer();
+    m_loadedMaterials.resize(0, nullptr);
 }
 
-VkResult RemPipeline::LoadShader(const std::string& shaderName,
-                                 RemMaterial& shaderComponent)
+RemMaterial* RemPipeline::LoadShader(const std::string& shaderName)
 {
 
     std::cout << "Creating Shader: " << shaderName << std::endl;
-
 
     //
     // Attempts to automatically load vert + frag with req suffixes
@@ -108,13 +104,12 @@ VkResult RemPipeline::LoadShader(const std::string& shaderName,
     // Merge the two into a RemMaterial for easy lookup
     //
 
-    RemMaterial* createdShader = new RemMaterial(fragData,
-                                                 vertData);
+    RemMaterial* material = new RemMaterial(fragData,vertData);
 
-    m_loadedShaders.push_back(createdShader);
-    shaderComponent = *createdShader;
+    m_loadedMaterials.push_back(material);
 
-    return VK_SUCCESS;
+
+    return material;
 }
 
 
@@ -134,22 +129,53 @@ VkShaderModule RemPipeline::CreateShaderModule(const std::vector<char> &code)
 
 }
 
-VkBuffer RemPipeline::CreateVertexBuffer(const std::vector<Vertex>& verticies)
+VkResult RemPipeline::CreateVertexBuffer(const std::vector<Vertex>& vertices,
+                                         VkBuffer& vertexBuffer,
+                                         VkDeviceMemory& allocatedMemory)
 {
+
+    std::cout << "Creating Vertex Buffer" << std::endl;
     VkBufferCreateInfo bufferInfo{};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = sizeof(verticies[0]) * verticies.size();
+    bufferInfo.size = sizeof(vertices[0]) * vertices.size();
     bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    VkBuffer buffer;
 
-    if (vkCreateBuffer(m_logicalDevice, &bufferInfo, nullptr, &buffer) !=
+    if (vkCreateBuffer(m_logicalDevice, &bufferInfo, nullptr, &vertexBuffer) !=
         VK_SUCCESS) {
         throw std::runtime_error("failed to create vertex buffer!");
     }
 
-    return buffer;
+
+    std::cout << "\tAlloc Vertex Buffer Memory" << std::endl;
+    VkMemoryRequirements memRequirements;
+    vkGetBufferMemoryRequirements(m_logicalDevice, vertexBuffer, &memRequirements);
+    VkMemoryAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = memRequirements.size;
+    allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+    VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+    if (vkAllocateMemory(m_logicalDevice, &allocInfo, nullptr, &allocatedMemory) != VK_SUCCESS) {
+        throw std::runtime_error("failed to allocate vertex buffer memory!");
+    }
+
+    std::cout << "\tBinding Vertex Buffer Memory" << std::endl;
+    if (vkBindBufferMemory(m_logicalDevice, vertexBuffer, allocatedMemory, 0) != VK_SUCCESS){
+
+        throw std::runtime_error("failed to bind vertex buffer memory!");
+    }
+
+    void* data;
+    if (vkMapMemory(m_logicalDevice, allocatedMemory, 0, bufferInfo.size, 0, &data) != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to map vertex buffer memory!");
+    }
+    memcpy(data, vertices.data(), (size_t) bufferInfo.size);
+    vkUnmapMemory(m_logicalDevice, allocatedMemory);
+
+    return VK_SUCCESS;
 }
 
 void RemPipeline::CreatePipelineLayout()
@@ -161,6 +187,7 @@ void RemPipeline::CreatePipelineLayout()
     auto bindingDescription = Vertex::GetBindingDescription();
     auto attributeDescriptions = Vertex::GetAttributeDescriptions();
 
+    // Vertex Input
     vertexInputInfo.vertexBindingDescriptionCount = 1;
     vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
     vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
@@ -271,11 +298,11 @@ void RemPipeline::CreatePipelineLayout()
 
 
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages{};
-    for (int i = 0; i < m_loadedShaders.size(); i++)
+    for (int i = 0; i < m_loadedMaterials.size(); i++)
     {
-        for(int j = 0; j < m_loadedShaders[i]->m_shaderStages.size(); j++)
+        for(int j = 0; j < m_loadedMaterials[i]->m_shaderStages.size(); j++)
         {
-            shaderStages.push_back(m_loadedShaders[i]->m_shaderStages[j]);
+            shaderStages.push_back(m_loadedMaterials[i]->m_shaderStages[j]);
         }
     }
 
@@ -339,12 +366,15 @@ void RemPipeline::CreateCommandBuffer()
     }
 
     for (size_t i = 0; i < m_commandBuffers.size(); i++) {
+
+        VkCommandBuffer commandBuffer = m_commandBuffers[i];
+
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         beginInfo.flags = 0; // Optional
         beginInfo.pInheritanceInfo = nullptr; // Optional
 
-        if (vkBeginCommandBuffer(m_commandBuffers[i], &beginInfo) != VK_SUCCESS) {
+        if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
             throw std::runtime_error("failed to begin recording command buffer!");
         }
 
@@ -367,11 +397,17 @@ void RemPipeline::CreateCommandBuffer()
         dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
         dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-        vkCmdBeginRenderPass(m_commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-        vkCmdBindPipeline(m_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
-        vkCmdDraw(m_commandBuffers[i], 3, 1, 0, 0);
-        vkCmdEndRenderPass(m_commandBuffers[i]);
-        if (vkEndCommandBuffer(m_commandBuffers[i]) != VK_SUCCESS) {
+        vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
+
+        VkBuffer vertexBuffers[] = {m_vertexBuffer};
+        VkDeviceSize offsets[] = {0};
+        vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+
+        vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+
+        vkCmdEndRenderPass(commandBuffer);
+        if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
             throw std::runtime_error("failed to record command buffer!");
         }
 
@@ -530,9 +566,9 @@ void RemPipeline::CreateSyncObjects()
 
 void RemPipeline::DestroyShader(RemMaterial* shaderComponent)
 {
-    //if ( std::find(m_loadedShaders.begin(), m_loadedShaders.end(), shaderComponent) != m_loadedShaders.end() )
+    //if ( std::find(m_loadedMaterials.begin(), m_loadedMaterials.end(), shaderComponent) != m_loadedMaterials.end() )
     //{
-    //    std::remove(m_loadedShaders.begin(), m_loadedShaders.end(), shaderComponent);
+    //    std::remove(m_loadedMaterials.begin(), m_loadedMaterials.end(), shaderComponent);
 //
     //    if (shaderComponent->m_fragment != nullptr)
     //        vkDestroyShaderModule(m_logicalDevice, shaderComponent->m_fragment, nullptr);
@@ -540,7 +576,7 @@ void RemPipeline::DestroyShader(RemMaterial* shaderComponent)
     //        vkDestroyShaderModule(m_logicalDevice, shaderComponent->m_vertex, nullptr);
 //
     //    delete shaderComponent;
-    //    m_loadedShaders.shrink_to_fit();
+    //    m_loadedMaterials.shrink_to_fit();
 //
     //}else
     //{
@@ -548,5 +584,23 @@ void RemPipeline::DestroyShader(RemMaterial* shaderComponent)
     //}
 }
 
+uint32_t RemPipeline::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
+{
+    VkPhysicalDeviceMemoryProperties memProperties;
+    vkGetPhysicalDeviceMemoryProperties(m_physicalDevice, &memProperties);
 
+    for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+        if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+            return i;
+        }
+    }
+    throw std::runtime_error("failed to find suitable memory type!");
+}
+
+void RemPipeline::CleanupVertexBuffer() {
+    if (m_vertexBuffer && m_vertexBufferMemory) {
+        vkDestroyBuffer(m_logicalDevice, m_vertexBuffer, nullptr);
+        vkFreeMemory(m_logicalDevice, m_vertexBufferMemory, nullptr);
+    }
+}
 
