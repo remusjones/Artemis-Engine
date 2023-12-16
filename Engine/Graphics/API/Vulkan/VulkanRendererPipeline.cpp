@@ -52,7 +52,7 @@ void VulkanRendererPipeline::Cleanup()
     {
         throw std::runtime_error("Attempted to Deconstruct Render Pipeline, but there was none to deconstruct");
     }
-    vkDestroyRenderPass(m_logicalDevice, m_remSwapChain->m_renderPass, nullptr);
+    vkDestroyRenderPass(m_logicalDevice, m_remSwapChain->mRenderPass, nullptr);
     // release all loaded shaders
 
     for(auto & loadedMaterial : m_loadedMaterials)
@@ -270,14 +270,14 @@ void VulkanRendererPipeline::CreatePipelineLayout()
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
-    viewport.width = (float) m_remSwapChain->m_swapChainExtent.width;
-    viewport.height = (float) m_remSwapChain->m_swapChainExtent.height;
+    viewport.width = (float) m_remSwapChain->mSwapChainExtent.width;
+    viewport.height = (float) m_remSwapChain->mSwapChainExtent.height;
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
 
     VkRect2D scissor{};
     scissor.offset = {0, 0};
-    scissor.extent = m_remSwapChain->m_swapChainExtent;
+    scissor.extent = m_remSwapChain->mSwapChainExtent;
 
     VkPipelineViewportStateCreateInfo viewportState{};
     viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -381,7 +381,7 @@ void VulkanRendererPipeline::CreatePipelineLayout()
     pipelineInfo.pColorBlendState = &colorBlending;
     pipelineInfo.pDynamicState = &dynamicState;
     pipelineInfo.layout = m_pipelineLayout;
-    pipelineInfo.renderPass = m_remSwapChain->m_renderPass;
+    pipelineInfo.renderPass = m_remSwapChain->mRenderPass;
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
     if (vkCreateGraphicsPipelines(m_logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_graphicsPipeline) != VK_SUCCESS) {
@@ -436,7 +436,7 @@ void VulkanRendererPipeline::DrawFrame()
     // 14/12/2022
     //
     VkResult result = vkAcquireNextImageKHR(m_logicalDevice,
-                                            m_remSwapChain->m_swapChain,
+                                            m_remSwapChain->mSwapChain,
                                             0,
                                             m_imageAvailableSemaphores[m_currentFrame],
                                             VK_NULL_HANDLE,
@@ -497,7 +497,7 @@ void VulkanRendererPipeline::DrawFrame()
     presentInfo.waitSemaphoreCount = 1;
     presentInfo.pWaitSemaphores = signalSemaphores;
 
-    VkSwapchainKHR swapChains[] = {m_remSwapChain->m_swapChain};
+    VkSwapchainKHR swapChains[] = {m_remSwapChain->mSwapChain};
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = swapChains;
     presentInfo.pImageIndices = &imageIndex;
@@ -550,7 +550,7 @@ void VulkanRendererPipeline::CreateSyncObjects()
     m_imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
     m_renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
     m_inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
-    m_imagesInFlight.resize(m_remSwapChain->m_swapChainImages.size(), VK_NULL_HANDLE);
+    m_imagesInFlight.resize(m_remSwapChain->mSwapChainImages.size(), VK_NULL_HANDLE);
 
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -623,10 +623,10 @@ void VulkanRendererPipeline::RecordCommandBuffer(VkCommandBuffer commandBuffer, 
 
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassInfo.renderPass = m_remSwapChain->m_renderPass;
-    renderPassInfo.framebuffer =  m_remSwapChain->m_swapChainFrameBuffers[imageIndex];
+    renderPassInfo.renderPass = m_remSwapChain->mRenderPass;
+    renderPassInfo.framebuffer =  m_remSwapChain->mSwapChainFrameBuffers[imageIndex];
     renderPassInfo.renderArea.offset = {0, 0};
-    renderPassInfo.renderArea.extent = m_remSwapChain->m_swapChainExtent;
+    renderPassInfo.renderArea.extent = m_remSwapChain->mSwapChainExtent;
 
     VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
     renderPassInfo.clearValueCount = 1;
@@ -639,15 +639,15 @@ void VulkanRendererPipeline::RecordCommandBuffer(VkCommandBuffer commandBuffer, 
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
-    viewport.width = (float) m_remSwapChain->m_swapChainExtent.width;
-    viewport.height = (float) m_remSwapChain->m_swapChainExtent.height;
+    viewport.width = (float) m_remSwapChain->mSwapChainExtent.width;
+    viewport.height = (float) m_remSwapChain->mSwapChainExtent.height;
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
     VkRect2D scissor{};
     scissor.offset = {0, 0};
-    scissor.extent = m_remSwapChain->m_swapChainExtent;
+    scissor.extent = m_remSwapChain->mSwapChainExtent;
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
     VkBuffer vertexBuffers[] = {m_vertexBuffer};

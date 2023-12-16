@@ -1,10 +1,9 @@
 //
 // Created by Remus on 11/12/2022.
 //
+#pragma once
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-#ifndef INC_3DENGINE_REMSWAPCHAIN_H
-#define INC_3DENGINE_REMSWAPCHAIN_H
 
 #include <vector>
 #include <optional>
@@ -13,34 +12,30 @@ class VulkanApplicationImpl;
 class VulkanSwapChain {
 public:
 
-
-
-    void Initialize(VkDevice &mLogicalDevice,
-                    VkPhysicalDevice &mPhysicalDevice,
-                    VkSurfaceKHR &mSurface,
-                    VkRenderPass& renderPass,
-                    VulkanApplicationImpl *remWindow);
+    void Initialize(VkDevice& aLogicalDevice,
+                    VkPhysicalDevice& aPhysicalDevice,
+                    VkSurfaceKHR& aSurface,
+                    VkRenderPass& aRenderPass,
+                    VulkanApplicationImpl *aWindow);
 
     void RecreateSwapChain();
     void CreateSwapChain();
     void CreateFrameBuffers();
     void CreateImageViews();
+    void CreateRenderPass();
     void Cleanup();
 
-    VkPhysicalDevice m_physicalDevice;
-    VulkanApplicationImpl* m_remApplicationInstance{};
-    // swapchain
-    VkSwapchainKHR m_swapChain{};
-    VkFormat m_swapChainImageFormat;
-    VkExtent2D m_swapChainExtent{};
-    std::vector<VkImage> m_swapChainImages;
-    std::vector<VkImageView> m_swapChainImageViews;
-    VkDevice m_logicalDevice;
-    VkSurfaceKHR m_surface;
-    std::vector<VkFramebuffer> m_swapChainFrameBuffers;
-    VkRenderPass m_renderPass;
+    VkPhysicalDevice mPhysicalDevice;
+    VulkanApplicationImpl* mApplication{};
+    VkSwapchainKHR mSwapChain{};
+    VkFormat mSwapChainImageFormat;
+    VkExtent2D mSwapChainExtent{};
+    std::vector<VkImage> mSwapChainImages;
+    std::vector<VkImageView> mSwapChainImageViews;
+    VkDevice mLogicalDevice;
+    VkSurfaceKHR mSurface;
+    std::vector<VkFramebuffer> mSwapChainFrameBuffers;
+    VkRenderPass mRenderPass;
 
-    void CreateRenderPass();
 };
 
-#endif //INC_3DENGINE_REMSWAPCHAIN_H
