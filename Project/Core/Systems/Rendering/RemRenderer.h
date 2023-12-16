@@ -10,7 +10,10 @@
 
 class RemMaterial;
 class RemRenderer {
+public:
+
+
 
     std::vector<Vertex> m_verticies;
-    RemMaterial* m_shaderComponent;
+    RemMaterial* m_material;
 };

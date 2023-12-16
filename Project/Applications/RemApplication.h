@@ -24,7 +24,6 @@ public:
     SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
     QueueFamilyIndices  FindQueueFamilies(VkPhysicalDevice device);
 
-
     RemPipeline m_renderPipeline;
     RemSwapChain* m_swapChain;
     VkInstance m_vulkanInstance;
@@ -54,9 +53,8 @@ private:
 
     // Create WSI > Vulkan bridge
     void CreateSurface();
+
     void CreateGraphicsPipeline();
-
-
 
     int m_windowWidth;
     int m_windowHeight;

@@ -2,6 +2,7 @@
 // Created by Remus on 4/11/2021.
 //
 #include "RemApplication.h"
+#include "Rendering/RemRenderer.h"
 #include <stdexcept>
 #include <cstring>
 #include <iostream>
@@ -165,11 +166,17 @@ void RemApplication::CreateGraphicsPipeline()
 
 
 
-    // Create Triangle Shader
-    RemMaterial Triangle;
-    m_renderPipeline.LoadShader("triangle", Triangle);
+    // Create Triangle Renderer
+    RemRenderer triangleRenderer;
+    triangleRenderer.m_material = m_renderPipeline.LoadShader("triangleInput"); // Create Material
 
-    // Parse Triangle shader to triangle renderer
+    const std::vector<Vertex> vertices = {
+            {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+            {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+            {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+    };
+
+    m_renderPipeline.CreateVertexBuffer(vertices, m_renderPipeline.m_vertexBuffer, m_renderPipeline.m_vertexBufferMemory);
 
 
     m_renderPipeline.CreatePipelineLayout();
