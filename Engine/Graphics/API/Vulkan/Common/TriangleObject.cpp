@@ -6,6 +6,7 @@
 #include "API/Base/Common/Material.h"
 #include "GraphicsPipeline.h"
 #include "API/Base/Common/Buffer.h"
+#include "VulkanGraphicsImpl.h"
 
 void TriangleObject::CreateObject() {
 
@@ -13,7 +14,7 @@ void TriangleObject::CreateObject() {
     mGraphicsPipeline = new GraphicsPipeline();
     mGraphicsPipeline->AddShader("/Shaders/triangleInput_v.spv", VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT);
     mGraphicsPipeline->AddShader("/Shaders/triangleInput_f.spv", VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT);
-
+    mGraphicsPipeline->AddRenderer(this);
     // Create Vertices & Indices (pretend mesh)
     mVertices = {
         {{-0.5f, -0.5f}, {.0f, 0.0f, 1.0f}},
@@ -47,10 +48,16 @@ void TriangleObject::CreateObject() {
                               VK_BUFFER_USAGE_TRANSFER_DST_BIT |
                               VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 
+    gGraphics->mRenderPipelineManager.AddGraphicsPipeline(mGraphicsPipeline);
+    mGraphicsPipeline->Create();
 }
 
 void TriangleObject::Render(VkCommandBuffer aCommandBuffer) {
 
+    VkBuffer vertexBuffers[] = {mVertexBuffer->mBuffer};
+    VkDeviceSize offsets[] = {0};
+    vkCmdBindVertexBuffers(aCommandBuffer, 0, 1, vertexBuffers, offsets);
+    vkCmdBindIndexBuffer(aCommandBuffer, mIndexBuffer->mBuffer, 0, VK_INDEX_TYPE_UINT16);
     vkCmdDrawIndexed(aCommandBuffer, static_cast<uint32_t>(mIndices.size()), 1, 0, 0, 0);
 }
 

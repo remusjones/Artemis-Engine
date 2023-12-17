@@ -14,6 +14,8 @@
 #include "API/Base/Common/Data/Vertex.h"
 #include "API/Base/Common/Buffer.h"
 
+class GraphicsPipeline;
+
 class VulkanPipelineManager
 {
 public:
@@ -25,25 +27,12 @@ public:
                     VkQueue& aPresentQueue
                     );
 
-    VkShaderModule CreateShaderModule(const std::vector<char>& aCode);
-    VulkanMaterial* LoadShader(const std::string& aShaderName);
-    VkResult CreateVertexBuffer(const std::vector<Vertex>& aVertices);
-    VkResult CreateIndexBuffer();
-
-    void CreateBuffer(VkDeviceSize aSize, VkBufferUsageFlags aUsage, VkMemoryPropertyFlags aProperties,
-                      VkBuffer& aBuffer,
-                      VkDeviceMemory& aBufferMemory);
-
-    void CopyBuffer(VkBuffer aSrcBuffer, VkBuffer aDstBuffer, VkDeviceSize aSize);
-
-    uint32_t FindMemoryType(uint32_t aTypeFilter, VkMemoryPropertyFlags aProperties);
-    void CreatePipelineLayout();
     void CreateCommandPool(const QueueFamilyIndices& aQueueFamilyIndices);
     void CreateCommandBuffers();
+    void AddGraphicsPipeline(GraphicsPipeline* aGraphicsPipeline);
     void RecordCommandBuffer(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex);
     void DrawFrame();
     void CreateSyncObjects();
-    void CleanupBuffers();
     void Cleanup();
 
 private:
@@ -51,20 +40,11 @@ private:
 
 public:
 
-    std::vector<VkFence> mInFlightFences;
     bool mFramebufferResized = false;
+    std::vector<GraphicsPipeline*> mGraphicsPipelines;
+    std::vector<VkFence> mInFlightFences;
     std::vector<VkFence> mImagesInFlight;
 
-    // TODO: House the vert buffer somewhere else
-    Buffer* mVertexBuffer;
-    Buffer* mIndexBuffer;
-
-
-
-   // VkBuffer mVertexBuffer;
-   // VkDeviceMemory mVertexBufferMemory;
-   // VkBuffer mIndexBuffer;
-   // VkDeviceMemory mIndexBufferMemory;
     VulkanSwapChain* mSwapChain;
     std::vector<VulkanMaterial*> mLoadedMaterials{};
 
@@ -77,9 +57,8 @@ private:
     VkDevice mLogicalDevice;
     VkPhysicalDevice mPhysicalDevice;
     VkPipelineLayout mPipelineLayout;
-    VkPipeline mGraphicsPipeline;
+    VkPipeline mGraphicPipeline;
     VkPhysicalDeviceProperties mDeviceProperties;
-
 
 
     std::vector<VkCommandBuffer> mCommandBuffers;

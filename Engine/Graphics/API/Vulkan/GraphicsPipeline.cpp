@@ -4,6 +4,7 @@
 
 #include <vulkan/vulkan_core.h>
 #include "GraphicsPipeline.h"
+#include "Common/TriangleObject.h"
 #include "API/Base/Common/Data/Vertex.h"
 #include "VulkanGraphicsImpl.h"
 #include "../../../IO/File Management/FileManagement.h"
@@ -181,5 +182,62 @@ void GraphicsPipeline::Destroy() const {
 
 std::vector<Material> GraphicsPipeline::MakeMaterials(uint8_t aBinding) const {
     // TODO: Not used yet due to not utilizing push constants
+}
+
+void GraphicsPipeline::AddRenderer(Renderer* aRenderer) {
+    mRenderers.push_back(aRenderer);
+}
+
+void GraphicsPipeline::RenderPipeline(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex)
+{
+
+    for(auto & mRenderer : mRenderers)
+    {
+        VkCommandBufferBeginInfo beginInfo{};
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+        if (vkBeginCommandBuffer(aCommandBuffer, &beginInfo) != VK_SUCCESS) {
+            throw std::runtime_error("failed to begin recording command buffer!");
+        }
+
+        VkRenderPassBeginInfo renderPassInfo{};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassInfo.renderPass = gGraphics->mSwapChain->mRenderPass;
+        renderPassInfo.framebuffer = gGraphics-> mSwapChain->mSwapChainFrameBuffers[aImageIndex];
+        renderPassInfo.renderArea.offset = {0, 0};
+        renderPassInfo.renderArea.extent =gGraphics-> mSwapChain->mSwapChainExtent;
+
+        VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
+        renderPassInfo.clearValueCount = 1;
+        renderPassInfo.pClearValues = &clearColor;
+
+        vkCmdBeginRenderPass(aCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+        vkCmdBindPipeline(aCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipeline);
+
+        VkViewport viewport{};
+        viewport.x = 0.0f;
+        viewport.y = 0.0f;
+        viewport.width = (float)gGraphics->mSwapChain->mSwapChainExtent.width;
+        viewport.height = (float)gGraphics->mSwapChain->mSwapChainExtent.height;
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+        vkCmdSetViewport(aCommandBuffer, 0, 1, &viewport);
+
+        VkRect2D scissor{};
+        scissor.offset = {0, 0};
+        scissor.extent = gGraphics->mSwapChain->mSwapChainExtent;
+        vkCmdSetScissor(aCommandBuffer, 0, 1, &scissor);
+
+
+        mRenderer->Render(aCommandBuffer);
+        vkCmdEndRenderPass(aCommandBuffer);
+
+        if (vkEndCommandBuffer(aCommandBuffer) != VK_SUCCESS) {
+            throw std::runtime_error("failed to record command buffer!");
+        }
+
+    }
+
 }
 

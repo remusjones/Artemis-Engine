@@ -42,7 +42,7 @@ void VulkanGraphicsImpl::Update()
     while (!glfwWindowShouldClose(mWindow))
     {
         glfwPollEvents();
-        this->mRenderPipeline.DrawFrame();
+        this->mRenderPipelineManager.DrawFrame();
     }
 }
 
@@ -50,7 +50,7 @@ void VulkanGraphicsImpl::Cleanup()
 {
 
     vkDeviceWaitIdle(mLogicalDevice);
-    mRenderPipeline.Cleanup();
+    mRenderPipelineManager.Cleanup();
 
     // TODO: Move into object pool ..
     if (mTriangle) {
@@ -84,7 +84,7 @@ VulkanGraphicsImpl::VulkanGraphicsImpl(const char *aWindowName, int aWindowWidth
 static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
 
     auto app = reinterpret_cast<VulkanGraphicsImpl*>(glfwGetWindowUserPointer(window));
-    app->mRenderPipeline.mFramebufferResized = true;
+    app->mRenderPipelineManager.mFramebufferResized = true;
 }
 
 void VulkanGraphicsImpl::InitializeWindow()
@@ -161,25 +161,9 @@ void VulkanGraphicsImpl::CreateSurface()
 
 void VulkanGraphicsImpl::CreateObjects() {
 
-    // Create mTriangle RendererBase
-    VulkanMaterial* material;
-    material = mRenderPipeline.LoadShader("triangleInput"); // Create MaterialBase
-
-    const std::vector<Vertex> vertices = {
-            {{-0.5f, -0.5f}, {.0f, 0.0f, 1.0f}},
-            {{0.5f, -0.5f}, {0.0f, 1.0f, 1.0f}},
-            {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-            {{-0.5f, 0.5f}, {1.0f, 0.5f, 1.0f}}
-    };
-
-
-    mRenderPipeline.CreatePipelineLayout();
-
     mTriangle = new TriangleObject();
     mTriangle->CreateObject();
 
-    mRenderPipeline.CreateVertexBuffer(vertices);
-    mRenderPipeline.CreateIndexBuffer();
 }
 
 
@@ -188,18 +172,18 @@ void VulkanGraphicsImpl::CreateGraphicsPipeline()
 {
 
 
-    mRenderPipeline.Initialize(mLogicalDevice,
-                               mSwapChain,
-                               mPhysicalDevice,
-                               mGraphicsQueue,
-                               mPresentQueue
+    mRenderPipelineManager.Initialize(mLogicalDevice,
+                                      mSwapChain,
+                                      mPhysicalDevice,
+                                      mGraphicsQueue,
+                                      mPresentQueue
                               );
         auto queueFamilies = FindQueueFamilies(mPhysicalDevice);
-    mRenderPipeline.CreateCommandPool(queueFamilies);
+    mRenderPipelineManager.CreateCommandPool(queueFamilies);
 
     CreateObjects();
 
-    mRenderPipeline.CreateSyncObjects();
+    mRenderPipelineManager.CreateSyncObjects();
     mSwapChain->CreateFrameBuffers();
 }
 

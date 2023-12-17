@@ -72,7 +72,7 @@ private:
 
 public:
     // TODO Move to HEAP
-    VulkanPipelineManager mRenderPipeline;
+    VulkanPipelineManager mRenderPipelineManager;
     VulkanSwapChain* mSwapChain;
     VkInstance mVulkanInstance;
     GLFWwindow* mWindow{}; // TODO: Move to interface

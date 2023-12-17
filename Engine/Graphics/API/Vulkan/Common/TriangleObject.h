@@ -11,12 +11,18 @@ class Material;
 class VulkanPipelineManager;
 class GraphicsPipeline;
 class Buffer;
+
+class Renderer{
+public:
+    virtual void Render(VkCommandBuffer aCommandBuffer) = 0;
+};
+
 /*Attempts to abstract the required components for rendering to
  * identify what can be seperated from render pipeline */
-class TriangleObject {
+class TriangleObject : public Renderer {
 public:
     void CreateObject();
-    void Render(VkCommandBuffer aCommandBuffer);
+    void Render(VkCommandBuffer aCommandBuffer) override;
     void Destroy();
     // Rendering Data
     Material* mMaterial;

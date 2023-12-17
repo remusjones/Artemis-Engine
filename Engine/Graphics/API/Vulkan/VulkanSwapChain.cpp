@@ -135,6 +135,7 @@ void VulkanSwapChain::CreateImageViews()
 
 void VulkanSwapChain::Cleanup()
 {
+
     std::cout << "Destroying Frame Buffer" << std::endl;
     for (auto & m_swapChainFrameBuffer : mSwapChainFrameBuffers) {
         vkDestroyFramebuffer(mLogicalDevice, m_swapChainFrameBuffer, nullptr);

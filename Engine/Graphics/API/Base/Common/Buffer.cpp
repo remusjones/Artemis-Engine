@@ -73,7 +73,7 @@ void Buffer::CopyBuffer(VkBuffer aSrcBuffer, VkBuffer aDstBuffer, VkDeviceSize a
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    allocInfo.commandPool = gGraphics->mRenderPipeline.mCommandPool;
+    allocInfo.commandPool = gGraphics->mRenderPipelineManager.mCommandPool;
     allocInfo.commandBufferCount = 1;
 
     VkCommandBuffer commandBuffer;
@@ -96,10 +96,10 @@ void Buffer::CopyBuffer(VkBuffer aSrcBuffer, VkBuffer aDstBuffer, VkDeviceSize a
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffer;
 
-    vkQueueSubmit(gGraphics->mRenderPipeline.mGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-    vkQueueWaitIdle(gGraphics->mRenderPipeline.mGraphicsQueue);
+    vkQueueSubmit(gGraphics->mRenderPipelineManager.mGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+    vkQueueWaitIdle(gGraphics->mRenderPipelineManager.mGraphicsQueue);
 
-    vkFreeCommandBuffers(gGraphics->mLogicalDevice, gGraphics->mRenderPipeline.mCommandPool, 1, &commandBuffer);
+    vkFreeCommandBuffers(gGraphics->mLogicalDevice, gGraphics->mRenderPipelineManager.mCommandPool, 1, &commandBuffer);
 
 }
 
