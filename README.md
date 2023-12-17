@@ -9,10 +9,6 @@
 ```cpp 
 set(ENV{VULKAN_SDK} "C:/VulkanSDK/1.3.268.0")
 ```
-### Clone Dependencies
-1. git clone https://github.com/glfw/glfw.git
-2. git clone https://github.com/g-truc/glm.git
-3. git clone https://github.com/google/glog.git
 
 ## Install MinGW Toolchain for CLion
 1. Install MSys2 ([http://www.msys2.org/])
