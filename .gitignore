@@ -1,6 +1,4 @@
-﻿glm
-glfw
-Vulkan-Tools
+﻿Vulkan-Tools
 cmake-build-debug
 
 cmake-build-debug-event-trace/
