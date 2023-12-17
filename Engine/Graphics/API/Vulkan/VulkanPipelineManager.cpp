@@ -186,72 +186,6 @@ VkResult VulkanPipelineManager::CreateIndexBuffer()
     return VK_SUCCESS;
 }
 
-void VulkanPipelineManager::CreateBuffer(VkDeviceSize aSize, VkBufferUsageFlags aUsage,
-                                         VkMemoryPropertyFlags aProperties, VkBuffer& aBuffer, VkDeviceMemory& aBufferMemory)
-{
-
-
-    VkBufferCreateInfo bufferInfo{};
-    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = aSize;
-    bufferInfo.usage = aUsage;
-    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-    if (vkCreateBuffer(mLogicalDevice, &bufferInfo, nullptr, &aBuffer) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create aBuffer!");
-    }
-
-    VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(mLogicalDevice, aBuffer, &memRequirements);
-
-    VkMemoryAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, aProperties);
-
-    if (vkAllocateMemory(mLogicalDevice, &allocInfo, nullptr, &aBufferMemory) != VK_SUCCESS) {
-        throw std::runtime_error("failed to allocate aBuffer memory!");
-    }
-
-    vkBindBufferMemory(mLogicalDevice, aBuffer, aBufferMemory, 0);
-
-}
-
-void VulkanPipelineManager::CopyBuffer(VkBuffer aSrcBuffer, VkBuffer aDstBuffer, VkDeviceSize aSize)
-{
-    VkCommandBufferAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    allocInfo.commandPool = mCommandPool;
-    allocInfo.commandBufferCount = 1;
-
-    VkCommandBuffer commandBuffer;
-    vkAllocateCommandBuffers(mLogicalDevice, &allocInfo, &commandBuffer);
-
-    VkCommandBufferBeginInfo beginInfo{};
-    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-    vkBeginCommandBuffer(commandBuffer, &beginInfo);
-
-    VkBufferCopy copyRegion{};
-    copyRegion.size = aSize;
-    vkCmdCopyBuffer(commandBuffer, aSrcBuffer, aDstBuffer, 1, &copyRegion);
-
-    vkEndCommandBuffer(commandBuffer);
-
-    VkSubmitInfo submitInfo{};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &commandBuffer;
-
-    vkQueueSubmit(mGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-    vkQueueWaitIdle(mGraphicsQueue);
-
-    vkFreeCommandBuffers(mLogicalDevice, mCommandPool, 1, &commandBuffer);
-
-}
-
 void VulkanPipelineManager::CreatePipelineLayout()
 {
     std::cout << "Creating Graphics Pipeline Layout\n";
@@ -394,7 +328,7 @@ void VulkanPipelineManager::CreatePipelineLayout()
         throw std::runtime_error("failed to create graphics pipeline");
     }
 
-    mSwapChain->CreateFrameBuffers();
+    //mSwapChain->CreateFrameBuffers();
 }
 
 void VulkanPipelineManager::CreateCommandPool(const QueueFamilyIndices& aQueueFamilyIndices)

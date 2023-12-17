@@ -10,6 +10,7 @@
 class Material;
 class VulkanPipelineManager;
 class GraphicsPipeline;
+class Buffer;
 /*Attempts to abstract the required components for rendering to
  * identify what can be seperated from render pipeline */
 class TriangleObject {
@@ -23,4 +24,6 @@ public:
     // Mesh Data
     std::vector<Vertex> mVertices;
     std::vector<int16_t> mIndices;
+    Buffer* mVertexBuffer;
+    Buffer* mIndexBuffer;
 };

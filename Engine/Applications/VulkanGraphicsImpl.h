@@ -12,7 +12,7 @@
 #include "IApplication.h"
 
 class VulkanSwapChain;
-
+class TriangleObject;
 class VulkanGraphicsImpl : public IApplication
 {
 public:
@@ -52,6 +52,7 @@ private:
     void CreateSurface();
 
     void CreateGraphicsPipeline();
+    void CreateObjects();
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
             VkDebugUtilsMessageSeverityFlagBitsEXT aMessageSeverity,
@@ -85,6 +86,7 @@ private:
     int mWindowHeight;
     const char* mWindowName;
 
+    TriangleObject* mTriangle;
 
     // Vulkan Impls
     std::vector<VkExtensionProperties> mExtensions;

@@ -123,6 +123,8 @@ void GraphicsPipeline::Create() {
     VkGraphicsPipelineCreateInfo pipelineInfo{};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
     pipelineInfo.stageCount = 2;
+
+    // TODO: Replace pStages with Push Constants
     pipelineInfo.pStages = mShadersInPipeline.data();
     pipelineInfo.pVertexInputState = &vertexInputInfo;
     pipelineInfo.pInputAssemblyState = &inputAssembly;
@@ -135,6 +137,7 @@ void GraphicsPipeline::Create() {
     pipelineInfo.renderPass =gGraphics->mSwapChain->mRenderPass;
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+
     if (vkCreateGraphicsPipelines(gGraphics->mLogicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &mGraphicsPipeline) != VK_SUCCESS) {
         throw std::runtime_error("failed to create graphics pipeline");
     }
@@ -168,8 +171,15 @@ void GraphicsPipeline::AddShader(const char *aPath, VkShaderStageFlagBits aStage
 
 void GraphicsPipeline::Destroy() const {
 
-    //TODO: Destroy Shaders?
+    for(const auto & i : mShadersInPipeline)
+    {
+        vkDestroyShaderModule(gGraphics->mLogicalDevice, i.module, nullptr);
+    }
     vkDestroyPipelineLayout(gGraphics->mLogicalDevice, mPipelineLayout, nullptr);
     vkDestroyPipeline(gGraphics->mLogicalDevice, mGraphicsPipeline, nullptr);
+}
+
+std::vector<Material> GraphicsPipeline::MakeMaterials(uint8_t aBinding) const {
+    // TODO: Not used yet due to not utilizing push constants
 }
 

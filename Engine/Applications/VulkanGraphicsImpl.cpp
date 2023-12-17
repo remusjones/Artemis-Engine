@@ -51,6 +51,13 @@ void VulkanGraphicsImpl::Cleanup()
 
     vkDeviceWaitIdle(mLogicalDevice);
     mRenderPipeline.Cleanup();
+
+    // TODO: Move into object pool ..
+    if (mTriangle) {
+        mTriangle->Destroy();
+        delete mTriangle;
+    }
+
     mSwapChain->Cleanup();
     delete mSwapChain;
     vkDestroyDevice(mLogicalDevice, nullptr);
@@ -152,26 +159,9 @@ void VulkanGraphicsImpl::CreateSurface()
     }
 }
 
+void VulkanGraphicsImpl::CreateObjects() {
 
-// Have this function virtual for extension??
-void VulkanGraphicsImpl::CreateGraphicsPipeline()
-{
-
-
-    mRenderPipeline.Initialize(mLogicalDevice,
-                               mSwapChain,
-                               mPhysicalDevice,
-                               mGraphicsQueue,
-                               mPresentQueue
-                              );
-
-
-
-    // Create Object, Register it?
-
-
-
-    // Create Triangle RendererBase
+    // Create mTriangle RendererBase
     VulkanMaterial* material;
     material = mRenderPipeline.LoadShader("triangleInput"); // Create MaterialBase
 
@@ -185,19 +175,32 @@ void VulkanGraphicsImpl::CreateGraphicsPipeline()
 
     mRenderPipeline.CreatePipelineLayout();
 
+    mTriangle = new TriangleObject();
+    mTriangle->CreateObject();
 
-    TriangleObject* Triangle = new TriangleObject();
-    Triangle->CreateObject();
-
-
-
-    auto queueFamilies = FindQueueFamilies(mPhysicalDevice);
-
-
-    mRenderPipeline.CreateCommandPool(queueFamilies);
     mRenderPipeline.CreateVertexBuffer(vertices);
     mRenderPipeline.CreateIndexBuffer();
+}
+
+
+// Have this function virtual for extension??
+void VulkanGraphicsImpl::CreateGraphicsPipeline()
+{
+
+
+    mRenderPipeline.Initialize(mLogicalDevice,
+                               mSwapChain,
+                               mPhysicalDevice,
+                               mGraphicsQueue,
+                               mPresentQueue
+                              );
+        auto queueFamilies = FindQueueFamilies(mPhysicalDevice);
+    mRenderPipeline.CreateCommandPool(queueFamilies);
+
+    CreateObjects();
+
     mRenderPipeline.CreateSyncObjects();
+    mSwapChain->CreateFrameBuffers();
 }
 
 bool VulkanGraphicsImpl::CheckValidationLayerSupport() {
@@ -240,7 +243,6 @@ std::vector<const char *> VulkanGraphicsImpl::GetRequiredExtensions() const{
     return extensions;
 }
 
-
 void VulkanGraphicsImpl::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& aCreateInfo) {
     aCreateInfo = {};
     aCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -248,7 +250,6 @@ void VulkanGraphicsImpl::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerC
     aCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
     aCreateInfo.pfnUserCallback = DebugCallback;
 }
-
 
 void VulkanGraphicsImpl::SetupDebugMessenger()
 {
@@ -263,6 +264,7 @@ void VulkanGraphicsImpl::SetupDebugMessenger()
     }
 
 }
+
 VkResult VulkanGraphicsImpl::CreateDebugUtilsMessengerEXT(VkInstance instance,
                                                           const VkDebugUtilsMessengerCreateInfoEXT *aCreateInfo,
                                                           const VkAllocationCallbacks *aAllocator,
