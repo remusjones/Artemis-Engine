@@ -45,3 +45,21 @@ void FileManagement::SetShaderInfoSettings(
 const FileManagementShaderInfo &FileManagement::GetShaderInfoSettings() {
     return ShaderFileSettings;
 }
+
+std::vector<char> FileManagement::GetShaderFileDataPath(const char* aRelativeDirectory) {
+    std::string finalDirectory = GetCurrentDirectory();
+    finalDirectory.append(aRelativeDirectory);
+
+    std::ifstream file(finalDirectory, std::ios::ate | std::ios::binary);
+
+    if (!file.is_open()) {
+        throw std::runtime_error("failed to open file");
+    }
+
+    size_t fileSize = (size_t) file.tellg();
+    std::vector<char> buffer(fileSize);
+    file.seekg(0);
+    file.read(buffer.data(),fileSize);
+    file.close();
+    return buffer;
+}

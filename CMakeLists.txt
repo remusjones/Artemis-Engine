@@ -8,10 +8,10 @@ set(ENV{VULKAN_SDK} "C:/VulkanSDK/1.3.268.0")
 find_package(Vulkan REQUIRED)
 
 add_executable(${PROJECT_NAME} main.cpp
-        Engine/Applications/VulkanApplicationImpl.cpp
-        Engine/Applications/VulkanApplicationImpl.h
-        "Engine/Graphics/API/Vulkan/VulkanRendererPipeline.cpp"
-        "Engine/Graphics/API/Vulkan/VulkanRendererPipeline.h"
+        Engine/Applications/VulkanGraphicsImpl.cpp
+        Engine/Applications/VulkanGraphicsImpl.h
+        "Engine/Graphics/API/Vulkan/VulkanPipelineManager.cpp"
+        "Engine/Graphics/API/Vulkan/VulkanPipelineManager.h"
         "Engine/Graphics/API/Vulkan/VulkanSystemStructs.h"
         "Engine/Graphics/API/Vulkan/Common/VulkanMaterial.cpp"
         "Engine/Graphics/API/Vulkan/Common/VulkanMaterial.h"
@@ -21,10 +21,8 @@ add_executable(${PROJECT_NAME} main.cpp
         "Engine/Graphics/API/Vulkan/VulkanSwapChain.h"
         "Engine/IO/File Management/FileManagementInfo.h"
         "Engine/Graphics/API/Base/Common/Data/Vertex.h"
-        "Engine/Graphics/API/Vulkan/Common/VulkanRenderer.cpp"
-        "Engine/Graphics/API/Vulkan/Common/VulkanRenderer.h"
-        Engine/Graphics/API/Base/Common/Material.h
-        Engine/Graphics/API/Base/Common/Renderer.h Engine/Applications/IApplication.h)
+        Engine/Graphics/API/Base/Common/MaterialBase.h
+        Engine/Graphics/API/Base/Common/RendererBase.h Engine/Applications/IApplication.h Engine/Graphics/API/Base/Common/Material.h Engine/Graphics/API/Base/Common/Buffer.h Engine/Graphics/API/Base/Common/Buffer.cpp Engine/Graphics/API/Base/Common/Buffer.h Engine/Graphics/API/Base/Common/Material.cpp Engine/Graphics/API/Base/Common/Material.h Engine/Graphics/API/Vulkan/Common/TriangleObject.cpp Engine/Graphics/API/Vulkan/Common/TriangleObject.h Engine/Graphics/API/Base/Common/MaterialBase.cpp Engine/Graphics/API/Base/Common/MaterialBase.h Engine/Graphics/API/Vulkan/GraphicsPipeline.cpp Engine/Graphics/API/Vulkan/GraphicsPipeline.h)
 
 # Include Vulkan Headers
 include_directories("${VULKAN_SDK}/Include")
@@ -43,6 +41,8 @@ add_subdirectory(glfw)
 target_link_libraries(${PROJECT_NAME} glfw)
 include_directories("glfw/include")
 
+# Link GLOG
+add_subdirectory(glog)
 # Link GLM
 add_subdirectory(glm)
 
@@ -50,5 +50,5 @@ add_subdirectory(glm)
 target_link_libraries(
         ${PROJECT_NAME}
         Vulkan::Vulkan
-        glm::glm)
+        glm::glm glog)
 

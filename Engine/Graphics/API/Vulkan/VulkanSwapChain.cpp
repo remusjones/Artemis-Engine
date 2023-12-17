@@ -6,7 +6,7 @@
 #include <iostream>
 #include "VulkanSwapChain.h"
 #include "VulkanSystemStructs.h"
-#include "VulkanApplicationImpl.h"
+#include "VulkanGraphicsImpl.h"
 
 void VulkanSwapChain::RecreateSwapChain()
 {
@@ -16,7 +16,7 @@ void VulkanSwapChain::RecreateSwapChain()
 
         glfwGetFramebufferSize(mApplication->mWindow, &width, &height);
         glfwWaitEvents();
-        std::cout << "VulkanApplicationImpl Minimized" << std::endl;
+        std::cout << "VulkanGraphicsImpl Minimized" << std::endl;
     }
 
     vkDeviceWaitIdle(mLogicalDevice);
@@ -185,7 +185,7 @@ void VulkanSwapChain::Initialize(VkDevice &aLogicalDevice,
                                  VkPhysicalDevice &aPhysicalDevice,
                                  VkSurfaceKHR &aSurface,
                                  VkRenderPass& aRenderPass,
-                                 VulkanApplicationImpl *aWindow)
+                                 VulkanGraphicsImpl *aWindow)
 {
     mLogicalDevice = aLogicalDevice;
     mPhysicalDevice = aPhysicalDevice;

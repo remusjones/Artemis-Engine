@@ -7,7 +7,7 @@
 #include <vector>
 #include <optional>
 
-class VulkanApplicationImpl;
+class VulkanGraphicsImpl;
 
 class VulkanSwapChain {
 public:
@@ -16,7 +16,7 @@ public:
                     VkPhysicalDevice& aPhysicalDevice,
                     VkSurfaceKHR& aSurface,
                     VkRenderPass& aRenderPass,
-                    VulkanApplicationImpl *aWindow);
+                    VulkanGraphicsImpl *aWindow);
 
     void RecreateSwapChain();
     void CreateSwapChain();
@@ -26,7 +26,7 @@ public:
     void Cleanup();
 
     VkPhysicalDevice mPhysicalDevice;
-    VulkanApplicationImpl* mApplication{};
+    VulkanGraphicsImpl* mApplication{};
     VkSwapchainKHR mSwapChain{};
     VkFormat mSwapChainImageFormat;
     VkExtent2D mSwapChainExtent{};

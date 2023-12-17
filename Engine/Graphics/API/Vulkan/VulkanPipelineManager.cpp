@@ -2,14 +2,14 @@
 // Created by Remus on 6/11/2021.
 //
 #include <fstream>
-#include "VulkanRendererPipeline.h"
+#include "VulkanPipelineManager.h"
 #include "../../../IO/File Management/FileManagement.h"
 #include <iostream>
-void VulkanRendererPipeline::Initialize(VkDevice& aLogicalDevice,
-                                        VulkanSwapChain* aSwapChain,
-                                        VkPhysicalDevice& aPhysicalDevice,
-                                        VkQueue& aGraphicsQueue,
-                                        VkQueue& aPresentQueue
+void VulkanPipelineManager::Initialize(VkDevice& aLogicalDevice,
+                                       VulkanSwapChain* aSwapChain,
+                                       VkPhysicalDevice& aPhysicalDevice,
+                                       VkQueue& aGraphicsQueue,
+                                       VkQueue& aPresentQueue
                               )
 {
 
@@ -21,13 +21,11 @@ void VulkanRendererPipeline::Initialize(VkDevice& aLogicalDevice,
     mPresentQueue = aPresentQueue;
     mPhysicalDevice = aPhysicalDevice;
 
-
     // Configuration info population
-    VkPhysicalDeviceProperties deviceProperties;
-    vkGetPhysicalDeviceProperties(mPhysicalDevice, &deviceProperties);
+    vkGetPhysicalDeviceProperties(mPhysicalDevice, &mDeviceProperties);
 }
 
-void VulkanRendererPipeline::Cleanup()
+void VulkanPipelineManager::Cleanup()
 {
     if (mGraphicsPipeline != nullptr)
     {
@@ -66,7 +64,7 @@ void VulkanRendererPipeline::Cleanup()
     mLoadedMaterials.resize(0, nullptr);
 }
 
-VulkanMaterial* VulkanRendererPipeline::LoadShader(const std::string& aShaderName)
+VulkanMaterial* VulkanPipelineManager::LoadShader(const std::string& aShaderName)
 {
 
     std::cout << "Creating Shader: " << aShaderName << std::endl;
@@ -109,7 +107,7 @@ VulkanMaterial* VulkanRendererPipeline::LoadShader(const std::string& aShaderNam
     return material;
 }
 
-VkShaderModule VulkanRendererPipeline::CreateShaderModule(const std::vector<char> &aCode)
+VkShaderModule VulkanPipelineManager::CreateShaderModule(const std::vector<char> &aCode)
 {
     VkShaderModuleCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -125,66 +123,74 @@ VkShaderModule VulkanRendererPipeline::CreateShaderModule(const std::vector<char
 
 }
 
-VkResult VulkanRendererPipeline::CreateVertexBuffer(const std::vector<Vertex>& aVertices)
+VkResult VulkanPipelineManager::CreateVertexBuffer(const std::vector<Vertex>& aVertices)
 {
-
-    std::cout << "Creating vertex buffer\n";
-    VkDeviceSize bufferSize = sizeof(aVertices[0]) * aVertices.size();
-    VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
-
-    std::cout << "\tCreating vertex staging buffer\n";
-    CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-    VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
-
-    void* data;
-    vkMapMemory(mLogicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, aVertices.data(), (size_t) bufferSize);
-    vkUnmapMemory(mLogicalDevice, stagingBufferMemory);
-
-    std::cout << "\tAllocating vertex buffer\n";
-    CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mVertexBuffer, mVertexBufferMemory);
-
-    CopyBuffer(stagingBuffer, mVertexBuffer, bufferSize);
-
-    std::cout <<"\tReleasing Copy Buffers" << std::endl;
-    vkDestroyBuffer(mLogicalDevice, stagingBuffer, nullptr);
-    vkFreeMemory(mLogicalDevice, stagingBufferMemory, nullptr);
+    mVertexBuffer = new Buffer(aVertices.data(), sizeof(aVertices[0]) * aVertices.size(),
+                              VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                                      VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    //std::cout << "Creating vertex buffer\n";
+    //VkDeviceSize bufferSize = sizeof(aVertices[0]) * aVertices.size();
+    //VkBuffer stagingBuffer;
+    //VkDeviceMemory stagingBufferMemory;
+//
+    //std::cout << "\tCreating vertex staging buffer\n";
+    //CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+    //VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+//
+    //void* data;
+    //vkMapMemory(mLogicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+   // memcpy(data, aVertices.data(), (size_t) bufferSize);
+    //vkUnmapMemory(mLogicalDevice, stagingBufferMemory);
+//
+    //std::cout << "\tAllocating vertex buffer\n";
+    //CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+    //             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mVertexBuffer, mVertexBufferMemory);
+//
+    //CopyBuffer(stagingBuffer, mVertexBuffer, bufferSize);
+//
+    //std::cout <<"\tReleasing Copy Buffers" << std::endl;
+    //vkDestroyBuffer(mLogicalDevice, stagingBuffer, nullptr);
+    //vkFreeMemory(mLogicalDevice, stagingBufferMemory, nullptr);
 
     return VK_SUCCESS;
 }
 
-VkResult VulkanRendererPipeline::CreateIndexBuffer()
+VkResult VulkanPipelineManager::CreateIndexBuffer()
 {
-    std::cout << "Creating index buffer\n";
-    VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+    mIndexBuffer = new Buffer(indices.data(), sizeof(indices[0]) * indices.size(),
+                              VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                              VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 
-    VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
-    std::cout << "\tCreating index staging buffer\n";
-    CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-    VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
-
-    void* data;
-    vkMapMemory(mLogicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, indices.data(), (size_t) bufferSize);
-    vkUnmapMemory(mLogicalDevice, stagingBufferMemory);
-    std::cout << "\tAllocating index buffer\n";
-    CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mIndexBuffer, mIndexBufferMemory);
-
-    CopyBuffer(stagingBuffer, mIndexBuffer, bufferSize);
-    std::cout <<"\tReleasing Copy Buffers" << std::endl;
-    vkDestroyBuffer(mLogicalDevice, stagingBuffer, nullptr);
-    vkFreeMemory(mLogicalDevice, stagingBufferMemory, nullptr);
+    //std::cout << "Creating index buffer\n";
+    //VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+//
+    //VkBuffer stagingBuffer;
+    //VkDeviceMemory stagingBufferMemory;
+    //std::cout << "\tCreating index staging buffer\n";
+    //CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+    //VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+//
+    //void* data;
+    //vkMapMemory(mLogicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+    //memcpy(data, indices.data(), (size_t) bufferSize);
+    //vkUnmapMemory(mLogicalDevice, stagingBufferMemory);
+    //std::cout << "\tAllocating index buffer\n";
+    //CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+    //             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, mIndexBuffer, mIndexBufferMemory);
+//
+    //CopyBuffer(stagingBuffer, mIndexBuffer, bufferSize);
+    //std::cout <<"\tReleasing Copy Buffers" << std::endl;
+    //vkDestroyBuffer(mLogicalDevice, stagingBuffer, nullptr);
+    //vkFreeMemory(mLogicalDevice, stagingBufferMemory, nullptr);
 
     return VK_SUCCESS;
 }
 
-void VulkanRendererPipeline::CreateBuffer(VkDeviceSize aSize, VkBufferUsageFlags aUsage,
-                                          VkMemoryPropertyFlags aProperties, VkBuffer& aBuffer, VkDeviceMemory& aBufferMemory)
+void VulkanPipelineManager::CreateBuffer(VkDeviceSize aSize, VkBufferUsageFlags aUsage,
+                                         VkMemoryPropertyFlags aProperties, VkBuffer& aBuffer, VkDeviceMemory& aBufferMemory)
 {
+
+
     VkBufferCreateInfo bufferInfo{};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     bufferInfo.size = aSize;
@@ -211,7 +217,7 @@ void VulkanRendererPipeline::CreateBuffer(VkDeviceSize aSize, VkBufferUsageFlags
 
 }
 
-void VulkanRendererPipeline::CopyBuffer(VkBuffer aSrcBuffer, VkBuffer aDstBuffer, VkDeviceSize aSize)
+void VulkanPipelineManager::CopyBuffer(VkBuffer aSrcBuffer, VkBuffer aDstBuffer, VkDeviceSize aSize)
 {
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -246,7 +252,7 @@ void VulkanRendererPipeline::CopyBuffer(VkBuffer aSrcBuffer, VkBuffer aDstBuffer
 
 }
 
-void VulkanRendererPipeline::CreatePipelineLayout()
+void VulkanPipelineManager::CreatePipelineLayout()
 {
     std::cout << "Creating Graphics Pipeline Layout\n";
 
@@ -363,9 +369,9 @@ void VulkanRendererPipeline::CreatePipelineLayout()
     pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
     pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
 
-    if (vkCreatePipelineLayout(mLogicalDevice, &pipelineLayoutInfo, nullptr, &mPipelineLayout) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to create pipeline layout!");
+    if (vkCreatePipelineLayout(mLogicalDevice, &pipelineLayoutInfo,
+                               nullptr, &mPipelineLayout) != VK_SUCCESS){
+        throw std::runtime_error("failed to create pipeline layout");
     }
 
     std::cout << "\tCreating Graphics Pipeline\n";
@@ -385,14 +391,13 @@ void VulkanRendererPipeline::CreatePipelineLayout()
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
     if (vkCreateGraphicsPipelines(mLogicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &mGraphicsPipeline) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create graphics pipeline!");
+        throw std::runtime_error("failed to create graphics pipeline");
     }
 
     mSwapChain->CreateFrameBuffers();
-    mHasCreatedPipeline = true;
 }
 
-void VulkanRendererPipeline::CreateCommandPool(const QueueFamilyIndices& aQueueFamilyIndices)
+void VulkanPipelineManager::CreateCommandPool(const QueueFamilyIndices& aQueueFamilyIndices)
 {
     std::cout << "Creating Command Pool" << std::endl;
     VkCommandPoolCreateInfo poolInfo{};
@@ -406,9 +411,8 @@ void VulkanRendererPipeline::CreateCommandPool(const QueueFamilyIndices& aQueueF
     CreateCommandBuffers();
 }
 
-void VulkanRendererPipeline::CreateCommandBuffers()
+void VulkanPipelineManager::CreateCommandBuffers()
 {
-    std::cout << "\tCreating Command Buffers" << std::endl;
     mCommandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
 
     VkCommandBufferAllocateInfo allocInfo{};
@@ -424,7 +428,7 @@ void VulkanRendererPipeline::CreateCommandBuffers()
 
 bool semaphoresNeedToBeRecreated = false;
 
-void VulkanRendererPipeline::DrawFrame()
+void VulkanPipelineManager::DrawFrame()
 {
     vkWaitForFences(mLogicalDevice, 1, &mInFlightFences[mCurrentFrame], VK_TRUE, UINT64_MAX);
 
@@ -520,7 +524,7 @@ void VulkanRendererPipeline::DrawFrame()
 
 }
 
-void VulkanRendererPipeline::CleanupOldSyncObjects()
+void VulkanPipelineManager::CleanupOldSyncObjects()
 {
     for (size_t i = 0; i < mRenderFinishedSemaphoresToDestroy.size(); i++) {
         vkDestroySemaphore(mLogicalDevice, mRenderFinishedSemaphoresToDestroy[i], nullptr);
@@ -538,7 +542,7 @@ void VulkanRendererPipeline::CleanupOldSyncObjects()
     mImageAvailableSemaphoresToDestroy.clear();
 }
 
-void VulkanRendererPipeline::CreateSyncObjects()
+void VulkanPipelineManager::CreateSyncObjects()
 {
     mInFlightFencesToDestroy.insert(mInFlightFencesToDestroy.end(), std::begin(mInFlightFences), std::end(mInFlightFences));     // C++11
     mImageAvailableSemaphoresToDestroy.insert(mImageAvailableSemaphoresToDestroy.end(), std::begin(mImageAvailableSemaphores), std::end(mImageAvailableSemaphores));     // C++11
@@ -568,7 +572,7 @@ void VulkanRendererPipeline::CreateSyncObjects()
     }
 }
 
-uint32_t VulkanRendererPipeline::FindMemoryType(uint32_t aTypeFilter, VkMemoryPropertyFlags aProperties)
+uint32_t VulkanPipelineManager::FindMemoryType(uint32_t aTypeFilter, VkMemoryPropertyFlags aProperties)
 {
     VkPhysicalDeviceMemoryProperties memProperties;
     vkGetPhysicalDeviceMemoryProperties(mPhysicalDevice, &memProperties);
@@ -581,18 +585,16 @@ uint32_t VulkanRendererPipeline::FindMemoryType(uint32_t aTypeFilter, VkMemoryPr
     throw std::runtime_error("failed to find suitable memory type!");
 }
 
-void VulkanRendererPipeline::CleanupBuffers() {
-    if (mVertexBuffer && mVertexBufferMemory) {
-        vkDestroyBuffer(mLogicalDevice, mVertexBuffer, nullptr);
-        vkFreeMemory(mLogicalDevice, mVertexBufferMemory, nullptr);
-    }
-    if (mIndexBuffer && mIndexBufferMemory) {
-        vkDestroyBuffer(mLogicalDevice, mIndexBuffer, nullptr);
-        vkFreeMemory(mLogicalDevice, mIndexBufferMemory, nullptr);
-    }
+void VulkanPipelineManager::CleanupBuffers() {
+
+    mVertexBuffer->Cleanup();
+    mIndexBuffer->Cleanup();
+
+    delete mVertexBuffer;
+    delete mIndexBuffer;
 }
 
-void VulkanRendererPipeline::RecordCommandBuffer(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex) {
+void VulkanPipelineManager::RecordCommandBuffer(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex) {
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
@@ -629,11 +631,11 @@ void VulkanRendererPipeline::RecordCommandBuffer(VkCommandBuffer aCommandBuffer,
     scissor.extent = mSwapChain->mSwapChainExtent;
     vkCmdSetScissor(aCommandBuffer, 0, 1, &scissor);
 
-    VkBuffer vertexBuffers[] = {mVertexBuffer};
+    VkBuffer vertexBuffers[] = {mVertexBuffer->mBuffer};
     VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(aCommandBuffer, 0, 1, vertexBuffers, offsets);
 
-    vkCmdBindIndexBuffer(aCommandBuffer, mIndexBuffer, 0, VK_INDEX_TYPE_UINT16);
+    vkCmdBindIndexBuffer(aCommandBuffer, mIndexBuffer->mBuffer, 0, VK_INDEX_TYPE_UINT16);
 
     vkCmdDrawIndexed(aCommandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 

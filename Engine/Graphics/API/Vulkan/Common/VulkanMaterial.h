@@ -11,9 +11,9 @@
 #include <map>
 #include <stdexcept>
 #include "VulkanSystemStructs.h"
-#include "API/Base/Common/Material.h"
+#include "API/Base/Common/MaterialBase.h"
 
-class VulkanMaterial : public Material {
+class VulkanMaterial : public MaterialBase {
 public:
     std::vector<VkPipelineShaderStageCreateInfo> m_shaderStages{};
 

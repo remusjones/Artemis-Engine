@@ -7,12 +7,12 @@
 #include <glm/mat4x4.hpp>
 
 #include <iostream>
-#include "VulkanApplicationImpl.h"
+#include "VulkanGraphicsImpl.h"
 
 int main() {
 
 
-    IApplication* app = new VulkanApplicationImpl("Vulkan 3D Engine", 800, 600);
+    IApplication* app = new VulkanGraphicsImpl("Vulkan 3D Engine", 800, 600);
 
     try {
         app->Run();

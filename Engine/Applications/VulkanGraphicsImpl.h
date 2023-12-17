@@ -1,24 +1,24 @@
 //
 // Created by Remus on 4/11/2021.
-// Generic VulkanApplicationImpl process to run the "project"
+// Generic VulkanGraphicsImpl process to run the "project"
 //
 #pragma once
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <vector>
 #include <optional>
-#include "VulkanRendererPipeline.h"
+#include "VulkanPipelineManager.h"
 #include "VulkanSystemStructs.h"
 #include "IApplication.h"
 
 class VulkanSwapChain;
 
-class VulkanApplicationImpl : public IApplication
+class VulkanGraphicsImpl : public IApplication
 {
 public:
     void Run() override;
 
-    VulkanApplicationImpl(const char* aWindowName, int aWindowWidth, int aWindowHeight);
+    VulkanGraphicsImpl(const char* aWindowName, int aWindowWidth, int aWindowHeight);
     VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& aAvailableFormats);
     VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& aAvailablePresentModes);
     VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& aCapabilities);
@@ -70,10 +70,13 @@ private:
     bool CheckValidationLayerSupport();
 
 public:
-    VulkanRendererPipeline mRenderPipeline;
+    // TODO Move to HEAP
+    VulkanPipelineManager mRenderPipeline;
     VulkanSwapChain* mSwapChain;
     VkInstance mVulkanInstance;
     GLFWwindow* mWindow{}; // TODO: Move to interface
+    VkPhysicalDevice mPhysicalDevice = VK_NULL_HANDLE;
+    VkDevice  mLogicalDevice{};
 
 private:
 
@@ -97,8 +100,7 @@ private:
     bool IsDeviceSuitable(VkPhysicalDevice aPhysicalDevice);
     bool CheckDeviceExtensionSupport(VkPhysicalDevice aPhysicalDevice);
 
-    VkPhysicalDevice mPhysicalDevice = VK_NULL_HANDLE;
-    VkDevice  mLogicalDevice{};
+
     VkPhysicalDeviceFeatures mDeviceFeatures{};
 
     const std::vector<const char*> mValidationLayers = {
@@ -114,3 +116,5 @@ private:
 #endif
 
 };
+typedef VulkanGraphicsImpl VulkanGraphics;
+extern VulkanGraphics* gGraphics;

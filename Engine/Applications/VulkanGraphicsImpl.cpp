@@ -1,8 +1,8 @@
 //
 // Created by Remus on 4/11/2021.
 //
-#include "VulkanApplicationImpl.h"
-#include "Common/VulkanRenderer.h"
+#include "VulkanGraphicsImpl.h"
+#include "Common/TriangleObject.h"
 #include <stdexcept>
 #include <cstring>
 #include <iostream>
@@ -11,7 +11,8 @@
 #include <algorithm>
 #include <VulkanSwapChain.h>
 
-void VulkanApplicationImpl::Run()
+VulkanGraphics* gGraphics = nullptr;
+void VulkanGraphicsImpl::Run()
 {
     InitializeWindow();
     InitializeVulkan();
@@ -19,8 +20,9 @@ void VulkanApplicationImpl::Run()
     Cleanup();
 }
 
-void VulkanApplicationImpl::InitializeVulkan()
+void VulkanGraphicsImpl::InitializeVulkan()
 {
+    gGraphics = this;
     CreateInstance();
     SetupDebugMessenger();
     CreateSurface();
@@ -35,7 +37,7 @@ void VulkanApplicationImpl::InitializeVulkan()
     CreateGraphicsPipeline();
 }
 
-void VulkanApplicationImpl::Update()
+void VulkanGraphicsImpl::Update()
 {
     while (!glfwWindowShouldClose(mWindow))
     {
@@ -44,7 +46,7 @@ void VulkanApplicationImpl::Update()
     }
 }
 
-void VulkanApplicationImpl::Cleanup()
+void VulkanGraphicsImpl::Cleanup()
 {
 
     vkDeviceWaitIdle(mLogicalDevice);
@@ -59,13 +61,13 @@ void VulkanApplicationImpl::Cleanup()
     vkDestroySurfaceKHR(mVulkanInstance, mSurface, nullptr);
     vkDestroyInstance(mVulkanInstance, nullptr);
 
-    std::cout << "Destroying VulkanApplicationImpl" << std::endl;
+    std::cout << "Destroying VulkanGraphicsImpl" << std::endl;
     glfwDestroyWindow(mWindow);
     glfwTerminate();
 
 }
 
-VulkanApplicationImpl::VulkanApplicationImpl(const char *aWindowName, int aWindowWidth, int aWindowHeight)
+VulkanGraphicsImpl::VulkanGraphicsImpl(const char *aWindowName, int aWindowWidth, int aWindowHeight)
 {
     mWindowName = aWindowName;
     mWindowWidth = aWindowWidth;
@@ -74,13 +76,11 @@ VulkanApplicationImpl::VulkanApplicationImpl(const char *aWindowName, int aWindo
 
 static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
 
-    auto app = reinterpret_cast<VulkanApplicationImpl*>(glfwGetWindowUserPointer(window));
+    auto app = reinterpret_cast<VulkanGraphicsImpl*>(glfwGetWindowUserPointer(window));
     app->mRenderPipeline.mFramebufferResized = true;
-
-    std::cout << "Window Resized: x: " << width << " y: " << height << std::endl;
 }
 
-void VulkanApplicationImpl::InitializeWindow()
+void VulkanGraphicsImpl::InitializeWindow()
 {
     std::cout << "Creating Window" << std::endl;
 
@@ -94,7 +94,7 @@ void VulkanApplicationImpl::InitializeWindow()
 
 }
 
-void VulkanApplicationImpl::CreateInstance()
+void VulkanGraphicsImpl::CreateInstance()
 {
     std::cout << "Creating Vulkan Instance" << std::endl;
 
@@ -145,7 +145,7 @@ void VulkanApplicationImpl::CreateInstance()
 
 }
 
-void VulkanApplicationImpl::CreateSurface()
+void VulkanGraphicsImpl::CreateSurface()
 {
     if (glfwCreateWindowSurface(mVulkanInstance, mWindow, nullptr, &mSurface) != VK_SUCCESS) {
         throw std::runtime_error("failed to create window surface!");
@@ -154,7 +154,7 @@ void VulkanApplicationImpl::CreateSurface()
 
 
 // Have this function virtual for extension??
-void VulkanApplicationImpl::CreateGraphicsPipeline()
+void VulkanGraphicsImpl::CreateGraphicsPipeline()
 {
 
 
@@ -167,9 +167,13 @@ void VulkanApplicationImpl::CreateGraphicsPipeline()
 
 
 
-    // Create Triangle Renderer
-    VulkanRenderer triangleRenderer;
-    triangleRenderer.material = mRenderPipeline.LoadShader("triangleInput"); // Create Material
+    // Create Object, Register it?
+
+
+
+    // Create Triangle RendererBase
+    VulkanMaterial* material;
+    material = mRenderPipeline.LoadShader("triangleInput"); // Create MaterialBase
 
     const std::vector<Vertex> vertices = {
             {{-0.5f, -0.5f}, {.0f, 0.0f, 1.0f}},
@@ -180,16 +184,23 @@ void VulkanApplicationImpl::CreateGraphicsPipeline()
 
 
     mRenderPipeline.CreatePipelineLayout();
+
+
+    TriangleObject* Triangle = new TriangleObject();
+    Triangle->CreateObject();
+
+
+
     auto queueFamilies = FindQueueFamilies(mPhysicalDevice);
+
+
     mRenderPipeline.CreateCommandPool(queueFamilies);
     mRenderPipeline.CreateVertexBuffer(vertices);
     mRenderPipeline.CreateIndexBuffer();
-
-
     mRenderPipeline.CreateSyncObjects();
 }
 
-bool VulkanApplicationImpl::CheckValidationLayerSupport() {
+bool VulkanGraphicsImpl::CheckValidationLayerSupport() {
     uint32_t layerCount;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
@@ -214,7 +225,7 @@ bool VulkanApplicationImpl::CheckValidationLayerSupport() {
     return true;
 }
 
-std::vector<const char *> VulkanApplicationImpl::GetRequiredExtensions() const{
+std::vector<const char *> VulkanGraphicsImpl::GetRequiredExtensions() const{
     uint32_t glfwExtensionCount = 0;
     const char** glfwExtensions;
     glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -230,7 +241,7 @@ std::vector<const char *> VulkanApplicationImpl::GetRequiredExtensions() const{
 }
 
 
-void VulkanApplicationImpl::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& aCreateInfo) {
+void VulkanGraphicsImpl::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& aCreateInfo) {
     aCreateInfo = {};
     aCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
     aCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
@@ -239,7 +250,7 @@ void VulkanApplicationImpl::PopulateDebugMessengerCreateInfo(VkDebugUtilsMesseng
 }
 
 
-void VulkanApplicationImpl::SetupDebugMessenger()
+void VulkanGraphicsImpl::SetupDebugMessenger()
 {
     if (!enableValidationLayers) return;
 
@@ -252,10 +263,10 @@ void VulkanApplicationImpl::SetupDebugMessenger()
     }
 
 }
-VkResult VulkanApplicationImpl::CreateDebugUtilsMessengerEXT(VkInstance instance,
-                                                             const VkDebugUtilsMessengerCreateInfoEXT *aCreateInfo,
-                                                             const VkAllocationCallbacks *aAllocator,
-                                                             VkDebugUtilsMessengerEXT *aDebugMessenger)
+VkResult VulkanGraphicsImpl::CreateDebugUtilsMessengerEXT(VkInstance instance,
+                                                          const VkDebugUtilsMessengerCreateInfoEXT *aCreateInfo,
+                                                          const VkAllocationCallbacks *aAllocator,
+                                                          VkDebugUtilsMessengerEXT *aDebugMessenger)
 {
 
     PFN_vkCreateDebugUtilsMessengerEXT func =
@@ -271,8 +282,8 @@ VkResult VulkanApplicationImpl::CreateDebugUtilsMessengerEXT(VkInstance instance
 
 }
 
-void VulkanApplicationImpl::DestroyDebugUtilsMessengerEXT(VkInstance aInstance, VkDebugUtilsMessengerEXT aDebugMessenger,
-                                                          const VkAllocationCallbacks *aAllocator)
+void VulkanGraphicsImpl::DestroyDebugUtilsMessengerEXT(VkInstance aInstance, VkDebugUtilsMessengerEXT aDebugMessenger,
+                                                       const VkAllocationCallbacks *aAllocator)
 {
     auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(aInstance, "vkDestroyDebugUtilsMessengerEXT");
     if (func != nullptr) {
@@ -280,9 +291,9 @@ void VulkanApplicationImpl::DestroyDebugUtilsMessengerEXT(VkInstance aInstance, 
     }
 }
 
-VkBool32 VulkanApplicationImpl::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT aMessageSeverity,
-                                              VkDebugUtilsMessageTypeFlagsEXT aMessageType,
-                                              const VkDebugUtilsMessengerCallbackDataEXT *aCallbackData, void *aUserData)
+VkBool32 VulkanGraphicsImpl::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT aMessageSeverity,
+                                           VkDebugUtilsMessageTypeFlagsEXT aMessageType,
+                                           const VkDebugUtilsMessengerCallbackDataEXT *aCallbackData, void *aUserData)
 {
     if (aMessageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
         std::cerr << aMessageType << " Validation layer: " <<
@@ -292,7 +303,7 @@ VkBool32 VulkanApplicationImpl::DebugCallback(VkDebugUtilsMessageSeverityFlagBit
     return VK_FALSE;
 }
 
-void VulkanApplicationImpl::InitializePhysicalDevice()
+void VulkanGraphicsImpl::InitializePhysicalDevice()
 {
     uint32_t deviceCount = 0;
     vkEnumeratePhysicalDevices(mVulkanInstance, &deviceCount, nullptr);
@@ -324,7 +335,7 @@ void VulkanApplicationImpl::InitializePhysicalDevice()
     }
 }
 
-bool VulkanApplicationImpl::IsDeviceSuitable(VkPhysicalDevice aPhysicalDevice)
+bool VulkanGraphicsImpl::IsDeviceSuitable(VkPhysicalDevice aPhysicalDevice)
 {
     QueueFamilyIndices indices = FindQueueFamilies(aPhysicalDevice);
 
@@ -340,7 +351,7 @@ bool VulkanApplicationImpl::IsDeviceSuitable(VkPhysicalDevice aPhysicalDevice)
     return indices.IsComplete() && extensionsSupported && swapChainAdequate;
 }
 
-VkSurfaceFormatKHR VulkanApplicationImpl::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
+VkSurfaceFormatKHR VulkanGraphicsImpl::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
 {
     for (const auto& availableFormat : availableFormats) {
         if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
@@ -350,7 +361,7 @@ VkSurfaceFormatKHR VulkanApplicationImpl::ChooseSwapSurfaceFormat(const std::vec
 
     return availableFormats[0];
 }
-VkPresentModeKHR VulkanApplicationImpl::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
+VkPresentModeKHR VulkanGraphicsImpl::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
 {
     for (const auto& availablePresentMode : availablePresentModes) {
         if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
@@ -360,7 +371,7 @@ VkPresentModeKHR VulkanApplicationImpl::ChooseSwapPresentMode(const std::vector<
 
     return VK_PRESENT_MODE_FIFO_KHR;
 }
-VkExtent2D VulkanApplicationImpl::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
+VkExtent2D VulkanGraphicsImpl::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
 {
     if (capabilities.currentExtent.width != UINT32_MAX)
     {
@@ -383,7 +394,7 @@ VkExtent2D VulkanApplicationImpl::ChooseSwapExtent(const VkSurfaceCapabilitiesKH
     }
 }
 
-bool VulkanApplicationImpl::CheckDeviceExtensionSupport(VkPhysicalDevice aPhysicalDevice)
+bool VulkanGraphicsImpl::CheckDeviceExtensionSupport(VkPhysicalDevice aPhysicalDevice)
 {
     uint32_t extensionCount;
     vkEnumerateDeviceExtensionProperties(aPhysicalDevice, nullptr, &extensionCount, nullptr);
@@ -400,7 +411,7 @@ bool VulkanApplicationImpl::CheckDeviceExtensionSupport(VkPhysicalDevice aPhysic
     return requiredExtensions.empty();
 }
 
-QueueFamilyIndices VulkanApplicationImpl::FindQueueFamilies(VkPhysicalDevice device)
+QueueFamilyIndices VulkanGraphicsImpl::FindQueueFamilies(VkPhysicalDevice device)
 {
     QueueFamilyIndices indices;
 
@@ -437,7 +448,7 @@ QueueFamilyIndices VulkanApplicationImpl::FindQueueFamilies(VkPhysicalDevice dev
     return indices;
 }
 
-SwapChainSupportDetails VulkanApplicationImpl::QuerySwapChainSupport(VkPhysicalDevice device)
+SwapChainSupportDetails VulkanGraphicsImpl::QuerySwapChainSupport(VkPhysicalDevice device)
 {
     SwapChainSupportDetails details;
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, mSurface, &details.mCapabilities);
@@ -462,7 +473,7 @@ SwapChainSupportDetails VulkanApplicationImpl::QuerySwapChainSupport(VkPhysicalD
 
 }
 
-void VulkanApplicationImpl::CreateLogicalDevice()
+void VulkanGraphicsImpl::CreateLogicalDevice()
 {
     std::cout << "Creating Logical Device" << std::endl;
     QueueFamilyIndices indices = FindQueueFamilies(mPhysicalDevice);

@@ -12,8 +12,9 @@
 #include "VulkanSwapChain.h"
 #include "Common/VulkanMaterial.h"
 #include "API/Base/Common/Data/Vertex.h"
+#include "API/Base/Common/Buffer.h"
 
-class VulkanRendererPipeline
+class VulkanPipelineManager
 {
 public:
 
@@ -49,17 +50,27 @@ private:
     void CleanupOldSyncObjects();
 
 public:
+
     std::vector<VkFence> mInFlightFences;
     bool mFramebufferResized = false;
     std::vector<VkFence> mImagesInFlight;
 
     // TODO: House the vert buffer somewhere else
-    VkBuffer mVertexBuffer;
-    VkDeviceMemory mVertexBufferMemory;
-    VkBuffer mIndexBuffer;
-    VkDeviceMemory mIndexBufferMemory;
+    Buffer* mVertexBuffer;
+    Buffer* mIndexBuffer;
+
+
+
+   // VkBuffer mVertexBuffer;
+   // VkDeviceMemory mVertexBufferMemory;
+   // VkBuffer mIndexBuffer;
+   // VkDeviceMemory mIndexBufferMemory;
     VulkanSwapChain* mSwapChain;
     std::vector<VulkanMaterial*> mLoadedMaterials{};
+
+    VkQueue mGraphicsQueue;
+    VkQueue mPresentQueue;
+    VkCommandPool mCommandPool;
 
 private:
     // Cached Variables for layouts
@@ -67,11 +78,9 @@ private:
     VkPhysicalDevice mPhysicalDevice;
     VkPipelineLayout mPipelineLayout;
     VkPipeline mGraphicsPipeline;
-    VkCommandPool mCommandPool;
+    VkPhysicalDeviceProperties mDeviceProperties;
 
 
-    VkQueue mGraphicsQueue;
-    VkQueue mPresentQueue;
 
     std::vector<VkCommandBuffer> mCommandBuffers;
     // Semaphores and Fences

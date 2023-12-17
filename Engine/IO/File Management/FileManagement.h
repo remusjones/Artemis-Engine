@@ -15,6 +15,7 @@ private:
 public:
 
     static std::vector<char> GetShaderFileData(const std::string& filename);
+    static std::vector<char> GetShaderFileDataPath(const char* aRelativeDirectory);
     static void SetShaderInfoSettings(const FileManagementShaderInfo&
     shaderInfo);
     static const FileManagementShaderInfo& GetShaderInfoSettings();
