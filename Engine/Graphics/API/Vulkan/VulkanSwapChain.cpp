@@ -69,8 +69,6 @@ void VulkanSwapChain::CreateSwapChain()
     createInfo.clipped = VK_TRUE;
     createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-
-
     if (vkCreateSwapchainKHR(mLogicalDevice, &createInfo, nullptr, &mSwapChain) != VK_SUCCESS) {
         throw std::runtime_error("failed to create swap chain!");
     }

@@ -97,6 +97,9 @@ void VulkanPipelineManager::DrawFrame()
     // Avoid max timout due to weird issue (after swap chain recreation) - https://www.reddit.com/r/vulkan/comments/wfugbz/weird_behaviour_of_vkacquireimagekhr/
     // 14/12/2022
     //
+
+
+
     VkResult result = vkAcquireNextImageKHR(mLogicalDevice,
                                             mSwapChain->mSwapChain,
                                             0,
@@ -105,18 +108,16 @@ void VulkanPipelineManager::DrawFrame()
                                             &imageIndex);
 
 
-    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || mFramebufferResized) {
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
         mSwapChain->RecreateSwapChain();
 
         CreateCommandBuffers();
-
         // Sync objects aren't atomic, so we have to regenerate them at the end of the current frame
         semaphoresNeedToBeRecreated = true;
-        mFramebufferResized = false;
+
     }else if (result != VK_SUCCESS) {
         throw std::runtime_error("failed to acquire swap chain image!");
     }
-
 
     // Only reset the fence if we are submitting work
     vkResetFences(mLogicalDevice, 1, &mInFlightFences[mCurrentFrame]);
@@ -171,6 +172,15 @@ void VulkanPipelineManager::DrawFrame()
 
     result = vkQueuePresentKHR(mPresentQueue, &presentInfo);
 
+    if (mFramebufferResized)
+    {
+        mSwapChain->RecreateSwapChain();
+
+        CreateCommandBuffers();
+        // Sync objects aren't atomic, so we have to regenerate them at the end of the current frame
+        semaphoresNeedToBeRecreated = true;
+        mFramebufferResized = false;
+    }
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
         mSwapChain->RecreateSwapChain();
     } else if (result != VK_SUCCESS) {

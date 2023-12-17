@@ -30,7 +30,6 @@ public:
     void CreateCommandPool(const QueueFamilyIndices& aQueueFamilyIndices);
     void CreateCommandBuffers();
     void AddGraphicsPipeline(GraphicsPipeline* aGraphicsPipeline);
-    void RecordCommandBuffer(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex);
     void DrawFrame();
     void CreateSyncObjects();
     void Cleanup();
@@ -56,8 +55,6 @@ private:
     // Cached Variables for layouts
     VkDevice mLogicalDevice;
     VkPhysicalDevice mPhysicalDevice;
-    VkPipelineLayout mPipelineLayout;
-    VkPipeline mGraphicPipeline;
     VkPhysicalDeviceProperties mDeviceProperties;
 
 
