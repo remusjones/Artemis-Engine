@@ -6,6 +6,7 @@
 #include "GraphicsPipeline.h"
 #include "VulkanGraphicsImpl.h"
 #include <iostream>
+#include "glog/logging.h"
 void VulkanPipelineManager::Initialize(VkDevice& aLogicalDevice,
                                        VulkanSwapChain* aSwapChain,
                                        VkPhysicalDevice& aPhysicalDevice,
@@ -67,7 +68,7 @@ void VulkanPipelineManager::Cleanup()
 
 void VulkanPipelineManager::CreateCommandPool()
 {
-    std::cout << "Creating Command Pool" << std::endl;
+    LOG(INFO) << "Creating Command Pool";
     auto queueFamilies = gGraphics->GetQueueFamilyIndices();
 
     VkCommandPoolCreateInfo poolInfo{};
@@ -235,7 +236,7 @@ void VulkanPipelineManager::CreateSyncObjects()
     mRenderFinishedSemaphoresToDestroy.insert(mRenderFinishedSemaphoresToDestroy.end(), std::begin(mRenderFinishedSemaphores), std::end(mRenderFinishedSemaphores));     // C++11
 
 
-    std::cout << "Creating Semaphores and Fences" << std::endl;
+    LOG(INFO) << "Creating Semaphores and Fences";
     mImageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
     mRenderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
     mInFlightFences.resize(MAX_FRAMES_IN_FLIGHT);

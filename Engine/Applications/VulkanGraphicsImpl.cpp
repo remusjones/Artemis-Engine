@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <VulkanSwapChain.h>
 #include <chrono>
+#include "glog/logging.h"
 
 VulkanGraphics* gGraphics = nullptr;
 void VulkanGraphicsImpl::Run()
@@ -41,22 +42,24 @@ void VulkanGraphicsImpl::InitializeVulkan()
 
 void VulkanGraphicsImpl::Update()
 {
+    // Start Clock for FPS Monitoring
     auto startTime = std::chrono::high_resolution_clock::now();
+    // Create FPS Window Header
+    std::string fpsHeader = mWindowName + std::string("| FPS: ");
     int frameCount = 0;
-
 
     while (!glfwWindowShouldClose(mWindow))
     {
         glfwPollEvents();
         this->mRenderPipelineManager.DrawFrame();
 
-
+        // Calculate Frames-Per-Second
         frameCount++;
         auto currentTime = std::chrono::high_resolution_clock::now();
         auto elapsedTime = std::chrono::duration_cast<std::chrono::seconds>(currentTime - startTime).count();
         if (elapsedTime >= 1) {
-            int fps = frameCount / elapsedTime;
-            glfwSetWindowTitle(mWindow, (std::string(mWindowName) + "| FPS: " + std::to_string(fps)).c_str());
+            double fps = frameCount / elapsedTime;
+            glfwSetWindowTitle(mWindow, (fpsHeader + std::to_string((int)fps)).c_str());
             frameCount = 0;
             startTime = currentTime;
         }
@@ -85,7 +88,7 @@ void VulkanGraphicsImpl::Cleanup()
     vkDestroySurfaceKHR(mVulkanInstance, mSurface, nullptr);
     vkDestroyInstance(mVulkanInstance, nullptr);
 
-    std::cout << "Destroying VulkanGraphicsImpl" << std::endl;
+    LOG(INFO) <<  "Destroying VulkanGraphicsImpl";
     glfwDestroyWindow(mWindow);
     glfwTerminate();
 
@@ -106,7 +109,7 @@ static void framebufferResizeCallback(GLFWwindow* window, int width, int height)
 
 void VulkanGraphicsImpl::InitializeWindow()
 {
-    std::cout << "Creating Window" << std::endl;
+    LOG(INFO) << "Creating Window";
 
     glfwInit();
 
@@ -120,7 +123,7 @@ void VulkanGraphicsImpl::InitializeWindow()
 
 void VulkanGraphicsImpl::CreateInstance()
 {
-    std::cout << "Creating Vulkan Instance" << std::endl;
+    LOG(INFO) << "Creating Vulkan Instance";
 
     if (enableValidationLayers && !CheckValidationLayerSupport()) {
         throw std::runtime_error("validation layers requested, but not available!");
@@ -164,7 +167,7 @@ void VulkanGraphicsImpl::CreateInstance()
         throw std::runtime_error("failed to create instance!");
     }else
     {
-        std::cout << "Vulkan Instance Created Successfully" << std::endl;
+        LOG(INFO) << "Vulkan Instance Created Successfully";
     }
 
 }
@@ -185,7 +188,6 @@ void VulkanGraphicsImpl::CreateObjects() {
     gGraphics->mRenderPipelineManager.AddGraphicsPipeline(triangleGraphicsPipeline);
     triangleGraphicsPipeline->Create();
 }
-
 
 // Have this function virtual for extension??
 void VulkanGraphicsImpl::CreateGraphicsPipeline()
@@ -260,7 +262,7 @@ void VulkanGraphicsImpl::SetupDebugMessenger()
 
     if (CreateDebugUtilsMessengerEXT(mVulkanInstance, &createInfo, nullptr, &mDebugMessenger) != VK_SUCCESS)
     {
-        std::cout << "failed to set up debug messenger!" << std::endl;
+        LOG(ERROR) << "failed to set up debug messenger!";
     }
 
 }
@@ -333,7 +335,7 @@ void VulkanGraphicsImpl::InitializePhysicalDevice()
         vkGetPhysicalDeviceProperties(mPhysicalDevice, &deviceProperties);
         vkGetPhysicalDeviceFeatures(mPhysicalDevice, &deviceFeatures);
 
-        std::cout << "Selecting Device: " << deviceProperties.deviceName << std::endl;
+        LOG(INFO) << "Selecting Device: " << deviceProperties.deviceName;
     }
 }
 
@@ -363,6 +365,7 @@ VkSurfaceFormatKHR VulkanGraphicsImpl::ChooseSwapSurfaceFormat(const std::vector
 
     return availableFormats[0];
 }
+
 VkPresentModeKHR VulkanGraphicsImpl::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
 {
     for (const auto& availablePresentMode : availablePresentModes) {
@@ -373,6 +376,7 @@ VkPresentModeKHR VulkanGraphicsImpl::ChooseSwapPresentMode(const std::vector<VkP
 
     return VK_PRESENT_MODE_FIFO_KHR;
 }
+
 VkExtent2D VulkanGraphicsImpl::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
 {
     if (capabilities.currentExtent.width != UINT32_MAX)
@@ -477,7 +481,7 @@ SwapChainSupportDetails VulkanGraphicsImpl::QuerySwapChainSupport(VkPhysicalDevi
 
 void VulkanGraphicsImpl::CreateLogicalDevice()
 {
-    std::cout << "Creating Logical Device" << std::endl;
+    LOG(INFO) << "Creating Logical Device";
     mFamilyIndices = FindQueueFamilies(mPhysicalDevice);
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
@@ -492,7 +496,6 @@ void VulkanGraphicsImpl::CreateLogicalDevice()
         queueCreateInfo.pQueuePriorities = &queuePriority;
         queueCreateInfos.push_back(queueCreateInfo);
     }
-
 
     VkDeviceQueueCreateInfo queueCreateInfo{};
     queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -511,8 +514,6 @@ void VulkanGraphicsImpl::CreateLogicalDevice()
 
     createInfo.enabledExtensionCount = static_cast<uint32_t>(m_deviceExtensions.size());
     createInfo.ppEnabledExtensionNames = m_deviceExtensions.data();
-
-    //TODO: validation layers deprecated on devices, remove?
 
     if (enableValidationLayers) {
         createInfo.enabledLayerCount = 0;

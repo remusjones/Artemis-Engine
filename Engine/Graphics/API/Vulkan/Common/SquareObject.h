@@ -17,7 +17,9 @@ class Renderer{
 public:
     virtual void Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex, uint32_t aCurrentFrame) = 0;
     // Buffers
+    // Create specific vertex buffer similar to UniformBuffer
     Buffer* mVertexBuffer;
+    // Create specific index buffer similar to UniformBuffer
     Buffer* mIndexBuffer;
     UniformBuffer* mUniformBuffer;
 

@@ -7,6 +7,7 @@
 #include "VulkanSwapChain.h"
 #include "VulkanSystemStructs.h"
 #include "VulkanGraphicsImpl.h"
+#include "glog/logging.h"
 
 void VulkanSwapChain::RecreateSwapChain()
 {
@@ -16,7 +17,7 @@ void VulkanSwapChain::RecreateSwapChain()
 
         glfwGetFramebufferSize(mApplication->mWindow, &width, &height);
         glfwWaitEvents();
-        std::cout << "VulkanGraphicsImpl Minimized" << std::endl;
+        LOG(INFO) << "VulkanGraphicsImpl Minimized";
     }
 
     vkDeviceWaitIdle(mLogicalDevice);
@@ -81,7 +82,7 @@ void VulkanSwapChain::CreateSwapChain()
 
 void VulkanSwapChain::CreateFrameBuffers()
 {
-    std::cout << "\tCreating Frame Buffers" << std::endl;
+    LOG(INFO) << "Creating Frame Buffers";
     mSwapChainFrameBuffers.resize(mSwapChainImageViews.size());
     for (size_t i = 0; i < mSwapChainImageViews.size(); i++)
     {
@@ -133,8 +134,7 @@ void VulkanSwapChain::CreateImageViews()
 
 void VulkanSwapChain::Cleanup()
 {
-
-    std::cout << "Destroying Frame Buffer" << std::endl;
+    LOG(INFO) << "Destroying Frame Buffer";
     for (auto & m_swapChainFrameBuffer : mSwapChainFrameBuffers) {
         vkDestroyFramebuffer(mLogicalDevice, m_swapChainFrameBuffer, nullptr);
     }
@@ -147,7 +147,7 @@ void VulkanSwapChain::Cleanup()
 
 void VulkanSwapChain::CreateRenderPass()
 {
-    std::cout << "Creating Render Pass" << std::endl;
+    LOG(INFO) << "Creating Render Pass";
     VkAttachmentDescription colorAttachment{};
     colorAttachment.format = mSwapChainImageFormat;
     colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -192,9 +192,9 @@ void VulkanSwapChain::Initialize(VkDevice &aLogicalDevice,
     mRenderPass = aRenderPass;
     mApplication = aWindow;
 
-    std::cout << "Constructing Swap Chain" << std::endl;
+    LOG(INFO) << "Constructing Swap Chain";
     CreateSwapChain();
-    std::cout << "Constructing Image Views" << std::endl;
+    LOG(INFO) << "Constructing Image Views";
     CreateImageViews();
 
     CreateRenderPass();
