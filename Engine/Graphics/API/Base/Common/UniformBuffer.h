@@ -5,7 +5,9 @@
 
 #include <vulkan/vulkan_core.h>
 #include <vector>
-#include "glm/ext/matrix_float4x4.hpp"
+
+#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
+#include <glm/glm.hpp>
 #include "Buffer.h"
 #include "VulkanPipelineManager.h"
 #include "VulkanGraphicsImpl.h"

@@ -36,8 +36,11 @@ public:
  * identify what can be seperated from render pipeline */
 class SquareObject : public Renderer {
 public:
-    void CreateObject(GraphicsPipeline& aBoundGraphicsPipeline);
+    void CreateObject(GraphicsPipeline& aBoundGraphicsPipeline, const char* aName = "Default");
     void RotateObject(uint32_t aCurrentFrame);
     void Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex, uint32_t aCurrentFrame) override;
     void Destroy();
+
+    // TODO: Move name to a metadata tag instead
+    const char* mName;
 };

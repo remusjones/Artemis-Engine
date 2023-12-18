@@ -260,5 +260,7 @@ void VulkanPipelineManager::CreateSyncObjects()
 }
 
 void VulkanPipelineManager::AddGraphicsPipeline(GraphicsPipeline* aGraphicsPipeline) {
+    LOG(INFO) << "Creating Graphics Pipeline: " << aGraphicsPipeline->mPipelineName;
     mGraphicsPipelines.push_back(aGraphicsPipeline);
+    aGraphicsPipeline->Create();
 }

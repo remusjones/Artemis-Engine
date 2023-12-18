@@ -22,8 +22,6 @@ void GraphicsPipeline::Create() {
             UpdateDescriptorSets(j, mRenderer->mUniformBuffer->uniformBuffers[j]->mBuffer);
     }
 
-
-
     // Vertex Buffer
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;

@@ -11,6 +11,8 @@ class MaterialBase;
 class Renderer;
 class GraphicsPipeline {
 public:
+    GraphicsPipeline(const char* aPipelineName = "Unknown") : mPipelineName(aPipelineName){};
+
     void AddShader(const char* aPath, VkShaderStageFlagBits aStage);
     void AddMaterialBase(const MaterialBase* aBase) {
         mMaterials.push_back(aBase);
@@ -24,7 +26,13 @@ public:
     void Destroy() const;
 
 
+private:
+    void CreateDescriptorPool();
+    void CreateDescriptorSets();
+    void CreateUniformBufferLayouts();
 
+public:
+    const char* mPipelineName;
     VkDescriptorSetLayout mDescriptorSetLayout;
     VkPipelineLayout mPipelineLayout;
     VkPipeline mGraphicsPipeline;
@@ -32,11 +40,6 @@ public:
     std::vector<const MaterialBase*> mMaterials = {};
     std::vector<Renderer*> mRenderers = {};
     std::vector<VkDescriptorSet> mDescriptorSets;
-private:
-    void CreateDescriptorPool();
-    void CreateDescriptorSets();
-    void CreateUniformBufferLayouts();
-
 private:
     VkDescriptorPool mDescriptorPool;
 

@@ -182,11 +182,10 @@ void VulkanGraphicsImpl::CreateSurface()
 void VulkanGraphicsImpl::CreateObjects() {
     // Triangle Render Pipeline
 
-    auto* triangleGraphicsPipeline = new GraphicsPipeline();
+    auto* meshPipeline = new GraphicsPipeline("Mesh Pipeline");
     mSquare = new SquareObject();
-    mSquare->CreateObject(*triangleGraphicsPipeline);
-    gGraphics->mRenderPipelineManager.AddGraphicsPipeline(triangleGraphicsPipeline);
-    triangleGraphicsPipeline->Create();
+    mSquare->CreateObject(*meshPipeline, "Square");
+    gGraphics->mRenderPipelineManager.AddGraphicsPipeline(meshPipeline);
 }
 
 // Have this function virtual for extension??

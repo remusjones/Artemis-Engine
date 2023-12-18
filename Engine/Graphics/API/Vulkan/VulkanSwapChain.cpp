@@ -147,7 +147,6 @@ void VulkanSwapChain::Cleanup()
 
 void VulkanSwapChain::CreateRenderPass()
 {
-    LOG(INFO) << "Creating Render Pass";
     VkAttachmentDescription colorAttachment{};
     colorAttachment.format = mSwapChainImageFormat;
     colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -196,6 +195,6 @@ void VulkanSwapChain::Initialize(VkDevice &aLogicalDevice,
     CreateSwapChain();
     LOG(INFO) << "Constructing Image Views";
     CreateImageViews();
-
+    LOG(INFO) << "Creating Render Pass";
     CreateRenderPass();
 }

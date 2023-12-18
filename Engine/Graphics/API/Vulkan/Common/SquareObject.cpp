@@ -11,12 +11,15 @@
 #include "API/Base/Common/Buffer.h"
 #include "VulkanGraphicsImpl.h"
 #include "API/Base/Common/UniformBuffer.h"
+#include "glog/logging.h"
 
-void SquareObject::CreateObject(GraphicsPipeline& aBoundGraphicsPipeline) {
+void SquareObject::CreateObject(GraphicsPipeline& aBoundGraphicsPipeline, const char* aName) {
 
+    mName = aName;
+    LOG(INFO) << "Creating Object: " << mName;
     // Load Shaders
     mGraphicsPipeline = &aBoundGraphicsPipeline;
-    mGraphicsPipeline->AddShader("/Shaders/UniformBuffer_v.spv", VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT);
+    mGraphicsPipeline->AddShader("/Shaders/3DObject_v.spv", VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT);
     mGraphicsPipeline->AddShader("/Shaders/VertexLit_f.spv", VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT);
     mGraphicsPipeline->AddRenderer(this);
     // Create Vertices & Indices (pretend mesh)
@@ -66,7 +69,7 @@ void SquareObject::RotateObject(uint32_t aCurrentFrame) {
 
     UniformBufferObject ubo{};
     ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(15.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.view = glm::lookAt(glm::vec3(2.0f, 3.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     ubo.proj = glm::perspectiveRH(glm::radians(45.0f), (float)gGraphics->mSwapChain->mSwapChainExtent.width / (float)
     gGraphics->mSwapChain->mSwapChainExtent.height, 0.1f,
                               10.0f);
