@@ -40,16 +40,24 @@ set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
 # https://github.com/glfw/glfw.git
-add_subdirectory(${LIBRARIES_PATH}glfw)
-target_link_libraries(${PROJECT_NAME} ${LIBRARIES_PATH}glfw)
+add_subdirectory(${LIBRARIES_PATH}glfw glfw)
+target_link_libraries(${PROJECT_NAME} glfw)
 include_directories("${LIBRARIES_PATH}glfw/include")
 
 # https://github.com/google/glog.git
-add_subdirectory(${LIBRARIES_PATH}glog)
+add_subdirectory(${LIBRARIES_PATH}glog glog)
 
 # https://github.com/g-truc/glm.git
-add_subdirectory(${LIBRARIES_PATH}glm)
+add_subdirectory(${LIBRARIES_PATH}glm glm)
 
+# Compile SPV Shaders TODO: Move to Vulkan only CMake script
+add_custom_target(CompileSPVShaders
+        COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/CompileShaders.bat
+        COMMENT "Compiling SPV Shaders"
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        )
+
+add_dependencies(${PROJECT_NAME} CompileSPVShaders)
 # Link libraries
 target_link_libraries(
         ${PROJECT_NAME}
