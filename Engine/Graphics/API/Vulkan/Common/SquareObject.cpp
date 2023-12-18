@@ -13,7 +13,7 @@ void SquareObject::CreateObject(GraphicsPipeline& aBoundGraphicsPipeline) {
     // Load Shaders
     mGraphicsPipeline = &aBoundGraphicsPipeline;
     mGraphicsPipeline->AddShader("/Shaders/Flat2D_v.spv", VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT);
-    mGraphicsPipeline->AddShader("/Shaders/Flat2D_f.spv", VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT);
+    mGraphicsPipeline->AddShader("/Shaders/VertexLit_f.spv", VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT);
     mGraphicsPipeline->AddRenderer(this);
 
     // Create Vertices & Indices (pretend mesh)
