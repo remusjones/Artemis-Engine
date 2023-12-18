@@ -23,7 +23,8 @@ public:
     VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& aAvailablePresentModes);
     VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& aCapabilities);
     SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice aDevice);
-    QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice aDevice);
+    QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice aDevice) const;
+    QueueFamilyIndices GetQueueFamilyIndices() const {return mFamilyIndices;};
 
 private:
 
@@ -60,7 +61,7 @@ private:
             const VkDebugUtilsMessengerCallbackDataEXT* aCallbackData,
             void* aUserData);
 
-    std::vector<const char*> GetRequiredExtensions() const;
+    std::vector<const char*> GetRequiredExtensions() const;;
 
     VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* aCreateInfo,
                                           const VkAllocationCallbacks* aAllocator,
@@ -76,23 +77,24 @@ public:
     VulkanSwapChain* mSwapChain;
     VkInstance mVulkanInstance;
     GLFWwindow* mWindow{}; // TODO: Move to interface
-    VkPhysicalDevice mPhysicalDevice = VK_NULL_HANDLE;
     VkDevice  mLogicalDevice{};
+    VkPhysicalDevice mPhysicalDevice = VK_NULL_HANDLE;
+    VkSurfaceKHR mSurface;
 
 private:
 
+    QueueFamilyIndices mFamilyIndices;
     // TODO: Move these to IApplication
     int mWindowWidth;
     int mWindowHeight;
     const char* mWindowName;
 
-    SquareObject* mTriangle;
+    SquareObject* mSquare;
 
     // Vulkan Impls
     std::vector<VkExtensionProperties> mExtensions;
     VkQueue mGraphicsQueue;
     VkQueue mPresentQueue;
-    VkSurfaceKHR mSurface;
     VkRenderPass mRenderPass{};
     const std::vector<const char*> m_deviceExtensions = {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME

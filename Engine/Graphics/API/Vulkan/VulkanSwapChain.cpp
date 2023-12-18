@@ -50,7 +50,7 @@ void VulkanSwapChain::CreateSwapChain()
     createInfo.imageArrayLayers = 1;
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-    QueueFamilyIndices indices = mApplication->FindQueueFamilies(mPhysicalDevice);
+    QueueFamilyIndices indices = gGraphics->GetQueueFamilyIndices();
     uint32_t queueFamilyIndices[] = {indices.mGraphicsFamily.value(), indices.mPresentFamily.value()};
 
     if (indices.mGraphicsFamily != indices.mPresentFamily) {

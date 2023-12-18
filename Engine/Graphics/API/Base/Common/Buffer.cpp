@@ -103,7 +103,7 @@ void Buffer::CopyBuffer(VkBuffer aSrcBuffer, VkBuffer aDstBuffer, VkDeviceSize a
 
 }
 
-void Buffer::Cleanup() {
+void Buffer::Destroy() {
     if (mBuffer)
         vkDestroyBuffer(gGraphics->mLogicalDevice, mBuffer, nullptr);
     if (mMemory)

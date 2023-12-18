@@ -27,7 +27,7 @@ public:
                     VkQueue& aPresentQueue
                     );
 
-    void CreateCommandPool(const QueueFamilyIndices& aQueueFamilyIndices);
+    void CreateCommandPool();
     void CreateCommandBuffers();
     void AddGraphicsPipeline(GraphicsPipeline* aGraphicsPipeline);
     void DrawFrame();
@@ -50,13 +50,12 @@ public:
     VkQueue mGraphicsQueue;
     VkQueue mPresentQueue;
     VkCommandPool mCommandPool;
-
+    static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 private:
     // Cached Variables for layouts
     VkDevice mLogicalDevice;
     VkPhysicalDevice mPhysicalDevice;
     VkPhysicalDeviceProperties mDeviceProperties;
-
 
     std::vector<VkCommandBuffer> mCommandBuffers;
     // Semaphores and Fences
@@ -73,6 +72,6 @@ private:
             0, 1, 2, 2, 3, 0
     };
 
-    const int MAX_FRAMES_IN_FLIGHT = 2;
 
 };
+

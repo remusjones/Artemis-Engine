@@ -4,6 +4,7 @@
 #include <fstream>
 #include "VulkanPipelineManager.h"
 #include "GraphicsPipeline.h"
+#include "VulkanGraphicsImpl.h"
 #include <iostream>
 void VulkanPipelineManager::Initialize(VkDevice& aLogicalDevice,
                                        VulkanSwapChain* aSwapChain,
@@ -23,6 +24,7 @@ void VulkanPipelineManager::Initialize(VkDevice& aLogicalDevice,
 
     // Configuration info population
     vkGetPhysicalDeviceProperties(mPhysicalDevice, &mDeviceProperties);
+    CreateCommandPool();
 }
 
 void VulkanPipelineManager::Cleanup()
@@ -63,17 +65,20 @@ void VulkanPipelineManager::Cleanup()
     mGraphicsPipelines.resize(0, nullptr);
 }
 
-void VulkanPipelineManager::CreateCommandPool(const QueueFamilyIndices& aQueueFamilyIndices)
+void VulkanPipelineManager::CreateCommandPool()
 {
     std::cout << "Creating Command Pool" << std::endl;
+    auto queueFamilies = gGraphics->GetQueueFamilyIndices();
+
     VkCommandPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-    poolInfo.queueFamilyIndex = aQueueFamilyIndices.mGraphicsFamily.value();
+    poolInfo.queueFamilyIndex = queueFamilies.mGraphicsFamily.value();
 
     if (vkCreateCommandPool(mLogicalDevice, &poolInfo, nullptr, &mCommandPool) != VK_SUCCESS) {
         throw std::runtime_error("failed to create command pool");
     }
+
     CreateCommandBuffers();
 }
 
@@ -135,7 +140,7 @@ void VulkanPipelineManager::DrawFrame()
 
     for(auto & mGraphicsPipeline : mGraphicsPipelines)
     {
-        mGraphicsPipeline->RenderPipeline(mCommandBuffers[mCurrentFrame], imageIndex);
+        mGraphicsPipeline->RenderPipeline(mCommandBuffers[mCurrentFrame], imageIndex, mCurrentFrame);
     }
 
     // Check if a previous frame is using this image (i.e. there is its fence to wait on)
@@ -256,7 +261,3 @@ void VulkanPipelineManager::CreateSyncObjects()
 void VulkanPipelineManager::AddGraphicsPipeline(GraphicsPipeline* aGraphicsPipeline) {
     mGraphicsPipelines.push_back(aGraphicsPipeline);
 }
-
-
-
-

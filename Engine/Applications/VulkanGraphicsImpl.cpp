@@ -11,6 +11,7 @@
 #include <cstdint>
 #include <algorithm>
 #include <VulkanSwapChain.h>
+#include <chrono>
 
 VulkanGraphics* gGraphics = nullptr;
 void VulkanGraphicsImpl::Run()
@@ -40,10 +41,25 @@ void VulkanGraphicsImpl::InitializeVulkan()
 
 void VulkanGraphicsImpl::Update()
 {
+    auto startTime = std::chrono::high_resolution_clock::now();
+    int frameCount = 0;
+
+
     while (!glfwWindowShouldClose(mWindow))
     {
         glfwPollEvents();
         this->mRenderPipelineManager.DrawFrame();
+
+
+        frameCount++;
+        auto currentTime = std::chrono::high_resolution_clock::now();
+        auto elapsedTime = std::chrono::duration_cast<std::chrono::seconds>(currentTime - startTime).count();
+        if (elapsedTime >= 1) {
+            int fps = frameCount / elapsedTime;
+            glfwSetWindowTitle(mWindow, (std::string(mWindowName) + "| FPS: " + std::to_string(fps)).c_str());
+            frameCount = 0;
+            startTime = currentTime;
+        }
     }
 }
 
@@ -54,9 +70,9 @@ void VulkanGraphicsImpl::Cleanup()
     mRenderPipelineManager.Cleanup();
 
     // TODO: Move into object pool ..
-    if (mTriangle) {
-        mTriangle->Destroy();
-        delete mTriangle;
+    if (mSquare) {
+        mSquare->Destroy();
+        delete mSquare;
     }
 
     mSwapChain->Cleanup();
@@ -162,9 +178,10 @@ void VulkanGraphicsImpl::CreateSurface()
 
 void VulkanGraphicsImpl::CreateObjects() {
     // Triangle Render Pipeline
+
     auto* triangleGraphicsPipeline = new GraphicsPipeline();
-    mTriangle = new SquareObject();
-    mTriangle->CreateObject(*triangleGraphicsPipeline);
+    mSquare = new SquareObject();
+    mSquare->CreateObject(*triangleGraphicsPipeline);
     gGraphics->mRenderPipelineManager.AddGraphicsPipeline(triangleGraphicsPipeline);
     triangleGraphicsPipeline->Create();
 }
@@ -180,11 +197,8 @@ void VulkanGraphicsImpl::CreateGraphicsPipeline()
                                       mGraphicsQueue,
                                       mPresentQueue
                               );
-        auto queueFamilies = FindQueueFamilies(mPhysicalDevice);
-    mRenderPipelineManager.CreateCommandPool(queueFamilies);
 
     CreateObjects();
-
     mRenderPipelineManager.CreateSyncObjects();
     mSwapChain->CreateFrameBuffers();
 }
@@ -399,7 +413,7 @@ bool VulkanGraphicsImpl::CheckDeviceExtensionSupport(VkPhysicalDevice aPhysicalD
     return requiredExtensions.empty();
 }
 
-QueueFamilyIndices VulkanGraphicsImpl::FindQueueFamilies(VkPhysicalDevice device)
+QueueFamilyIndices VulkanGraphicsImpl::FindQueueFamilies(VkPhysicalDevice device) const
 {
     QueueFamilyIndices indices;
 
@@ -464,10 +478,10 @@ SwapChainSupportDetails VulkanGraphicsImpl::QuerySwapChainSupport(VkPhysicalDevi
 void VulkanGraphicsImpl::CreateLogicalDevice()
 {
     std::cout << "Creating Logical Device" << std::endl;
-    QueueFamilyIndices indices = FindQueueFamilies(mPhysicalDevice);
+    mFamilyIndices = FindQueueFamilies(mPhysicalDevice);
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-    std::set<uint32_t> uniqueQueueFamilies = {indices.mGraphicsFamily.value(), indices.mPresentFamily.value()};
+    std::set<uint32_t> uniqueQueueFamilies = {mFamilyIndices.mGraphicsFamily.value(), mFamilyIndices.mPresentFamily.value()};
 
     float queuePriority = 1.0f;
     for (uint32_t queueFamily : uniqueQueueFamilies) {
@@ -482,7 +496,7 @@ void VulkanGraphicsImpl::CreateLogicalDevice()
 
     VkDeviceQueueCreateInfo queueCreateInfo{};
     queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-    uint32_t graphicsFamilyIndex = indices.mGraphicsFamily.value();
+    uint32_t graphicsFamilyIndex = mFamilyIndices.mGraphicsFamily.value();
 
     queueCreateInfo.queueFamilyIndex = graphicsFamilyIndex;
     queueCreateInfo.queueCount = 1;
@@ -511,8 +525,9 @@ void VulkanGraphicsImpl::CreateLogicalDevice()
         throw std::runtime_error("failed to create logical device!");
     }
 
-    vkGetDeviceQueue(mLogicalDevice, indices.mPresentFamily.value(), 0, &mPresentQueue);
+    vkGetDeviceQueue(mLogicalDevice, mFamilyIndices.mPresentFamily.value(), 0, &mPresentQueue);
     vkGetDeviceQueue(mLogicalDevice, graphicsFamilyIndex, 0, &mGraphicsQueue);
 
 }
+
 
