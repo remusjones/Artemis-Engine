@@ -92,20 +92,13 @@ void SquareObject::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex, 
 
 void SquareObject::Destroy() {
 
-    if (mVertexBuffer) {
-        mVertexBuffer->Destroy();
+    if (mVertexBuffer)
         delete mVertexBuffer;
-    }
 
-    if (mIndexBuffer) {
-        mIndexBuffer->Destroy();
+    if (mIndexBuffer)
         delete mIndexBuffer;
-    }
 
     if (mUniformBuffer)
-    {
-        mUniformBuffer->Destroy();
         delete mUniformBuffer;
-    }
 }
 

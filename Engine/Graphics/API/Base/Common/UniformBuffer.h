@@ -23,7 +23,7 @@ class UniformBuffer{
 public:
 
     UniformBuffer();
-    void Destroy();
+    ~UniformBuffer();
 
     std::vector<Buffer*> uniformBuffers;
     std::vector<void*> uniformBuffersMapped;

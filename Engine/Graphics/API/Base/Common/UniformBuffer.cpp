@@ -4,7 +4,8 @@
 // Created by Remus on 18/12/2023.
 //
 UniformBuffer::UniformBuffer()
-        : uniformBuffers(VulkanPipelineManager::MAX_FRAMES_IN_FLIGHT), uniformBuffersMapped(VulkanPipelineManager::MAX_FRAMES_IN_FLIGHT)
+        : uniformBuffers(VulkanPipelineManager::MAX_FRAMES_IN_FLIGHT),
+        uniformBuffersMapped(VulkanPipelineManager::MAX_FRAMES_IN_FLIGHT)
 {
     VkDeviceSize bufferSize = sizeof(UniformBufferObject);
 
@@ -20,10 +21,11 @@ UniformBuffer::UniformBuffer()
     }
 }
 
-void UniformBuffer::Destroy() {
+UniformBuffer::~UniformBuffer() {
+
     for (auto & uniformBuffer : uniformBuffers)
     {
-        uniformBuffer->Destroy();
+        delete uniformBuffer;
     }
     uniformBuffers.resize(0, nullptr);
     uniformBuffers.resize(0, nullptr);

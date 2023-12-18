@@ -98,12 +98,11 @@ void Buffer::CopyBuffer(VkBuffer aSrcBuffer, VkBuffer aDstBuffer, VkDeviceSize a
 
     vkQueueSubmit(gGraphics->mRenderPipelineManager.mGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
     vkQueueWaitIdle(gGraphics->mRenderPipelineManager.mGraphicsQueue);
-
     vkFreeCommandBuffers(gGraphics->mLogicalDevice, gGraphics->mRenderPipelineManager.mCommandPool, 1, &commandBuffer);
-
 }
 
-void Buffer::Destroy() {
+Buffer::~Buffer() {
+
     if (mBuffer)
         vkDestroyBuffer(gGraphics->mLogicalDevice, mBuffer, nullptr);
     if (mMemory)
