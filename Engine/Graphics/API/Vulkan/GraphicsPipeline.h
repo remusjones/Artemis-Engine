@@ -15,7 +15,7 @@ public:
     void AddMaterialBase(const MaterialBase* aBase) {
         mMaterials.push_back(aBase);
     };
-    std::vector<Material> MakeMaterials(uint8_t aBinding) const;
+    std::vector<const MaterialBase *> MakeMaterials(uint8_t aBinding) const;
 
     void AddRenderer(Renderer* aRenderer);
     void RenderPipeline(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex);

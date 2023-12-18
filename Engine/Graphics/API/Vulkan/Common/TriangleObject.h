@@ -21,7 +21,7 @@ public:
  * identify what can be seperated from render pipeline */
 class TriangleObject : public Renderer {
 public:
-    void CreateObject();
+    void CreateObject(GraphicsPipeline& aBoundGraphicsPipeline);
     void Render(VkCommandBuffer aCommandBuffer) override;
     void Destroy();
     // Rendering Data

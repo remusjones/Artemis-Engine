@@ -3,6 +3,7 @@
 //
 #include "VulkanGraphicsImpl.h"
 #include "Common/TriangleObject.h"
+#include "GraphicsPipeline.h"
 #include <stdexcept>
 #include <cstring>
 #include <iostream>
@@ -160,17 +161,18 @@ void VulkanGraphicsImpl::CreateSurface()
 }
 
 void VulkanGraphicsImpl::CreateObjects() {
-
+    // Triangle Render Pipeline
+    auto* triangleGraphicsPipeline = new GraphicsPipeline();
     mTriangle = new TriangleObject();
-    mTriangle->CreateObject();
-
+    mTriangle->CreateObject(*triangleGraphicsPipeline);
+    gGraphics->mRenderPipelineManager.AddGraphicsPipeline(triangleGraphicsPipeline);
+    triangleGraphicsPipeline->Create();
 }
 
 
 // Have this function virtual for extension??
 void VulkanGraphicsImpl::CreateGraphicsPipeline()
 {
-
 
     mRenderPipelineManager.Initialize(mLogicalDevice,
                                       mSwapChain,

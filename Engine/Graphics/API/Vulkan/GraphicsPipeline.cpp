@@ -180,8 +180,9 @@ void GraphicsPipeline::Destroy() const {
     vkDestroyPipeline(gGraphics->mLogicalDevice, mGraphicsPipeline, nullptr);
 }
 
-std::vector<Material> GraphicsPipeline::MakeMaterials(uint8_t aBinding) const {
+std::vector<const MaterialBase *> GraphicsPipeline::MakeMaterials(uint8_t aBinding) const {
     // TODO: Not used yet due to not utilizing push constants
+    return mMaterials;
 }
 
 void GraphicsPipeline::AddRenderer(Renderer* aRenderer) {
@@ -190,54 +191,51 @@ void GraphicsPipeline::AddRenderer(Renderer* aRenderer) {
 
 void GraphicsPipeline::RenderPipeline(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex)
 {
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+    if (vkBeginCommandBuffer(aCommandBuffer, &beginInfo) != VK_SUCCESS) {
+        throw std::runtime_error("failed to begin recording command buffer!");
+    }
+
+    VkRenderPassBeginInfo renderPassInfo{};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassInfo.renderPass = gGraphics->mSwapChain->mRenderPass;
+    renderPassInfo.framebuffer = gGraphics-> mSwapChain->mSwapChainFrameBuffers[aImageIndex];
+    renderPassInfo.renderArea.offset = {0, 0};
+    renderPassInfo.renderArea.extent = gGraphics-> mSwapChain->mSwapChainExtent;
+
+    VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
+    renderPassInfo.clearValueCount = 1;
+    renderPassInfo.pClearValues = &clearColor;
+
+    vkCmdBeginRenderPass(aCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    vkCmdBindPipeline(aCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipeline);
+
+    VkViewport viewport{};
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.width = (float)gGraphics->mSwapChain->mSwapChainExtent.width;
+    viewport.height = (float)gGraphics->mSwapChain->mSwapChainExtent.height;
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    vkCmdSetViewport(aCommandBuffer, 0, 1, &viewport);
+
+    VkRect2D scissor{};
+    scissor.offset = {0, 0};
+    scissor.extent = gGraphics->mSwapChain->mSwapChainExtent;
+    vkCmdSetScissor(aCommandBuffer, 0, 1, &scissor);
 
     for(auto & mRenderer : mRenderers)
     {
-        VkCommandBufferBeginInfo beginInfo{};
-        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
-        if (vkBeginCommandBuffer(aCommandBuffer, &beginInfo) != VK_SUCCESS) {
-            throw std::runtime_error("failed to begin recording command buffer!");
-        }
-
-        VkRenderPassBeginInfo renderPassInfo{};
-        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = gGraphics->mSwapChain->mRenderPass;
-        renderPassInfo.framebuffer = gGraphics-> mSwapChain->mSwapChainFrameBuffers[aImageIndex];
-        renderPassInfo.renderArea.offset = {0, 0};
-        renderPassInfo.renderArea.extent =gGraphics-> mSwapChain->mSwapChainExtent;
-
-        VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
-        renderPassInfo.clearValueCount = 1;
-        renderPassInfo.pClearValues = &clearColor;
-
-        vkCmdBeginRenderPass(aCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-        vkCmdBindPipeline(aCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipeline);
-
-        VkViewport viewport{};
-        viewport.x = 0.0f;
-        viewport.y = 0.0f;
-        viewport.width = (float)gGraphics->mSwapChain->mSwapChainExtent.width;
-        viewport.height = (float)gGraphics->mSwapChain->mSwapChainExtent.height;
-        viewport.minDepth = 0.0f;
-        viewport.maxDepth = 1.0f;
-        vkCmdSetViewport(aCommandBuffer, 0, 1, &viewport);
-
-        VkRect2D scissor{};
-        scissor.offset = {0, 0};
-        scissor.extent = gGraphics->mSwapChain->mSwapChainExtent;
-        vkCmdSetScissor(aCommandBuffer, 0, 1, &scissor);
-
-
         mRenderer->Render(aCommandBuffer);
-        vkCmdEndRenderPass(aCommandBuffer);
-
-        if (vkEndCommandBuffer(aCommandBuffer) != VK_SUCCESS) {
-            throw std::runtime_error("failed to record command buffer!");
-        }
-
     }
 
+    vkCmdEndRenderPass(aCommandBuffer);
+
+    if (vkEndCommandBuffer(aCommandBuffer) != VK_SUCCESS) {
+        throw std::runtime_error("failed to record command buffer!");
+    }
 }
 

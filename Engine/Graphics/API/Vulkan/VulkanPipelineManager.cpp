@@ -54,6 +54,13 @@ void VulkanPipelineManager::Cleanup()
     }
 
     mLoadedMaterials.resize(0, nullptr);
+
+    for(auto& graphicsPipeline : mGraphicsPipelines)
+    {
+        graphicsPipeline->Destroy();
+        delete graphicsPipeline;
+    }
+    mGraphicsPipelines.resize(0, nullptr);
 }
 
 void VulkanPipelineManager::CreateCommandPool(const QueueFamilyIndices& aQueueFamilyIndices)
