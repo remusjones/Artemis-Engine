@@ -12,7 +12,7 @@
 #include "IApplication.h"
 
 class VulkanSwapChain;
-class TriangleObject;
+class SquareObject;
 class VulkanGraphicsImpl : public IApplication
 {
 public:
@@ -86,7 +86,7 @@ private:
     int mWindowHeight;
     const char* mWindowName;
 
-    TriangleObject* mTriangle;
+    SquareObject* mTriangle;
 
     // Vulkan Impls
     std::vector<VkExtensionProperties> mExtensions;

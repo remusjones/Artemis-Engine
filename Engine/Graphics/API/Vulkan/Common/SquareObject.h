@@ -19,7 +19,7 @@ public:
 
 /*Attempts to abstract the required components for rendering to
  * identify what can be seperated from render pipeline */
-class TriangleObject : public Renderer {
+class SquareObject : public Renderer {
 public:
     void CreateObject(GraphicsPipeline& aBoundGraphicsPipeline);
     void Render(VkCommandBuffer aCommandBuffer) override;

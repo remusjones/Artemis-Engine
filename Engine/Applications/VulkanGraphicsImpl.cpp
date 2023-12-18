@@ -2,7 +2,7 @@
 // Created by Remus on 4/11/2021.
 //
 #include "VulkanGraphicsImpl.h"
-#include "Common/TriangleObject.h"
+#include "Common/SquareObject.h"
 #include "GraphicsPipeline.h"
 #include <stdexcept>
 #include <cstring>
@@ -163,7 +163,7 @@ void VulkanGraphicsImpl::CreateSurface()
 void VulkanGraphicsImpl::CreateObjects() {
     // Triangle Render Pipeline
     auto* triangleGraphicsPipeline = new GraphicsPipeline();
-    mTriangle = new TriangleObject();
+    mTriangle = new SquareObject();
     mTriangle->CreateObject(*triangleGraphicsPipeline);
     gGraphics->mRenderPipelineManager.AddGraphicsPipeline(triangleGraphicsPipeline);
     triangleGraphicsPipeline->Create();

@@ -22,7 +22,8 @@ add_executable(${PROJECT_NAME} main.cpp
         "Engine/IO/File Management/FileManagementInfo.h"
         "Engine/Graphics/API/Base/Common/Data/Vertex.h"
         Engine/Graphics/API/Base/Common/MaterialBase.h
-        Engine/Graphics/API/Base/Common/RendererBase.h Engine/Applications/IApplication.h Engine/Graphics/API/Base/Common/Material.h Engine/Graphics/API/Base/Common/Buffer.h Engine/Graphics/API/Base/Common/Buffer.cpp Engine/Graphics/API/Base/Common/Buffer.h Engine/Graphics/API/Base/Common/Material.cpp Engine/Graphics/API/Base/Common/Material.h Engine/Graphics/API/Vulkan/Common/TriangleObject.cpp Engine/Graphics/API/Vulkan/Common/TriangleObject.h Engine/Graphics/API/Base/Common/MaterialBase.cpp Engine/Graphics/API/Base/Common/MaterialBase.h Engine/Graphics/API/Vulkan/GraphicsPipeline.cpp Engine/Graphics/API/Vulkan/GraphicsPipeline.h)
+        Engine/Graphics/API/Base/Common/RendererBase.h Engine/Applications/IApplication.h Engine/Graphics/API/Base/Common/Material.h Engine/Graphics/API/Base/Common/Buffer.h Engine/Graphics/API/Base/Common/Buffer.cpp Engine/Graphics/API/Base/Common/Buffer.h Engine/Graphics/API/Base/Common/Material.cpp Engine/Graphics/API/Base/Common/Material.h Engine/Graphics/API/Vulkan/Common/SquareObject.cpp Engine/Graphics/API/Vulkan/Common/SquareObject.h Engine/Graphics/API/Base/Common/MaterialBase.cpp Engine/Graphics/API/Base/Common/MaterialBase.h Engine/Graphics/API/Vulkan/GraphicsPipeline.cpp Engine/Graphics/API/Vulkan/GraphicsPipeline.h
+        Engine/Graphics/API/Base/Common/Data/UniformBufferObject.h)
 
 # Include Vulkan Headers
 include_directories("${VULKAN_SDK}/Include")

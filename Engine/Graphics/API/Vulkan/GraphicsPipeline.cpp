@@ -4,7 +4,7 @@
 
 #include <vulkan/vulkan_core.h>
 #include "GraphicsPipeline.h"
-#include "Common/TriangleObject.h"
+#include "Common/SquareObject.h"
 #include "API/Base/Common/Data/Vertex.h"
 #include "VulkanGraphicsImpl.h"
 #include "../../../IO/File Management/FileManagement.h"

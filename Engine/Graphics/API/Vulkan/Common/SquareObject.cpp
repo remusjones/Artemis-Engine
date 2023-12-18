@@ -2,18 +2,18 @@
 // Created by Remus on 17/12/2023.
 //
 
-#include "TriangleObject.h"
+#include "SquareObject.h"
 #include "API/Base/Common/Material.h"
 #include "GraphicsPipeline.h"
 #include "API/Base/Common/Buffer.h"
 #include "VulkanGraphicsImpl.h"
 
-void TriangleObject::CreateObject(GraphicsPipeline& aBoundGraphicsPipeline) {
+void SquareObject::CreateObject(GraphicsPipeline& aBoundGraphicsPipeline) {
 
     // Load Shaders
     mGraphicsPipeline = &aBoundGraphicsPipeline;
-    mGraphicsPipeline->AddShader("/Shaders/triangleInput_v.spv", VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT);
-    mGraphicsPipeline->AddShader("/Shaders/triangleInput_f.spv", VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT);
+    mGraphicsPipeline->AddShader("/Shaders/Flat2D_v.spv", VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT);
+    mGraphicsPipeline->AddShader("/Shaders/Flat2D_f.spv", VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT);
     mGraphicsPipeline->AddRenderer(this);
 
     // Create Vertices & Indices (pretend mesh)
@@ -51,7 +51,7 @@ void TriangleObject::CreateObject(GraphicsPipeline& aBoundGraphicsPipeline) {
 
 }
 
-void TriangleObject::Render(VkCommandBuffer aCommandBuffer) {
+void SquareObject::Render(VkCommandBuffer aCommandBuffer) {
 
     VkBuffer vertexBuffers[] = {mVertexBuffer->mBuffer};
     VkDeviceSize offsets[] = {0};
@@ -60,7 +60,7 @@ void TriangleObject::Render(VkCommandBuffer aCommandBuffer) {
     vkCmdDrawIndexed(aCommandBuffer, static_cast<uint32_t>(mIndices.size()), 1, 0, 0, 0);
 }
 
-void TriangleObject::Destroy() {
+void SquareObject::Destroy() {
 
     if (mVertexBuffer) {
         mVertexBuffer->Cleanup();
