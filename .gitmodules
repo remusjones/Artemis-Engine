@@ -14,7 +14,7 @@
     path = Libraries/SDL
     url = https://github.com/libsdl-org/SDL.git
     branch = main
-[submodule "vk-bootstrap"]
-    path = Libraries/vk-bootstrap
-    url = https://github.com/charles-lunarg/vk-bootstrap.git
-    branch = main
+[submodule "VulkanMemoryAllocator"]
+    path = Libraries/VulkanMemoryAllocator
+    url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
+    branch = master

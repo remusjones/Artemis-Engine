@@ -73,7 +73,7 @@ add_subdirectory(${LIBRARIES_PATH}glm glm)
 add_subdirectory(${LIBRARIES_PATH}SDL EXCLUDE_FROM_ALL)
 
 # https://github.com/charles-lunarg/vk-bootstrap.git
-add_subdirectory(${LIBRARIES_PATH}vk-bootstrap vk-bootstrap)
+add_subdirectory(${LIBRARIES_PATH}VulkanMemoryAllocator VulkanMemoryAllocator)
 
 # Compile SPV Shaders TODO: Move to Vulkan only CMake script
 add_custom_target(CompileSPVShaders
@@ -88,7 +88,8 @@ target_link_libraries(${PROJECT_NAME} )
 target_link_libraries(
         ${PROJECT_NAME}
         Vulkan::Vulkan
-        glm::glm glog
+        glm::glm
+        glog
         SDL3::SDL3
-        vk-bootstrap vk-bootstrap)
+        VulkanMemoryAllocator)
 
