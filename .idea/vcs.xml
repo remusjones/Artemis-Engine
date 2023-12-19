@@ -2,8 +2,10 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Libraries/SDL" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Libraries/glfw" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Libraries/glm" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Libraries/glog" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Libraries/vk-bootstrap" vcs="Git" />
   </component>
 </project>

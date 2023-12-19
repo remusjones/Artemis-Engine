@@ -10,8 +10,11 @@
     path = Libraries/glog
     url = https://github.com/google/glog.git
     branch = master
-[submodule "sdl"]
-    path = Libraries/sdl
+[submodule "SDL"]
+    path = Libraries/SDL
     url = https://github.com/libsdl-org/SDL.git
     branch = main
-
+[submodule "vk-bootstrap"]
+    path = Libraries/vk-bootstrap
+    url = https://github.com/charles-lunarg/vk-bootstrap.git
+    branch = main

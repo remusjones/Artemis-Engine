@@ -5,7 +5,10 @@ set(CMAKE_CXX_STANDARD 23)
 
 # Vulkan path to SDK
 set(ENV{VULKAN_SDK} "C:/VulkanSDK/1.3.268.0")
+set(SDL_DIRECTX OFF) # Disable due to not working atm
 set(LIBRARIES_PATH "Libraries/")
+
+
 find_package(Vulkan REQUIRED)
 
 add_executable(${PROJECT_NAME} main.cpp
@@ -58,7 +61,7 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 # https://github.com/glfw/glfw.git
 add_subdirectory(${LIBRARIES_PATH}glfw glfw)
 target_link_libraries(${PROJECT_NAME} glfw)
-include_directories("${LIBRARIES_PATH}glfw/include")
+include_directories(${LIBRARIES_PATH}glfw/include)
 
 # https://github.com/google/glog.git
 add_subdirectory(${LIBRARIES_PATH}glog glog)
@@ -66,10 +69,11 @@ add_subdirectory(${LIBRARIES_PATH}glog glog)
 # https://github.com/g-truc/glm.git
 add_subdirectory(${LIBRARIES_PATH}glm glm)
 
-# https://github.com/g-truc/glm.git
-add_subdirectory(${LIBRARIES_PATH}sdl sdl)
+# https://github.com/libsdl-org/SDL.git
+add_subdirectory(${LIBRARIES_PATH}SDL EXCLUDE_FROM_ALL)
 
-
+# https://github.com/charles-lunarg/vk-bootstrap.git
+add_subdirectory(${LIBRARIES_PATH}vk-bootstrap vk-bootstrap)
 
 # Compile SPV Shaders TODO: Move to Vulkan only CMake script
 add_custom_target(CompileSPVShaders
@@ -80,9 +84,11 @@ add_custom_target(CompileSPVShaders
 
 add_dependencies(${PROJECT_NAME} CompileSPVShaders)
 # Link libraries
+target_link_libraries(${PROJECT_NAME} )
 target_link_libraries(
         ${PROJECT_NAME}
         Vulkan::Vulkan
         glm::glm glog
-        sdl sdl)
+        SDL3::SDL3
+        vk-bootstrap vk-bootstrap)
 
