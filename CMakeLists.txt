@@ -5,7 +5,6 @@ set(CMAKE_CXX_STANDARD 23)
 
 # Vulkan path to SDK
 set(ENV{VULKAN_SDK} "C:/VulkanSDK/1.3.268.0")
-set(SDL_DIRECTX OFF) # Disable due to not working atm
 set(LIBRARIES_PATH "Libraries/")
 
 
@@ -54,12 +53,14 @@ include_directories(Engine/Applications)
 include_directories(Engine/IO/File Management)
 
 # https://github.com/google/glog.git
+set(WITH_GFLAGS OFF) # We aren't using gflags, so disable it
 add_subdirectory(${LIBRARIES_PATH}glog glog)
 
 # https://github.com/g-truc/glm.git
 add_subdirectory(${LIBRARIES_PATH}glm glm)
 
 # https://github.com/libsdl-org/SDL.git
+set(SDL_DIRECTX OFF) # Disable due to not working atm
 add_subdirectory(${LIBRARIES_PATH}SDL EXCLUDE_FROM_ALL)
 
 # https://github.com/charles-lunarg/vk-bootstrap.git
@@ -81,5 +82,5 @@ target_link_libraries(
         glm::glm
         glog
         SDL3::SDL3
-        VulkanMemoryAllocator)
+        GPUOpen::VulkanMemoryAllocator)
 
