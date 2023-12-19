@@ -8,10 +8,10 @@
 #include <stdexcept>
 
 #include "Common/SquareObject.h"
-#include "API/Base/Common/Data/Vertex.h"
+#include "Base/Common/Data/Vertex.h"
 #include "VulkanGraphicsImpl.h"
-#include "../../../IO/File Management/FileManagement.h"
-#include "API/Base/Common/Buffers/UniformBuffer.h"
+#include "File Management/FileManagement.h"
+#include "Base/Common/Buffers/UniformBuffer.h"
 
 void GraphicsPipeline::Create() {
 

@@ -4,7 +4,7 @@
 #pragma once
 
 #include <vector>
-#include "API/Base/Common/MaterialBase.h"
+#include "Base/Common/MaterialBase.h"
 
 class VulkanMaterial : public MaterialBase {
 public:

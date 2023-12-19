@@ -47,10 +47,9 @@ add_executable(${PROJECT_NAME} main.cpp
 # Include Vulkan Headers
 include_directories("${VULKAN_SDK}/Include")
 
-include_directories(Engine/Graphics)
-include_directories(Engine/Graphics/API/Vulkan API)
+include_directories(Engine/Graphics/API)
 include_directories(Engine/Applications)
-include_directories(Engine/IO/File Management)
+include_directories(Engine/IO)
 
 # https://github.com/google/glog.git
 set(WITH_GFLAGS OFF) # We aren't using gflags, so disable it
@@ -60,7 +59,7 @@ add_subdirectory(${LIBRARIES_PATH}glog glog)
 add_subdirectory(${LIBRARIES_PATH}glm glm)
 
 # https://github.com/libsdl-org/SDL.git
-set(SDL_DIRECTX OFF) # Disable due to not working atm
+set(SDL_DIRECTX OFF) # Disable due to not supporting directx at the moment
 add_subdirectory(${LIBRARIES_PATH}SDL EXCLUDE_FROM_ALL)
 
 # https://github.com/charles-lunarg/vk-bootstrap.git

@@ -6,8 +6,8 @@
 #include <vector>
 #include "VulkanSwapChain.h"
 #include "Common/VulkanMaterial.h"
-#include "API/Base/Common/Data/Vertex.h"
-#include "API/Base/Common/Buffers/Buffer.h"
+#include "Base/Common/Data/Vertex.h"
+#include "Base/Common/Buffers/Buffer.h"
 
 class GraphicsPipeline;
 

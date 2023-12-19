@@ -4,12 +4,11 @@
 //
 #pragma once
 #include <vector>
-#include <optional>
 #include <SDL_video.h>
 
-#include "VulkanPipelineManager.h"
-#include "VulkanSystemStructs.h"
 #include "IApplication.h"
+#include "Vulkan/VulkanPipelineManager.h"
+#include "Vulkan/VulkanSystemStructs.h"
 
 class VulkanSwapChain;
 class SquareObject;

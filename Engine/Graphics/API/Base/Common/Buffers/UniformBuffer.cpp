@@ -1,5 +1,8 @@
 #include "UniformBuffer.h"
 
+#include "VulkanGraphicsImpl.h"
+#include "Vulkan/VulkanPipelineManager.h"
+
 //
 // Created by Remus on 18/12/2023.
 //

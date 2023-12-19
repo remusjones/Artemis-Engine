@@ -3,20 +3,19 @@
 //
 #define VK_USE_PLATFORM_WIN32_KHR
 #include "VulkanGraphicsImpl.h"
-#include "Common/SquareObject.h"
-#include "GraphicsPipeline.h"
 #include <stdexcept>
 #include <cstring>
 #include <iostream>
 #include <set>
 #include <cstdint>
 #include <algorithm>
-#include <VulkanSwapChain.h>
 #include <chrono>
 #include <SDL.h>
 #include <SDL_vulkan.h>
 
 #include "glog/logging.h"
+#include "Vulkan/GraphicsPipeline.h"
+#include "Vulkan/Common/SquareObject.h"
 
 VulkanGraphics *gGraphics = nullptr;
 

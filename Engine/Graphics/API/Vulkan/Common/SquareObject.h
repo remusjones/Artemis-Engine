@@ -5,7 +5,7 @@
 #pragma once
 
 #include <vector>
-#include "API/Base/Common/Data/Vertex.h"
+#include "Base/Common/Data/Vertex.h"
 
 class Material;
 class VulkanPipelineManager;

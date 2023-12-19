@@ -3,14 +3,10 @@
 //
 #pragma once
 
-#include <vulkan/vulkan_core.h>
 #include <vector>
-
 #define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
 #include "glm/glm.hpp"
-#include "API/Base/Common/Buffers/Buffer.h"
-#include "VulkanPipelineManager.h"
-#include "VulkanGraphicsImpl.h"
+#include "Base/Common/Buffers/Buffer.h"
 
 class UniformBufferObject{
 public:
