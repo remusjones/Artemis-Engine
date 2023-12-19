@@ -8,7 +8,7 @@
 #include "API/Base/Common/Data/Vertex.h"
 #include "VulkanGraphicsImpl.h"
 #include "../../../IO/File Management/FileManagement.h"
-#include "API/Base/Common/UniformBuffer.h"
+#include "API/Base/Common/Buffers/UniformBuffer.h"
 
 void GraphicsPipeline::Create() {
 

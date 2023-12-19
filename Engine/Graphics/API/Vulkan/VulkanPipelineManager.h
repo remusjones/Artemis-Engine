@@ -12,7 +12,7 @@
 #include "VulkanSwapChain.h"
 #include "Common/VulkanMaterial.h"
 #include "API/Base/Common/Data/Vertex.h"
-#include "API/Base/Common/Buffer.h"
+#include "API/Base/Common/Buffers/Buffer.h"
 
 class GraphicsPipeline;
 

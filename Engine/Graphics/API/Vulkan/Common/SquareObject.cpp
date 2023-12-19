@@ -8,15 +8,22 @@
 #include "SquareObject.h"
 #include "API/Base/Common/Material.h"
 #include "GraphicsPipeline.h"
-#include "API/Base/Common/Buffer.h"
+#include "API/Base/Common/Buffers/Buffer.h"
 #include "VulkanGraphicsImpl.h"
-#include "API/Base/Common/UniformBuffer.h"
+#include "API/Base/Common/Buffers/UniformBuffer.h"
+#include "API/Base/Common/Buffers/VertexBuffer.h"
 #include "glog/logging.h"
 
 void SquareObject::CreateObject(GraphicsPipeline& aBoundGraphicsPipeline, const char* aName) {
 
     mName = aName;
     LOG(INFO) << "Creating Object: " << mName;
+
+    InitializeRenderer(aBoundGraphicsPipeline);
+}
+
+void SquareObject::InitializeRenderer(GraphicsPipeline& aBoundGraphicsPipeline) {
+
     // Load Shaders
     mGraphicsPipeline = &aBoundGraphicsPipeline;
     mGraphicsPipeline->AddShader("/Shaders/3DObject_v.spv", VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT);
@@ -24,10 +31,10 @@ void SquareObject::CreateObject(GraphicsPipeline& aBoundGraphicsPipeline, const 
     mGraphicsPipeline->AddRenderer(this);
     // Create Vertices & Indices (pretend mesh)
     mVertices = {
-        {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-        {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-        {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-        {{-0.5f, 0.5f}, {1.0f, 0.5f, 1.0f}}
+            {{-0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+            {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+            {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+            {{-0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}}
     };
 
     mIndices = {
@@ -47,17 +54,8 @@ void SquareObject::CreateObject(GraphicsPipeline& aBoundGraphicsPipeline, const 
     //mMaterial->Create(materialBase, "mSquare");
 
     // Create Buffers
-    mVertexBuffer = new Buffer(mVertices.data(), sizeof(mVertices[0]) * mVertices.size(),
-                               VK_BUFFER_USAGE_TRANSFER_DST_BIT |
-                               VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-
-    mIndexBuffer = new Buffer(mIndices.data(), sizeof(mIndices[0]) * mIndices.size(),
-                              VK_BUFFER_USAGE_TRANSFER_DST_BIT |
-                              VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
-
+    mVertexBuffer = new VertexBuffer(mVertices, mIndices);
     mUniformBuffer = new UniformBuffer();
-
-
 }
 
 void SquareObject::RotateObject(uint32_t aCurrentFrame) {
@@ -79,15 +77,9 @@ void SquareObject::RotateObject(uint32_t aCurrentFrame) {
 
 void SquareObject::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex, uint32_t aCurrentFrame) {
 
-    VkBuffer vertexBuffers[] = {mVertexBuffer->mBuffer};
-    VkDeviceSize offsets[] = {0};
-
     RotateObject(aCurrentFrame);
-    vkCmdBindVertexBuffers(aCommandBuffer, 0, 1, vertexBuffers, offsets);
-    vkCmdBindIndexBuffer(aCommandBuffer, mIndexBuffer->mBuffer, 0, VK_INDEX_TYPE_UINT16);
 
-    vkCmdDrawIndexed(aCommandBuffer, static_cast<uint32_t>(mIndices.size()), 1, 0, 0, 0);
-
+    Renderer::Render(aCommandBuffer, aImageIndex, aCurrentFrame);
 }
 
 void SquareObject::Destroy() {
@@ -95,10 +87,15 @@ void SquareObject::Destroy() {
     if (mVertexBuffer)
         delete mVertexBuffer;
 
-    if (mIndexBuffer)
-        delete mIndexBuffer;
-
     if (mUniformBuffer)
         delete mUniformBuffer;
 }
 
+void Renderer::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex, uint32_t aCurrentFrame) {
+    VkBuffer vertexBuffers[] = {mVertexBuffer->mVerticesBuffer->mBuffer};
+    VkDeviceSize offsets[] = {0};
+    vkCmdBindVertexBuffers(aCommandBuffer, 0, 1, vertexBuffers, offsets);
+    vkCmdBindIndexBuffer(aCommandBuffer, mVertexBuffer->mIndicesBuffer->mBuffer, 0, VK_INDEX_TYPE_UINT16);
+
+    vkCmdDrawIndexed(aCommandBuffer, static_cast<uint32_t>(mIndices.size()), 1, 0, 0, 0);
+}
