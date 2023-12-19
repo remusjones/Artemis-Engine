@@ -2,10 +2,8 @@
 // Created by Remus on 11/12/2022.
 //
 #pragma once
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
 #include <vector>
-#include <optional>
+#include <vulkan/vulkan_core.h>
 
 class VulkanGraphicsImpl;
 

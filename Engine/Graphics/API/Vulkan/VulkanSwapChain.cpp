@@ -5,18 +5,23 @@
 #include <stdexcept>
 #include <iostream>
 #include "VulkanSwapChain.h"
+
+#include <SDL_events.h>
+
 #include "VulkanSystemStructs.h"
 #include "VulkanGraphicsImpl.h"
 #include "glog/logging.h"
 
 void VulkanSwapChain::RecreateSwapChain()
 {
-    int width = 0, height = 0;
-    glfwGetFramebufferSize(mApplication->mWindow, &width, &height);
+    int width = 0;
+    int height = 0;
+    SDL_GetWindowSize(mApplication->mWindow, &width, &height);
     while (width == 0 || height == 0) {
 
-        glfwGetFramebufferSize(mApplication->mWindow, &width, &height);
-        glfwWaitEvents();
+        SDL_GetWindowSize(mApplication->mWindow, &width, &height);
+        //SDL_Event event;
+        //SDL_WaitEvent(&event);
         LOG(INFO) << "VulkanGraphicsImpl Minimized";
     }
 

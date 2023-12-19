@@ -53,16 +53,6 @@ include_directories(Engine/Graphics/API/Vulkan API)
 include_directories(Engine/Applications)
 include_directories(Engine/IO/File Management)
 
-# Configure and link GLFW
-set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-
-# https://github.com/glfw/glfw.git
-add_subdirectory(${LIBRARIES_PATH}glfw glfw)
-target_link_libraries(${PROJECT_NAME} glfw)
-include_directories(${LIBRARIES_PATH}glfw/include)
-
 # https://github.com/google/glog.git
 add_subdirectory(${LIBRARIES_PATH}glog glog)
 

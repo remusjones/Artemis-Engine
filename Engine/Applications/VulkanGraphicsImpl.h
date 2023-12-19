@@ -3,10 +3,10 @@
 // Generic VulkanGraphicsImpl process to run the "project"
 //
 #pragma once
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
 #include <vector>
 #include <optional>
+#include <SDL_video.h>
+
 #include "VulkanPipelineManager.h"
 #include "VulkanSystemStructs.h"
 #include "IApplication.h"
@@ -31,7 +31,7 @@ private:
     // Init Vulkan & Supporting Vulkan
     void InitializeVulkan();
 
-    // Create GLFW Window
+    // Create Window
     void InitializeWindow();
 
     // Main Engine Loop
@@ -61,7 +61,7 @@ private:
             const VkDebugUtilsMessengerCallbackDataEXT* aCallbackData,
             void* aUserData);
 
-    std::vector<const char*> GetRequiredExtensions() const;;
+    std::vector<const char*> GetRequiredExtensions() const;
 
     VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* aCreateInfo,
                                           const VkAllocationCallbacks* aAllocator,
@@ -76,7 +76,7 @@ public:
     VulkanPipelineManager mRenderPipelineManager;
     VulkanSwapChain* mSwapChain;
     VkInstance mVulkanInstance;
-    GLFWwindow* mWindow{}; // TODO: Move to interface
+    SDL_Window* mWindow{nullptr}; // TODO: Move to interface
     VkDevice  mLogicalDevice{};
     VkPhysicalDevice mPhysicalDevice = VK_NULL_HANDLE;
     VkSurfaceKHR mSurface;

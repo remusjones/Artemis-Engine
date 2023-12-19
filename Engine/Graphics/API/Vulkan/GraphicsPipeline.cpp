@@ -4,6 +4,9 @@
 
 #include <vulkan/vulkan_core.h>
 #include "GraphicsPipeline.h"
+
+#include <stdexcept>
+
 #include "Common/SquareObject.h"
 #include "API/Base/Common/Data/Vertex.h"
 #include "VulkanGraphicsImpl.h"

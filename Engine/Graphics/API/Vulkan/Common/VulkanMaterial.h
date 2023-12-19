@@ -3,14 +3,7 @@
 //
 #pragma once
 
-#define GLFW_INCLUDE_VULKAN
-#include "GLFW/glfw3.h"
-
 #include <vector>
-#include <string>
-#include <map>
-#include <stdexcept>
-#include "VulkanSystemStructs.h"
 #include "API/Base/Common/MaterialBase.h"
 
 class VulkanMaterial : public MaterialBase {

@@ -2,13 +2,8 @@
 // Created by Remus on 6/11/2021.
 //
 #pragma once
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
 
 #include <vector>
-#include <string>
-#include <map>
-#include "VulkanSystemStructs.h"
 #include "VulkanSwapChain.h"
 #include "Common/VulkanMaterial.h"
 #include "API/Base/Common/Data/Vertex.h"

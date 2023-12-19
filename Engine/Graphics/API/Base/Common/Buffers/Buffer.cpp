@@ -3,6 +3,9 @@
 //
 
 #include "Buffer.h"
+
+#include <stdexcept>
+
 #include "VulkanGraphicsImpl.h"
 
 Buffer::Buffer(const void *aData, VkDeviceSize bufferSize, VkBufferUsageFlags aUsage) {
