@@ -66,6 +66,11 @@ add_subdirectory(${LIBRARIES_PATH}glog glog)
 # https://github.com/g-truc/glm.git
 add_subdirectory(${LIBRARIES_PATH}glm glm)
 
+# https://github.com/g-truc/glm.git
+add_subdirectory(${LIBRARIES_PATH}sdl sdl)
+
+
+
 # Compile SPV Shaders TODO: Move to Vulkan only CMake script
 add_custom_target(CompileSPVShaders
         COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/CompileShaders.bat
@@ -78,5 +83,6 @@ add_dependencies(${PROJECT_NAME} CompileSPVShaders)
 target_link_libraries(
         ${PROJECT_NAME}
         Vulkan::Vulkan
-        glm::glm glog)
+        glm::glm glog
+        sdl sdl)
 

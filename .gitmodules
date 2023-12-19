@@ -10,3 +10,8 @@
     path = Libraries/glog
     url = https://github.com/google/glog.git
     branch = master
+[submodule "sdl"]
+    path = Libraries/sdl
+    url = https://github.com/libsdl-org/SDL.git
+    branch = main
+
