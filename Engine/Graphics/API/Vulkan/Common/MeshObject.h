@@ -5,8 +5,11 @@
 #pragma once
 
 #include <vector>
+
+#include "..\..\Base\Common\Buffers\PushConstants.h"
 #include "Base/Common/Data/Vertex.h"
 
+class Mesh;
 class Material;
 class VulkanPipelineManager;
 class GraphicsPipeline;
@@ -16,8 +19,9 @@ class AllocatedVertexBuffer;
 
 class Renderer {
 public:
-
     Renderer();
+
+    virtual ~Renderer();
 
     virtual void Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
                         uint32_t aCurrentFrame);
@@ -25,20 +29,17 @@ public:
     virtual void InitializeRenderer(GraphicsPipeline &aBoundGraphicsPipeline) =
     0;
 
-    UniformBuffer *mUniformBuffer;
-    AllocatedVertexBuffer *mVertexBuffer;
 
-    // Rendering Data
-    Material *mMaterial; // TODO: Concept Unused
     GraphicsPipeline *mGraphicsPipeline;
 
-    std::vector<Vertex> mVertices;
-    std::vector<int16_t> mIndices;
+    Mesh* mMesh;
+
+    PushConstants mPushConstants{};
 };
 
 /*Attempts to abstract the required components for rendering to
  * identify what can be seperated from render pipeline */
-class SquareObject : public Renderer {
+class MeshObject : public Renderer {
 public:
     void CreateObject(GraphicsPipeline &aBoundGraphicsPipeline,
                       const char *aName = "Default");
@@ -50,7 +51,6 @@ public:
     void Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
                 uint32_t aCurrentFrame) override;
 
-    void Destroy();
 
     // TODO: Move name to a metadata tag instead
     const char *mName;

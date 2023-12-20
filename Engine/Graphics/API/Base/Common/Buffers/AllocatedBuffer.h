@@ -15,9 +15,6 @@ public:
     void CreateBuffer(VkDeviceSize aSize, VkBufferUsageFlags aUsage, VkMemoryPropertyFlags aProperties, VkBuffer &aBuffer,
                       VmaAllocation &aAllocation);
 
-    void CopyBuffer(VkBuffer aSrcBuffer, VkBuffer aDstBuffer,
-                    VkDeviceSize aSize);
-
     VkBuffer mBuffer;
     VmaAllocation mAllocation;
 };

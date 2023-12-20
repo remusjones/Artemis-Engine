@@ -15,7 +15,7 @@
 
 #include "glog/logging.h"
 #include "Vulkan/GraphicsPipeline.h"
-#include "Vulkan/Common/SquareObject.h"
+#include "Vulkan/Common/MeshObject.h"
 
 VulkanGraphics *gGraphics = nullptr;
 
@@ -83,11 +83,7 @@ void VulkanGraphicsImpl::Cleanup() {
     vkDeviceWaitIdle(mLogicalDevice);
     mRenderPipelineManager.Cleanup();
 
-    // TODO: Move into object pool ..
-    if (mSquare) {
-        mSquare->Destroy();
-        delete mSquare;
-    }
+    delete mSquare;
 
     vmaDestroyAllocator(mAllocator);
     mSwapChain->Cleanup();
@@ -191,7 +187,7 @@ void VulkanGraphicsImpl::CreateObjects() {
     // Triangle Render Pipeline
 
     auto *meshPipeline = new GraphicsPipeline("Mesh Pipeline");
-    mSquare = new SquareObject();
+    mSquare = new MeshObject();
     mSquare->CreateObject(*meshPipeline, "Square");
     gGraphics->mRenderPipelineManager.AddGraphicsPipeline(meshPipeline);
 }

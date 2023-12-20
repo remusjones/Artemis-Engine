@@ -33,14 +33,10 @@ private:
 
 public:
     const char* mPipelineName;
-    VkDescriptorSetLayout mDescriptorSetLayout;
     VkPipelineLayout mPipelineLayout;
     VkPipeline mGraphicsPipeline;
     std::vector<VkPipelineShaderStageCreateInfo> mShadersInPipeline;
     std::vector<const MaterialBase*> mMaterials = {};
     std::vector<Renderer*> mRenderers = {};
-    std::vector<VkDescriptorSet> mDescriptorSets;
-private:
-    VkDescriptorPool mDescriptorPool;
 
 };

@@ -33,14 +33,13 @@ add_executable(${PROJECT_NAME} main.cpp
         Engine/Graphics/API/Base/Common/Buffers/Buffer.h
         Engine/Graphics/API/Base/Common/Material.cpp
         Engine/Graphics/API/Base/Common/Material.h
-        Engine/Graphics/API/Vulkan/Common/SquareObject.cpp
-        Engine/Graphics/API/Vulkan/Common/SquareObject.h
+        Engine/Graphics/API/Vulkan/Common/MeshObject.cpp
+        Engine/Graphics/API/Vulkan/Common/MeshObject.h
         Engine/Graphics/API/Base/Common/MaterialBase.cpp
         Engine/Graphics/API/Base/Common/MaterialBase.h
         Engine/Graphics/API/Vulkan/GraphicsPipeline.cpp
         Engine/Graphics/API/Vulkan/GraphicsPipeline.h
-        Engine/Graphics/API/Base/Common/Buffers/UniformBuffer.h
-        Engine/Graphics/API/Base/Common/Buffers/UniformBuffer.cpp
+        Engine/Graphics/API/Base/Common/Buffers/PushConstants.h
         Engine/Graphics/API/Base/Common/Buffers/VertexBuffer.cpp
         Engine/Graphics/API/Base/Common/Buffers/VertexBuffer.h
         Engine/Graphics/API/Base/Common/Buffers/AllocatedVertexBuffer.h
@@ -48,7 +47,10 @@ add_executable(${PROJECT_NAME} main.cpp
         Engine/Graphics/API/Base/Common/Buffers/AllocatedVertexBuffer.cpp
         Engine/Graphics/API/Base/Common/Buffers/AllocatedVertexBuffer.h
         Engine/Graphics/API/Base/Common/Buffers/AllocatedBuffer.cpp
-        Engine/Graphics/API/Base/Common/Buffers/AllocatedBuffer.h)
+        Engine/Graphics/API/Base/Common/Buffers/AllocatedBuffer.h
+        Engine/Graphics/API/Base/Common/Data/Mesh.cpp
+        Engine/Graphics/API/Base/Common/Data/Mesh.h
+        Engine/Graphics/API/Base/Common/AllocatedImage.h)
 
 # Include Vulkan Headers
 include_directories("${VULKAN_SDK}/Include")
@@ -71,6 +73,9 @@ add_subdirectory(${LIBRARIES_PATH}SDL EXCLUDE_FROM_ALL)
 # https://github.com/charles-lunarg/vk-bootstrap.git
 add_subdirectory(${LIBRARIES_PATH}VulkanMemoryAllocator VulkanMemoryAllocator)
 
+# https://github.com/tinyobjloader/tinyobjloader.git
+add_subdirectory(${LIBRARIES_PATH}tinyobjloader tinyobjloader)
+
 # Compile SPV Shaders TODO: Move to Vulkan only CMake script
 add_custom_target(CompileSPVShaders
         COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/CompileShaders.bat
@@ -87,5 +92,6 @@ target_link_libraries(
         glm::glm
         glog
         SDL3::SDL3
-        GPUOpen::VulkanMemoryAllocator)
+        GPUOpen::VulkanMemoryAllocator
+        tinyobjloader)
 

@@ -7,28 +7,19 @@
 
 #include <stdexcept>
 
-#include "Common/SquareObject.h"
+#include "Common/MeshObject.h"
 #include "Base/Common/Data/Vertex.h"
 #include "VulkanGraphicsImpl.h"
-#include "Base/Common/Buffers/AllocatedBuffer.h"
 #include "File Management/FileManagement.h"
-#include "Base/Common/Buffers/UniformBuffer.h"
+#include "..\Base\Common\Buffers\PushConstants.h"
 
 void GraphicsPipeline::Create() {
 
-    CreateUniformBufferLayouts();
-    CreateDescriptorPool();
-    CreateDescriptorSets();
-
-    // Configure Renderers
-    for(auto & mRenderer : mRenderers) {
-        for (int j = 0; j < mRenderer->mUniformBuffer->uniformBuffers.size(); j++)
-            UpdateDescriptorSets(j, mRenderer->mUniformBuffer->uniformBuffers[j]->mBuffer);
-    }
 
     // Vertex Buffer
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+
     auto bindingDescription = Vertex::GetBindingDescription();
     auto attributeDescriptions = Vertex::GetAttributeDescriptions();
 
@@ -125,12 +116,15 @@ void GraphicsPipeline::Create() {
     dynamicState.dynamicStateCount = 2;
     dynamicState.pDynamicStates = dynamicStates.data();
 
+    VkPushConstantRange pushConstant;
+    pushConstant.offset = 0;
+    pushConstant.size = sizeof(PushConstants);
+    pushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = 1;
-    pipelineLayoutInfo.pSetLayouts = &mDescriptorSetLayout;
-    pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
-    pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
+    pipelineLayoutInfo.pushConstantRangeCount = 1;
+    pipelineLayoutInfo.pPushConstantRanges = &pushConstant;
 
     if (vkCreatePipelineLayout(gGraphics->mLogicalDevice, &pipelineLayoutInfo,
                                nullptr, &mPipelineLayout) != VK_SUCCESS){
@@ -162,24 +156,7 @@ void GraphicsPipeline::Create() {
 }
 
 void GraphicsPipeline::CreateUniformBufferLayouts() {
-    // Uniform Buffer
-    VkDescriptorSetLayoutBinding uboLayoutBinding{};
-    uboLayoutBinding.binding = 0;
-    uboLayoutBinding.descriptorCount = 1;
-    uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    uboLayoutBinding.pImmutableSamplers = nullptr;
-    uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-
-    VkDescriptorSetLayoutCreateInfo layoutInfo{};
-    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    layoutInfo.bindingCount = 1;
-    layoutInfo.pBindings = &uboLayoutBinding;
-
-    if (vkCreateDescriptorSetLayout(gGraphics->mLogicalDevice, &layoutInfo, nullptr, &mDescriptorSetLayout) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create descriptor set layout");
-    }
 }
-
 void GraphicsPipeline::AddShader(const char *aPath, VkShaderStageFlagBits aStage) {
 
     const char* entryName = "main";
@@ -213,8 +190,6 @@ void GraphicsPipeline::Destroy() const {
         vkDestroyShaderModule(gGraphics->mLogicalDevice, i.module, nullptr);
     }
 
-    vkDestroyDescriptorPool(gGraphics->mLogicalDevice, mDescriptorPool, nullptr);
-    vkDestroyDescriptorSetLayout(gGraphics->mLogicalDevice, mDescriptorSetLayout, nullptr);
     vkDestroyPipelineLayout(gGraphics->mLogicalDevice, mPipelineLayout, nullptr);
     vkDestroyPipeline(gGraphics->mLogicalDevice, mGraphicsPipeline, nullptr);
 }
@@ -230,12 +205,8 @@ void GraphicsPipeline::AddRenderer(Renderer* aRenderer) {
 
 void GraphicsPipeline::RenderPipeline(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex, uint32_t aCurrentFrame)
 {
+
     vkCmdBindPipeline(aCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipeline);
-
-
-    vkCmdBindDescriptorSets(aCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout, 0, 1,
-                            &mDescriptorSets[aCurrentFrame], 0,
-                            nullptr);
 
     for(auto & mRenderer : mRenderers)
     {
@@ -245,56 +216,4 @@ void GraphicsPipeline::RenderPipeline(VkCommandBuffer aCommandBuffer, uint32_t a
 
 }
 
-void GraphicsPipeline::CreateDescriptorPool() {
-
-    VkDescriptorPoolSize poolSize{};
-    poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSize.descriptorCount = static_cast<uint32_t>(VulkanPipelineManager::MAX_FRAMES_IN_FLIGHT);
-
-    VkDescriptorPoolCreateInfo poolInfo{};
-    poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    poolInfo.poolSizeCount = 1;
-    poolInfo.pPoolSizes = &poolSize;
-
-    poolInfo.maxSets = static_cast<uint32_t>(VulkanPipelineManager::MAX_FRAMES_IN_FLIGHT);
-
-    if (vkCreateDescriptorPool(gGraphics->mLogicalDevice, &poolInfo, nullptr, &mDescriptorPool) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create descriptor pool!");
-    }
-}
-
-void GraphicsPipeline::CreateDescriptorSets() {
-
-    std::vector<VkDescriptorSetLayout> layouts(VulkanPipelineManager::MAX_FRAMES_IN_FLIGHT, mDescriptorSetLayout);
-    VkDescriptorSetAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool = mDescriptorPool;
-    allocInfo.descriptorSetCount = static_cast<uint32_t>(VulkanPipelineManager::MAX_FRAMES_IN_FLIGHT);
-    allocInfo.pSetLayouts = layouts.data();
-
-    mDescriptorSets.resize(VulkanPipelineManager::MAX_FRAMES_IN_FLIGHT);
-    if (vkAllocateDescriptorSets(gGraphics->mLogicalDevice, &allocInfo, mDescriptorSets.data()) != VK_SUCCESS) {
-        throw std::runtime_error("failed to allocate descriptor sets!");
-    }
-}
-
-void GraphicsPipeline::UpdateDescriptorSets(uint32_t aDescriptorIndex, VkBuffer aBuffer) {
-    VkDescriptorBufferInfo bufferInfo{};
-    bufferInfo.buffer = aBuffer;
-    bufferInfo.offset = 0; // Set the appropriate offset if needed
-    bufferInfo.range = VK_WHOLE_SIZE; // Set the appropriate range
-
-    // Update the descriptor set
-    VkWriteDescriptorSet descriptorWrite = {};
-    descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptorWrite.dstSet = mDescriptorSets[aDescriptorIndex];
-    descriptorWrite.dstBinding = 0;
-    descriptorWrite.dstArrayElement = 0;
-    descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; // Set the appropriate type
-    descriptorWrite.descriptorCount = 1;
-    descriptorWrite.pBufferInfo = &bufferInfo;
-
-    // Perform the descriptor set update
-    vkUpdateDescriptorSets(gGraphics->mLogicalDevice, 1, &descriptorWrite, 0, nullptr);
-}
 

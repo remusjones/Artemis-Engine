@@ -11,7 +11,7 @@
 #include "Vulkan/VulkanSystemStructs.h"
 
 class VulkanSwapChain;
-class SquareObject;
+class MeshObject;
 class VulkanGraphicsImpl : public IApplication
 {
 public:
@@ -89,7 +89,7 @@ private:
     int mWindowHeight;
     const char* mWindowName;
 
-    SquareObject* mSquare;
+    MeshObject* mSquare;
 
     // Vulkan Impls
     std::vector<VkExtensionProperties> mExtensions;
