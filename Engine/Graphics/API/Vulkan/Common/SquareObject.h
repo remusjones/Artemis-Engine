@@ -12,21 +12,26 @@ class VulkanPipelineManager;
 class GraphicsPipeline;
 class Buffer;
 class UniformBuffer;
-class VertexBuffer;
+class AllocatedVertexBuffer;
 
-class Renderer{
+class Renderer {
 public:
-    virtual void Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex, uint32_t aCurrentFrame);
-    virtual void InitializeRenderer(GraphicsPipeline& aBoundGraphicsPipeline) = 0;
 
-    UniformBuffer* mUniformBuffer;
-    VertexBuffer* mVertexBuffer;
+    Renderer();
+
+    virtual void Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
+                        uint32_t aCurrentFrame);
+
+    virtual void InitializeRenderer(GraphicsPipeline &aBoundGraphicsPipeline) =
+    0;
+
+    UniformBuffer *mUniformBuffer;
+    AllocatedVertexBuffer *mVertexBuffer;
 
     // Rendering Data
-    Material* mMaterial; // TODO: Concept Unused
-    GraphicsPipeline* mGraphicsPipeline;
+    Material *mMaterial; // TODO: Concept Unused
+    GraphicsPipeline *mGraphicsPipeline;
 
-    // Mesh Data
     std::vector<Vertex> mVertices;
     std::vector<int16_t> mIndices;
 };
@@ -35,12 +40,18 @@ public:
  * identify what can be seperated from render pipeline */
 class SquareObject : public Renderer {
 public:
-    void CreateObject(GraphicsPipeline& aBoundGraphicsPipeline, const char* aName = "Default");
+    void CreateObject(GraphicsPipeline &aBoundGraphicsPipeline,
+                      const char *aName = "Default");
+
     void RotateObject(uint32_t aCurrentFrame);
-    void InitializeRenderer(GraphicsPipeline& aBoundGraphicsPipeline) override;
-    void Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex, uint32_t aCurrentFrame) override;
+
+    void InitializeRenderer(GraphicsPipeline &aBoundGraphicsPipeline) override;
+
+    void Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
+                uint32_t aCurrentFrame) override;
+
     void Destroy();
 
     // TODO: Move name to a metadata tag instead
-    const char* mName;
+    const char *mName;
 };

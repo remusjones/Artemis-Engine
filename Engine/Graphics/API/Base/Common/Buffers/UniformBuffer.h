@@ -6,7 +6,8 @@
 #include <vector>
 #define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
 #include "glm/glm.hpp"
-#include "Base/Common/Buffers/Buffer.h"
+
+class AllocatedBuffer;
 
 class UniformBufferObject{
 public:
@@ -21,6 +22,6 @@ public:
     UniformBuffer();
     ~UniformBuffer();
 
-    std::vector<Buffer*> uniformBuffers;
+    std::vector<AllocatedBuffer*> uniformBuffers;
     std::vector<void*> uniformBuffersMapped;
 };

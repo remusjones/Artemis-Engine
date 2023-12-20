@@ -79,6 +79,7 @@ public:
     VkDevice  mLogicalDevice{};
     VkPhysicalDevice mPhysicalDevice = VK_NULL_HANDLE;
     VkSurfaceKHR mSurface;
+    VmaAllocator mAllocator;
 
 private:
 

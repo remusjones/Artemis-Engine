@@ -1,6 +1,7 @@
 //
 // Created by Remus on 4/11/2021.
 //
+#define VMA_IMPLEMENTATION
 #define VK_USE_PLATFORM_WIN32_KHR
 #include "VulkanGraphicsImpl.h"
 #include <stdexcept>
@@ -8,7 +9,6 @@
 #include <iostream>
 #include <set>
 #include <cstdint>
-#include <algorithm>
 #include <chrono>
 #include <SDL.h>
 #include <SDL_vulkan.h>
@@ -33,6 +33,13 @@ void VulkanGraphicsImpl::InitializeVulkan() {
     CreateSurface();
     InitializePhysicalDevice();
     CreateLogicalDevice();
+
+    VmaAllocatorCreateInfo allocatorInfo = {};
+    allocatorInfo.physicalDevice = mPhysicalDevice;
+    allocatorInfo.device = mLogicalDevice;
+    allocatorInfo.instance = mVulkanInstance;
+    vmaCreateAllocator(&allocatorInfo, &mAllocator);
+
     mSwapChain = new VulkanSwapChain();
     mSwapChain->Initialize(mLogicalDevice,
                            mPhysicalDevice,
@@ -82,6 +89,7 @@ void VulkanGraphicsImpl::Cleanup() {
         delete mSquare;
     }
 
+    vmaDestroyAllocator(mAllocator);
     mSwapChain->Cleanup();
     delete mSwapChain;
     vkDestroyDevice(mLogicalDevice, nullptr);
@@ -98,7 +106,7 @@ void VulkanGraphicsImpl::Cleanup() {
         SDL_DestroyWindow(mWindow);
 }
 
-VulkanGraphicsImpl::VulkanGraphicsImpl(const char *aWindowName, int aWindowWidth, int aWindowHeight) {
+VulkanGraphicsImpl::VulkanGraphicsImpl(const char *aWindowName, const int aWindowWidth, const int aWindowHeight) {
     mWindowName = aWindowName;
     mWindowWidth = aWindowWidth;
     mWindowHeight = aWindowHeight;
@@ -124,7 +132,7 @@ void VulkanGraphicsImpl::InitializeWindow() {
         mWindowHeight, //window height in pixels
         windowFlags
     );
-    SDL_AddEventWatch(reinterpret_cast<SDL_EventFilter>(WindowResizedCallback), NULL);
+    SDL_AddEventWatch(reinterpret_cast<SDL_EventFilter>(WindowResizedCallback), nullptr);
 }
 
 void VulkanGraphicsImpl::CreateInstance() {
@@ -147,6 +155,7 @@ void VulkanGraphicsImpl::CreateInstance() {
     createInfo.pApplicationInfo = &appInfo;
 
     VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
+
     if (enableValidationLayers) {
         createInfo.enabledLayerCount = static_cast<uint32_t>(mValidationLayers.size());
         createInfo.ppEnabledLayerNames = mValidationLayers.data();
@@ -227,6 +236,7 @@ bool VulkanGraphicsImpl::CheckValidationLayerSupport() {
 }
 
 std::vector<const char *> VulkanGraphicsImpl::GetRequiredExtensions() const {
+
     Uint32 count = 0;
     const auto windowExtensions = SDL_Vulkan_GetInstanceExtensions(&count);
 
@@ -291,9 +301,8 @@ VkBool32 VulkanGraphicsImpl::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEX
                                            VkDebugUtilsMessageTypeFlagsEXT aMessageType,
                                            const VkDebugUtilsMessengerCallbackDataEXT *aCallbackData, void *aUserData) {
     if (aMessageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
-        std::cerr << aMessageType << " Validation layer: " <<
-                aCallbackData->pMessage <<
-                std::endl;
+        LOG(ERROR) << aMessageType << " | Validation layer: " <<
+                aCallbackData->pMessage;
     }
     return VK_FALSE;
 }
@@ -303,7 +312,7 @@ void VulkanGraphicsImpl::InitializePhysicalDevice() {
     vkEnumeratePhysicalDevices(mVulkanInstance, &deviceCount, nullptr);
 
     if (deviceCount == 0) {
-        throw std::runtime_error("failed to find GPUs with Vulkan support!");
+        throw std::runtime_error("failed to find GPUs with Vulkan support");
     }
 
     std::vector<VkPhysicalDevice> devices(deviceCount);
@@ -317,14 +326,14 @@ void VulkanGraphicsImpl::InitializePhysicalDevice() {
     }
 
     if (mPhysicalDevice == VK_NULL_HANDLE) {
-        throw std::runtime_error("failed to find a suitable GPU!");
+        throw std::runtime_error("failed to find a suitable GPU");
     } else {
         VkPhysicalDeviceProperties deviceProperties;
         VkPhysicalDeviceFeatures deviceFeatures;
         vkGetPhysicalDeviceProperties(mPhysicalDevice, &deviceProperties);
         vkGetPhysicalDeviceFeatures(mPhysicalDevice, &deviceFeatures);
 
-        LOG(INFO) << "Selecting Device: " << deviceProperties.deviceName;
+        LOG(INFO) << "Selecting GPU: " << deviceProperties.deviceName;
     }
 }
 

@@ -9,7 +9,8 @@
 #include "SquareObject.h"
 #include "Base/Common/Material.h"
 #include "Base/Common/Buffers/UniformBuffer.h"
-#include "Base/Common/Buffers/VertexBuffer.h"
+#include "Base/Common/Buffers/AllocatedBuffer.h"
+#include "Base/Common/Buffers/AllocatedVertexBuffer.h"
 #include "VulkanGraphicsImpl.h"
 #include "Vulkan/GraphicsPipeline.h"
 
@@ -26,17 +27,25 @@ void SquareObject::InitializeRenderer(
     // Load Shaders
     mGraphicsPipeline = &aBoundGraphicsPipeline;
     mGraphicsPipeline->AddShader("/Shaders/3DObject_v.spv",
-                                 VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT);
+                                 VK_SHADER_STAGE_VERTEX_BIT);
     mGraphicsPipeline->AddShader("/Shaders/VertexLit_f.spv",
-                                 VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT);
+                                 VK_SHADER_STAGE_FRAGMENT_BIT);
     mGraphicsPipeline->AddRenderer(this);
-    // Create Vertices & Indices (pretend mesh)
-    mVertices = {
-        {{-0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-        {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-        {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-        {{-0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}}
-    };
+
+
+    mVertices.resize(4);
+
+    //vertex positions
+    mVertices[0].mPosition = {-0.5f, -0.5f, 0.0f};
+    mVertices[1].mPosition = {0.5f, -0.5f, 0.0f};
+    mVertices[2].mPosition = {0.5f, 0.5f, 0.0f};
+    mVertices[3].mPosition = {-0.5f, 0.5f, 0.0f};
+
+    //vertex colors, all green
+    mVertices[0].mColor = {0.f, 1.f, 0.0f}; //pure green
+    mVertices[1].mColor = {0.f, 1.f, 0.0f}; //pure green
+    mVertices[2].mColor = {0.f, 1.f, 0.0f}; //pure green
+    mVertices[3].mColor = {0.f, 1.f, 0.0f}; //pure green
 
     mIndices = {
         0, 1, 2, 2, 3, 0
@@ -55,7 +64,7 @@ void SquareObject::InitializeRenderer(
     //mMaterial->Create(materialBase, "mSquare");
 
     // Create Buffers
-    mVertexBuffer = new VertexBuffer(mVertices, mIndices);
+    mVertexBuffer = new AllocatedVertexBuffer(mVertices, mIndices);
     mUniformBuffer = new UniformBuffer();
 }
 
@@ -91,11 +100,14 @@ void SquareObject::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
 }
 
 void SquareObject::Destroy() {
-    if (mVertexBuffer)
-        delete mVertexBuffer;
+    delete mVertexBuffer;
+    delete mUniformBuffer;
+}
 
-    if (mUniformBuffer)
-        delete mUniformBuffer;
+
+Renderer::Renderer(): mUniformBuffer(nullptr), mVertexBuffer(nullptr),
+                      mMaterial(nullptr),
+                      mGraphicsPipeline(nullptr) {
 }
 
 void Renderer::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,

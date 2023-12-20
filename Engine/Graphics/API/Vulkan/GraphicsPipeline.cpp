@@ -10,6 +10,7 @@
 #include "Common/SquareObject.h"
 #include "Base/Common/Data/Vertex.h"
 #include "VulkanGraphicsImpl.h"
+#include "Base/Common/Buffers/AllocatedBuffer.h"
 #include "File Management/FileManagement.h"
 #include "Base/Common/Buffers/UniformBuffer.h"
 

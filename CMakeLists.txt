@@ -42,7 +42,13 @@ add_executable(${PROJECT_NAME} main.cpp
         Engine/Graphics/API/Base/Common/Buffers/UniformBuffer.h
         Engine/Graphics/API/Base/Common/Buffers/UniformBuffer.cpp
         Engine/Graphics/API/Base/Common/Buffers/VertexBuffer.cpp
-        Engine/Graphics/API/Base/Common/Buffers/VertexBuffer.h)
+        Engine/Graphics/API/Base/Common/Buffers/VertexBuffer.h
+        Engine/Graphics/API/Base/Common/Buffers/AllocatedVertexBuffer.h
+        Engine/Graphics/API/Base/Common/Buffers/AllocatedVertexBuffer.cpp
+        Engine/Graphics/API/Base/Common/Buffers/AllocatedVertexBuffer.cpp
+        Engine/Graphics/API/Base/Common/Buffers/AllocatedVertexBuffer.h
+        Engine/Graphics/API/Base/Common/Buffers/AllocatedBuffer.cpp
+        Engine/Graphics/API/Base/Common/Buffers/AllocatedBuffer.h)
 
 # Include Vulkan Headers
 include_directories("${VULKAN_SDK}/Include")
