@@ -3,6 +3,11 @@
 //
 
 #pragma once
-class AllocatedImage {
+#include <vulkan/vulkan_core.h>
+#include "Buffers/AllocatedBuffer.h"
 
+class AllocatedImage {
+public:
+    VkImage mImage;
+    VmaAllocation mAllocation;
 };

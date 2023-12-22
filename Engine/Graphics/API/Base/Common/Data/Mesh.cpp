@@ -17,14 +17,12 @@ Mesh::~Mesh() {
 }
 
 void Mesh::Bind(VkCommandBuffer aCommandBuffer) const {
-
     const VkBuffer vertexBuffers[] = {mVertexBuffer->mVerticesBuffer->mBuffer};
     const VkDeviceSize offsets[] = {0};
 
     vkCmdBindVertexBuffers(aCommandBuffer, 0, 1, vertexBuffers, offsets);
     vkCmdBindIndexBuffer(aCommandBuffer, mVertexBuffer->mIndicesBuffer->mBuffer,
                          0, VK_INDEX_TYPE_UINT16);
-
 }
 
 bool Mesh::LoadFromObject(const char *aFileName) {

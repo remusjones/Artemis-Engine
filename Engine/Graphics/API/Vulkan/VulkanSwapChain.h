@@ -5,26 +5,33 @@
 #include <vector>
 #include <vulkan/vulkan_core.h>
 
+#include "Base/Common/AllocatedImage.h"
+
 class VulkanGraphicsImpl;
 
 class VulkanSwapChain {
 public:
-
-    void Initialize(VkDevice& aLogicalDevice,
-                    VkPhysicalDevice& aPhysicalDevice,
-                    VkSurfaceKHR& aSurface,
-                    VkRenderPass& aRenderPass,
+    void Initialize(VkDevice &aLogicalDevice,
+                    VkPhysicalDevice &aPhysicalDevice,
+                    VkSurfaceKHR &aSurface,
+                    VkRenderPass &aRenderPass,
                     VulkanGraphicsImpl *aWindow);
 
     void RecreateSwapChain();
+
     void CreateSwapChain();
+
     void CreateFrameBuffers();
+
     void CreateImageViews();
+    void CreateDepthBufferView();
     void CreateRenderPass();
+
     void Cleanup();
 
+
     VkPhysicalDevice mPhysicalDevice;
-    VulkanGraphicsImpl* mApplication{};
+    VulkanGraphicsImpl *mApplication{};
     VkSwapchainKHR mSwapChain{};
     VkFormat mSwapChainImageFormat;
     VkExtent2D mSwapChainExtent{};
@@ -35,5 +42,7 @@ public:
     std::vector<VkFramebuffer> mSwapChainFrameBuffers;
     VkRenderPass mRenderPass;
 
+    VkImageView mDepthImageView;
+    AllocatedImage mAllocatedDepthImage;
+    VkFormat _depthFormat;
 };
-

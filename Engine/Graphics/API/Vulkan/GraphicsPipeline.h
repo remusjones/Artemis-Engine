@@ -21,7 +21,7 @@ public:
     void UpdateDescriptorSets(uint32_t aDescriptorIndex, VkBuffer aBuffer);
 
     void AddRenderer(Renderer* aRenderer);
-    void RenderPipeline(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex, uint32_t aCurrentFrame);
+    void Draw(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex, uint32_t aCurrentFrame);
     void Create();
     void Destroy() const;
 
@@ -38,5 +38,5 @@ public:
     std::vector<VkPipelineShaderStageCreateInfo> mShadersInPipeline;
     std::vector<const MaterialBase*> mMaterials = {};
     std::vector<Renderer*> mRenderers = {};
-
+    VkPipelineDepthStencilStateCreateInfo mDepthStencil;
 };

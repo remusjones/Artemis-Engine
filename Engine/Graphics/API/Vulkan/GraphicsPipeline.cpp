@@ -12,6 +12,7 @@
 #include "VulkanGraphicsImpl.h"
 #include "File Management/FileManagement.h"
 #include "..\Base\Common\Buffers\PushConstants.h"
+#include "Helpers/VulkanInitialization.h"
 
 void GraphicsPipeline::Create() {
 
@@ -131,11 +132,14 @@ void GraphicsPipeline::Create() {
         throw std::runtime_error("failed to create pipeline layout");
     }
 
+    mDepthStencil = VulkanInitialization::DepthStencilCreateInfo(true, true,
+    VK_COMPARE_OP_LESS_OR_EQUAL);
+
+
     VkGraphicsPipelineCreateInfo pipelineInfo{};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
     pipelineInfo.stageCount = 2;
-
-    // TODO: Replace pStages with Push Constants
+    pipelineInfo.pDepthStencilState = &mDepthStencil;
     pipelineInfo.pStages = mShadersInPipeline.data();
     pipelineInfo.pVertexInputState = &vertexInputInfo;
     pipelineInfo.pInputAssemblyState = &inputAssembly;
@@ -203,7 +207,7 @@ void GraphicsPipeline::AddRenderer(Renderer* aRenderer) {
     mRenderers.push_back(aRenderer);
 }
 
-void GraphicsPipeline::RenderPipeline(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex, uint32_t aCurrentFrame)
+void GraphicsPipeline::Draw(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex, uint32_t aCurrentFrame)
 {
 
     vkCmdBindPipeline(aCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipeline);

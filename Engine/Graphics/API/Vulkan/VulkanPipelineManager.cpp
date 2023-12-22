@@ -29,14 +29,17 @@ void VulkanPipelineManager::Initialize(VkDevice &aLogicalDevice,
 void VulkanPipelineManager::Cleanup() {
     CleanupOldSyncObjects();
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        vkDestroySemaphore(mLogicalDevice, mRenderFinishedSemaphores[i], nullptr);
-        vkDestroySemaphore(mLogicalDevice, mImageAvailableSemaphores[i], nullptr);
+        vkDestroySemaphore(mLogicalDevice, mRenderFinishedSemaphores[i],
+                           nullptr);
+        vkDestroySemaphore(mLogicalDevice, mImageAvailableSemaphores[i],
+                           nullptr);
         vkDestroyFence(mLogicalDevice, mInFlightFences[i], nullptr);
     }
     if (mCommandPool != nullptr) {
         vkDestroyCommandPool(mLogicalDevice, mCommandPool, nullptr);
     } else {
-        throw std::runtime_error("Attempted to Deconstruct Command Pool, but there was none to deconstruct");
+        throw std::runtime_error(
+            "Attempted to Deconstruct Command Pool, but there was none to deconstruct");
     }
 
     vkDestroyRenderPass(mLogicalDevice, mSwapChain->mRenderPass, nullptr);
@@ -67,7 +70,8 @@ void VulkanPipelineManager::CreateCommandPool() {
     poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     poolInfo.queueFamilyIndex = queueFamilies.mGraphicsFamily.value();
 
-    if (vkCreateCommandPool(mLogicalDevice, &poolInfo, nullptr, &mCommandPool) != VK_SUCCESS) {
+    if (vkCreateCommandPool(mLogicalDevice, &poolInfo, nullptr, &mCommandPool)
+        != VK_SUCCESS) {
         throw std::runtime_error("failed to create command pool");
     }
 
@@ -83,7 +87,8 @@ void VulkanPipelineManager::CreateCommandBuffers() {
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     allocInfo.commandBufferCount = (uint32_t) mCommandBuffers.size();
 
-    if (vkAllocateCommandBuffers(mLogicalDevice, &allocInfo, mCommandBuffers.data()) != VK_SUCCESS) {
+    if (vkAllocateCommandBuffers(mLogicalDevice, &allocInfo,
+                                 mCommandBuffers.data()) != VK_SUCCESS) {
         throw std::runtime_error("failed to allocate command buffers");
     }
 }
@@ -91,53 +96,48 @@ void VulkanPipelineManager::CreateCommandBuffers() {
 bool semaphoresNeedToBeRecreated = false;
 
 void VulkanPipelineManager::DrawFrame() {
-    vkWaitForFences(mLogicalDevice, 1, &mInFlightFences[mCurrentFrame], VK_TRUE, UINT64_MAX);
+    vkWaitForFences(mLogicalDevice, 1, &mInFlightFences[mCurrentFrame], VK_TRUE,
+                    UINT64_MAX);
 
     uint32_t imageIndex;
-
-    //
-    // Avoid max timout due to weird issue (after swap chain recreation) - https://www.reddit.com/r/vulkan/comments/wfugbz/weird_behaviour_of_vkacquireimagekhr/
-    // 14/12/2022
-    //
-
-
+    VkCommandBuffer currentCommandBuffer = mCommandBuffers[mCurrentFrame];
     VkResult result = vkAcquireNextImageKHR(mLogicalDevice,
                                             mSwapChain->mSwapChain,
                                             0,
-                                            mImageAvailableSemaphores[mCurrentFrame],
+                                            mImageAvailableSemaphores[
+                                                mCurrentFrame],
                                             VK_NULL_HANDLE,
                                             &imageIndex);
 
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
         mSwapChain->RecreateSwapChain();
-
         CreateCommandBuffers();
         // Sync objects aren't atomic, so we have to regenerate them at the end of the current frame
         semaphoresNeedToBeRecreated = true;
     } else if (result != VK_SUCCESS) {
-        throw std::runtime_error("failed to acquire swap chain image!");
+        throw std::runtime_error("failed to acquire swap chain image");
     }
 
     // Only reset the fence if we are submitting work
     vkResetFences(mLogicalDevice, 1, &mInFlightFences[mCurrentFrame]);
-    const VkCommandBuffer currentCommandBuffer = mCommandBuffers[mCurrentFrame];
+    vkResetCommandBuffer(currentCommandBuffer, 0);
 
-    vkResetCommandBuffer(currentCommandBuffer, /*VkCommandBufferResetFlagBits*/ 0);
-    // VUID-vkCmdDrawIndexed-None-08608
-    //RecordCommandBuffer(mCommandBuffers[mCurrentFrame], imageIndex);
 
+    VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
+    VkClearValue depthClear;
+    depthClear.depthStencil.depth = 1.f;
+    VkClearValue clearValues[] = {clearColor, depthClear};
 
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = gGraphics->mSwapChain->mRenderPass;
-    renderPassInfo.framebuffer = gGraphics->mSwapChain->mSwapChainFrameBuffers[imageIndex];
+    renderPassInfo.framebuffer = gGraphics->mSwapChain->mSwapChainFrameBuffers[
+        imageIndex];
     renderPassInfo.renderArea.offset = {0, 0};
     renderPassInfo.renderArea.extent = gGraphics->mSwapChain->mSwapChainExtent;
-
-    VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
-    renderPassInfo.clearValueCount = 1;
-    renderPassInfo.pClearValues = &clearColor;
+    renderPassInfo.clearValueCount = 2;
+    renderPassInfo.pClearValues = &clearValues[0];
 
 
     // ----BEGIN FRAME----
@@ -147,7 +147,7 @@ void VulkanPipelineManager::DrawFrame() {
     if (vkBeginCommandBuffer(currentCommandBuffer, &beginInfo) != VK_SUCCESS) {
         throw std::runtime_error("failed to begin recording command buffer!");
     }
-    
+
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
@@ -163,10 +163,12 @@ void VulkanPipelineManager::DrawFrame() {
     vkCmdSetScissor(currentCommandBuffer, 0, 1, &scissor);
 
 
-    vkCmdBeginRenderPass(currentCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBeginRenderPass(currentCommandBuffer, &renderPassInfo,
+                         VK_SUBPASS_CONTENTS_INLINE);
 
     for (const auto &mGraphicsPipeline: mGraphicsPipelines) {
-        mGraphicsPipeline->RenderPipeline(currentCommandBuffer, imageIndex, mCurrentFrame);
+        mGraphicsPipeline->Draw(currentCommandBuffer, imageIndex,
+                                mCurrentFrame);
     }
 
     vkCmdEndRenderPass(currentCommandBuffer);
@@ -178,7 +180,8 @@ void VulkanPipelineManager::DrawFrame() {
 
     // Check if a previous frame is using this image (i.e. there is its fence to wait on)
     if (mImagesInFlight[imageIndex] != VK_NULL_HANDLE) {
-        vkWaitForFences(mLogicalDevice, 1, &mImagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
+        vkWaitForFences(mLogicalDevice, 1, &mImagesInFlight[imageIndex],
+                        VK_TRUE, UINT64_MAX);
     }
     // Mark the image as now being in use by this frame
     mImagesInFlight[imageIndex] = mInFlightFences[mCurrentFrame];
@@ -188,7 +191,9 @@ void VulkanPipelineManager::DrawFrame() {
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
     VkSemaphore waitSemaphores[] = {mImageAvailableSemaphores[mCurrentFrame]};
-    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+    VkPipelineStageFlags waitStages[] = {
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+    };
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = waitSemaphores;
     submitInfo.pWaitDstStageMask = waitStages;
@@ -200,7 +205,8 @@ void VulkanPipelineManager::DrawFrame() {
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
-    if (vkQueueSubmit(mGraphicsQueue, 1, &submitInfo, mInFlightFences[mCurrentFrame]) != VK_SUCCESS) {
+    if (vkQueueSubmit(mGraphicsQueue, 1, &submitInfo,
+                      mInFlightFences[mCurrentFrame]) != VK_SUCCESS) {
         throw std::runtime_error("failed to submit draw command buffer!");
     }
 
@@ -257,14 +263,17 @@ void VulkanPipelineManager::CleanupOldSyncObjects() {
 }
 
 void VulkanPipelineManager::CreateSyncObjects() {
-    mInFlightFencesToDestroy.insert(mInFlightFencesToDestroy.end(), std::begin(mInFlightFences),
+    mInFlightFencesToDestroy.insert(mInFlightFencesToDestroy.end(),
+                                    std::begin(mInFlightFences),
                                     std::end(mInFlightFences)); // C++11
-    mImageAvailableSemaphoresToDestroy.insert(mImageAvailableSemaphoresToDestroy.end(),
-                                              std::begin(mImageAvailableSemaphores),
-                                              std::end(mImageAvailableSemaphores)); // C++11
-    mRenderFinishedSemaphoresToDestroy.insert(mRenderFinishedSemaphoresToDestroy.end(),
-                                              std::begin(mRenderFinishedSemaphores),
-                                              std::end(mRenderFinishedSemaphores)); // C++11
+    mImageAvailableSemaphoresToDestroy.insert(
+        mImageAvailableSemaphoresToDestroy.end(),
+        std::begin(mImageAvailableSemaphores),
+        std::end(mImageAvailableSemaphores)); // C++11
+    mRenderFinishedSemaphoresToDestroy.insert(
+        mRenderFinishedSemaphoresToDestroy.end(),
+        std::begin(mRenderFinishedSemaphores),
+        std::end(mRenderFinishedSemaphores)); // C++11
 
 
     LOG(INFO) << "Creating Semaphores and Fences";
@@ -281,16 +290,22 @@ void VulkanPipelineManager::CreateSyncObjects() {
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        if (vkCreateSemaphore(mLogicalDevice, &semaphoreInfo, nullptr, &mImageAvailableSemaphores[i]) != VK_SUCCESS ||
-            vkCreateSemaphore(mLogicalDevice, &semaphoreInfo, nullptr, &mRenderFinishedSemaphores[i]) != VK_SUCCESS ||
-            vkCreateFence(mLogicalDevice, &fenceInfo, nullptr, &mInFlightFences[i]) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create synchronization objects for a frame!");
+        if (vkCreateSemaphore(mLogicalDevice, &semaphoreInfo, nullptr,
+                              &mImageAvailableSemaphores[i]) != VK_SUCCESS ||
+            vkCreateSemaphore(mLogicalDevice, &semaphoreInfo, nullptr,
+                              &mRenderFinishedSemaphores[i]) != VK_SUCCESS ||
+            vkCreateFence(mLogicalDevice, &fenceInfo, nullptr,
+                          &mInFlightFences[i]) != VK_SUCCESS) {
+            throw std::runtime_error(
+                "failed to create synchronization objects for a frame!");
         }
     }
 }
 
-void VulkanPipelineManager::AddGraphicsPipeline(GraphicsPipeline *aGraphicsPipeline) {
-    LOG(INFO) << "Creating Graphics Pipeline: " << aGraphicsPipeline->mPipelineName;
+void VulkanPipelineManager::AddGraphicsPipeline(
+    GraphicsPipeline *aGraphicsPipeline) {
+    LOG(INFO) << "Creating Graphics Pipeline: " << aGraphicsPipeline->
+            mPipelineName;
     mGraphicsPipelines.push_back(aGraphicsPipeline);
     aGraphicsPipeline->Create();
 }

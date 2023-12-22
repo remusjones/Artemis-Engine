@@ -44,9 +44,11 @@ void MeshObject::RotateObject(uint32_t aCurrentFrame) {
     float time = std::chrono::duration<float, std::chrono::seconds::period>(
         currentTime - startTime).count();
 
+
+
     mPushConstants.model = glm::rotate(glm::mat4(1.0f),
                                        time * glm::radians(15.0f),
-                                       glm::vec3(0.0f, 0.0f, 1.0f));
+                                      glm::vec3(0.0f, 0.0f, 1.0f));
     mPushConstants.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f),
                                       glm::vec3(0.0f, 0.0f, 0.0f),
                                       glm::vec3(0.0f, 0.0f, 1.0f));
@@ -56,7 +58,7 @@ void MeshObject::RotateObject(uint32_t aCurrentFrame) {
                                              gGraphics->mSwapChain->
                                              mSwapChainExtent.
                                              height, 0.1f,
-                                             10.0f);
+                                             100.0f);
 }
 
 void MeshObject::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
@@ -84,7 +86,7 @@ void Renderer::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
                        sizeof(PushConstants), &mPushConstants);
 
     //vkCmdDraw(aCommandBuffer, mVertices.size(), 1, 0, 0);
-    vkCmdDrawIndexed(aCommandBuffer, static_cast<uint32_t>(mMesh->GetIndices().size()),
-        1,0, 0, 0);
-    //vkCmdDraw(aCommandBuffer, mMesh->GetVertices().size(), 1, 0, 0);
+    //vkCmdDrawIndexed(aCommandBuffer, static_cast<uint32_t>(mMesh->GetIndices
+    //().size()),1,0, 0, 0);
+    vkCmdDraw(aCommandBuffer, mMesh->GetVertices().size(), 1, 0, 0);
 }

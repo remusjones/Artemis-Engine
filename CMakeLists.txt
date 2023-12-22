@@ -50,7 +50,8 @@ add_executable(${PROJECT_NAME} main.cpp
         Engine/Graphics/API/Base/Common/Buffers/AllocatedBuffer.h
         Engine/Graphics/API/Base/Common/Data/Mesh.cpp
         Engine/Graphics/API/Base/Common/Data/Mesh.h
-        Engine/Graphics/API/Base/Common/AllocatedImage.h)
+        Engine/Graphics/API/Base/Common/AllocatedImage.h
+        Engine/Graphics/API/Vulkan/Helpers/VulkanInitialization.h)
 
 # Include Vulkan Headers
 include_directories("${VULKAN_SDK}/Include")
