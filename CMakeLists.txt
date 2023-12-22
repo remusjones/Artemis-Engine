@@ -13,8 +13,8 @@ find_package(Vulkan REQUIRED)
 add_executable(${PROJECT_NAME} main.cpp
         Engine/Applications/VulkanGraphicsImpl.cpp
         Engine/Applications/VulkanGraphicsImpl.h
-        "Engine/Graphics/API/Vulkan/VulkanPipelineManager.cpp"
-        "Engine/Graphics/API/Vulkan/VulkanPipelineManager.h"
+        "Engine/Graphics/API/Vulkan/VulkanEngine.cpp"
+        "Engine/Graphics/API/Vulkan/VulkanEngine.h"
         "Engine/Graphics/API/Vulkan/VulkanSystemStructs.h"
         "Engine/Graphics/API/Vulkan/Common/VulkanMaterial.cpp"
         "Engine/Graphics/API/Vulkan/Common/VulkanMaterial.h"
@@ -51,7 +51,17 @@ add_executable(${PROJECT_NAME} main.cpp
         Engine/Graphics/API/Base/Common/Data/Mesh.cpp
         Engine/Graphics/API/Base/Common/Data/Mesh.h
         Engine/Graphics/API/Base/Common/AllocatedImage.h
-        Engine/Graphics/API/Vulkan/Helpers/VulkanInitialization.h)
+        Engine/Graphics/API/Vulkan/Helpers/VulkanInitialization.h
+        Engine/Common/Scenes/Scene.cpp
+        Engine/Common/Scenes/Scene.h
+        Engine/Common/Objects/Camera.cpp
+        Engine/Common/Objects/Camera.h
+        Engine/Common/Math/Transform.cpp
+        Engine/Common/Math/Transform.h
+        Engine/Common/Scenes/SandboxScene.cpp
+        Engine/Common/Scenes/SandboxScene.h
+        Engine/Common/Objects/Super.cpp
+        Engine/Common/Objects/Super.h)
 
 # Include Vulkan Headers
 include_directories("${VULKAN_SDK}/Include")
@@ -59,6 +69,7 @@ include_directories("${VULKAN_SDK}/Include")
 include_directories(Engine/Graphics/API)
 include_directories(Engine/Applications)
 include_directories(Engine/IO)
+include_directories(Engine/Common)
 
 # https://github.com/google/glog.git
 set(WITH_GFLAGS OFF) # We aren't using gflags, so disable it
