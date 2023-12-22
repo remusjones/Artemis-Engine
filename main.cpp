@@ -10,7 +10,7 @@
 int main() {
 
     LOG(INFO) << "Initializing Application";
-    IApplication* app = new VulkanGraphicsImpl("Vulkan 3D Engine", 800, 600);
+    IApplication* app = new VulkanGraphicsImpl("Engine", 800, 600);
     try {
         app->Run();
     } catch (const std::exception& e) {

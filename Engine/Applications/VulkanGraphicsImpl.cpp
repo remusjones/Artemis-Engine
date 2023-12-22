@@ -12,9 +12,8 @@
 #include <chrono>
 #include <SDL.h>
 #include <SDL_vulkan.h>
-
+#include "Scenes/SandboxScene.h"
 #include "glog/logging.h"
-#include "Vulkan/GraphicsPipeline.h"
 #include "Vulkan/Common/MeshObject.h"
 
 VulkanGraphics *gGraphics = nullptr;
@@ -52,8 +51,9 @@ void VulkanGraphicsImpl::InitializeVulkan() {
 void VulkanGraphicsImpl::Update() {
     // Start Clock for FPS Monitoring
     auto startTime = std::chrono::high_resolution_clock::now();
+    auto fpsStartTime = std::chrono::high_resolution_clock::now();
     // Create FPS Window Header
-    std::string fpsHeader = mWindowName + std::string("| FPS: ");
+    std::string fpsHeader = mWindowName + std::string(" | FPS: ");
     int frameCount = 0;
     SDL_Event e;
     bool bQuitting = false;
@@ -62,23 +62,27 @@ void VulkanGraphicsImpl::Update() {
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_EVENT_QUIT) bQuitting = true;
         }
-        if (!(SDL_GetWindowFlags(mWindow) & SDL_WINDOW_MINIMIZED))
-            // TODO: handle this within the swapchain?
-            this->mRenderPipelineManager.DrawFrame();
+        if (!(SDL_GetWindowFlags(mWindow) & SDL_WINDOW_MINIMIZED)) {
+            this->mActiveScene->Tick(mDeltaTime);
+            this->mRenderPipelineManager.DrawFrame(*mActiveScene);
+        }
 
         // Calculate Frames-Per-Second
         frameCount++;
         auto currentTime = std::chrono::high_resolution_clock::now();
-        const auto elapsedTime = std::chrono::duration_cast<
-            std::chrono::seconds>(currentTime - startTime).count();
+        mDeltaTime = std::chrono::duration_cast<std::chrono::duration<float> >
+                (currentTime - startTime).count();
 
-        if (elapsedTime >= 1) {
+        if (const auto elapsedTime = std::chrono::duration_cast<
+                std::chrono::seconds>(currentTime - fpsStartTime).count();
+            elapsedTime > 0) {
             const double fps = frameCount / elapsedTime;
             SDL_SetWindowTitle(mWindow,
                                (fpsHeader + std::to_string((int) fps)).c_str());
             frameCount = -1;
-            startTime = currentTime;
+            fpsStartTime = currentTime;
         }
+        startTime = currentTime;
     }
 }
 
@@ -86,7 +90,8 @@ void VulkanGraphicsImpl::Cleanup() {
     vkDeviceWaitIdle(mLogicalDevice);
     mRenderPipelineManager.Cleanup();
 
-    delete mSquare;
+    mActiveScene->Cleanup();
+    delete mActiveScene;
 
     mSwapChain->Cleanup();
     delete mSwapChain;
@@ -197,13 +202,9 @@ void VulkanGraphicsImpl::CreateSurface() {
     }
 }
 
-void VulkanGraphicsImpl::CreateObjects() {
-    // Triangle Render Pipeline
-
-    auto *meshPipeline = new GraphicsPipeline("Mesh Pipeline");
-    mSquare = new MeshObject();
-    mSquare->CreateObject(*meshPipeline, "Square");
-    gGraphics->mRenderPipelineManager.AddGraphicsPipeline(meshPipeline);
+void VulkanGraphicsImpl::CreateScenes() {
+    mActiveScene = new SandboxScene();
+    mActiveScene->Construct("Sandbox");
 }
 
 // Have this function virtual for extension??
@@ -215,7 +216,7 @@ void VulkanGraphicsImpl::CreateGraphicsPipeline() {
                                       mPresentQueue
     );
 
-    CreateObjects();
+    CreateScenes();
     mRenderPipelineManager.CreateSyncObjects();
     mSwapChain->CreateFrameBuffers();
 }

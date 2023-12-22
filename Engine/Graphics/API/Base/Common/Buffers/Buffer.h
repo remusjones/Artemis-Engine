@@ -7,7 +7,7 @@
 #include <vulkan/vulkan_core.h>
 
 
-class VulkanPipelineManager;
+class VulkanEngine;
 
 class Buffer {
 public:

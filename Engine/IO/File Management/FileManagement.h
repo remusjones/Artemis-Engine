@@ -20,7 +20,7 @@ public:
     shaderInfo);
     static const FileManagementShaderInfo& GetShaderInfoSettings();
 
-    static std::string GetCurrentDirectory();
+    static std::string GetWorkingDirectory();
 private:
     static inline FileManagementShaderInfo ShaderFileSettings;
 };

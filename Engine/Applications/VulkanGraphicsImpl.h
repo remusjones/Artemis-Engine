@@ -7,9 +7,10 @@
 #include <SDL_video.h>
 
 #include "IApplication.h"
-#include "Vulkan/VulkanPipelineManager.h"
+#include "Vulkan/VulkanEngine.h"
 #include "Vulkan/VulkanSystemStructs.h"
 
+class Scene;
 class VulkanSwapChain;
 class MeshObject;
 class VulkanGraphicsImpl : public IApplication
@@ -52,7 +53,7 @@ private:
     void CreateSurface();
 
     void CreateGraphicsPipeline();
-    void CreateObjects();
+    void CreateScenes();
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
             VkDebugUtilsMessageSeverityFlagBitsEXT aMessageSeverity,
@@ -72,7 +73,7 @@ private:
 
 public:
     // TODO Move to HEAP
-    VulkanPipelineManager mRenderPipelineManager;
+    VulkanEngine mRenderPipelineManager;
     VulkanSwapChain* mSwapChain;
     VkInstance mVulkanInstance;
     SDL_Window* mWindow{nullptr}; // TODO: Move to interface
@@ -88,8 +89,8 @@ private:
     int mWindowWidth;
     int mWindowHeight;
     const char* mWindowName;
-
-    MeshObject* mSquare;
+    Scene* mActiveScene;
+    float mDeltaTime;
 
     // Vulkan Impls
     std::vector<VkExtensionProperties> mExtensions;

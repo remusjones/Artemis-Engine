@@ -2,13 +2,14 @@
 // Created by Remus on 6/11/2021.
 //
 #include <fstream>
-#include "VulkanPipelineManager.h"
+#include "VulkanEngine.h"
 #include "GraphicsPipeline.h"
 #include "VulkanGraphicsImpl.h"
 #include <iostream>
 #include "glog/logging.h"
+#include "Scenes/Scene.h"
 
-void VulkanPipelineManager::Initialize(VkDevice &aLogicalDevice,
+void VulkanEngine::Initialize(VkDevice &aLogicalDevice,
                                        VulkanSwapChain *aSwapChain,
                                        VkPhysicalDevice &aPhysicalDevice,
                                        VkQueue &aGraphicsQueue,
@@ -26,7 +27,7 @@ void VulkanPipelineManager::Initialize(VkDevice &aLogicalDevice,
     CreateCommandPool();
 }
 
-void VulkanPipelineManager::Cleanup() {
+void VulkanEngine::Cleanup() {
     CleanupOldSyncObjects();
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         vkDestroySemaphore(mLogicalDevice, mRenderFinishedSemaphores[i],
@@ -53,15 +54,9 @@ void VulkanPipelineManager::Cleanup() {
     }
 
     mLoadedMaterials.resize(0, nullptr);
-
-    for (auto &graphicsPipeline: mGraphicsPipelines) {
-        graphicsPipeline->Destroy();
-        delete graphicsPipeline;
-    }
-    mGraphicsPipelines.resize(0, nullptr);
 }
 
-void VulkanPipelineManager::CreateCommandPool() {
+void VulkanEngine::CreateCommandPool() {
     LOG(INFO) << "Creating Command Pool";
     auto queueFamilies = gGraphics->GetQueueFamilyIndices();
 
@@ -78,7 +73,7 @@ void VulkanPipelineManager::CreateCommandPool() {
     CreateCommandBuffers();
 }
 
-void VulkanPipelineManager::CreateCommandBuffers() {
+void VulkanEngine::CreateCommandBuffers() {
     mCommandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
 
     VkCommandBufferAllocateInfo allocInfo{};
@@ -95,7 +90,7 @@ void VulkanPipelineManager::CreateCommandBuffers() {
 
 bool semaphoresNeedToBeRecreated = false;
 
-void VulkanPipelineManager::DrawFrame() {
+void VulkanEngine::DrawFrame(Scene& aActiveScene) {
     vkWaitForFences(mLogicalDevice, 1, &mInFlightFences[mCurrentFrame], VK_TRUE,
                     UINT64_MAX);
 
@@ -166,10 +161,7 @@ void VulkanPipelineManager::DrawFrame() {
     vkCmdBeginRenderPass(currentCommandBuffer, &renderPassInfo,
                          VK_SUBPASS_CONTENTS_INLINE);
 
-    for (const auto &mGraphicsPipeline: mGraphicsPipelines) {
-        mGraphicsPipeline->Draw(currentCommandBuffer, imageIndex,
-                                mCurrentFrame);
-    }
+    aActiveScene.Render(currentCommandBuffer, imageIndex, mCurrentFrame);
 
     vkCmdEndRenderPass(currentCommandBuffer);
 
@@ -245,7 +237,7 @@ void VulkanPipelineManager::DrawFrame() {
     mCurrentFrame = (mCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
-void VulkanPipelineManager::CleanupOldSyncObjects() {
+void VulkanEngine::CleanupOldSyncObjects() {
     for (auto &i: mRenderFinishedSemaphoresToDestroy) {
         vkDestroySemaphore(mLogicalDevice, i, nullptr);
     }
@@ -262,7 +254,7 @@ void VulkanPipelineManager::CleanupOldSyncObjects() {
     mImageAvailableSemaphoresToDestroy.clear();
 }
 
-void VulkanPipelineManager::CreateSyncObjects() {
+void VulkanEngine::CreateSyncObjects() {
     mInFlightFencesToDestroy.insert(mInFlightFencesToDestroy.end(),
                                     std::begin(mInFlightFences),
                                     std::end(mInFlightFences)); // C++11
@@ -300,12 +292,4 @@ void VulkanPipelineManager::CreateSyncObjects() {
                 "failed to create synchronization objects for a frame!");
         }
     }
-}
-
-void VulkanPipelineManager::AddGraphicsPipeline(
-    GraphicsPipeline *aGraphicsPipeline) {
-    LOG(INFO) << "Creating Graphics Pipeline: " << aGraphicsPipeline->
-            mPipelineName;
-    mGraphicsPipelines.push_back(aGraphicsPipeline);
-    aGraphicsPipeline->Create();
 }

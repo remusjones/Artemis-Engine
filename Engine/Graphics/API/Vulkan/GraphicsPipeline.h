@@ -6,6 +6,7 @@
 
 
 #include <vector>
+#include <glm/fwd.hpp>
 class Material;
 class MaterialBase;
 class Renderer;
@@ -21,7 +22,8 @@ public:
     void UpdateDescriptorSets(uint32_t aDescriptorIndex, VkBuffer aBuffer);
 
     void AddRenderer(Renderer* aRenderer);
-    void Draw(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex, uint32_t aCurrentFrame);
+    void Draw(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex, uint32_t
+    aCurrentFrame, glm::mat4 aCameraViewMatrix) const;
     void Create();
     void Destroy() const;
 

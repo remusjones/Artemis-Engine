@@ -9,7 +9,7 @@
 
 std::vector<char> FileManagement::GetShaderFileData(const std::string &filename)
 {
-    std::string finalDirectory = GetCurrentDirectory();
+    std::string finalDirectory = GetWorkingDirectory();
     finalDirectory.append(ShaderFileSettings.pShaderDirectory);
     finalDirectory.append(filename);
 
@@ -28,7 +28,7 @@ std::vector<char> FileManagement::GetShaderFileData(const std::string &filename)
     return buffer;
 }
 
-std::string FileManagement::GetCurrentDirectory()
+std::string FileManagement::GetWorkingDirectory()
 {
     char buffer[MAX_PATH];
     GetModuleFileNameA(nullptr, buffer, MAX_PATH);
@@ -47,7 +47,7 @@ const FileManagementShaderInfo &FileManagement::GetShaderInfoSettings() {
 }
 
 std::vector<char> FileManagement::GetShaderFileDataPath(const char* aRelativeDirectory) {
-    std::string finalDirectory = GetCurrentDirectory();
+    std::string finalDirectory = GetWorkingDirectory();
     finalDirectory.append(aRelativeDirectory);
 
     std::ifstream file(finalDirectory, std::ios::ate | std::ios::binary);

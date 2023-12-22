@@ -9,9 +9,10 @@
 #include "Base/Common/Data/Vertex.h"
 #include "Base/Common/Buffers/Buffer.h"
 
+class Scene;
 class GraphicsPipeline;
 
-class VulkanPipelineManager
+class VulkanEngine
 {
 public:
 
@@ -24,8 +25,8 @@ public:
 
     void CreateCommandPool();
     void CreateCommandBuffers();
-    void AddGraphicsPipeline(GraphicsPipeline* aGraphicsPipeline);
-    void DrawFrame();
+
+    void DrawFrame(Scene& aActiveScene);
     void CreateSyncObjects();
     void Cleanup();
 
@@ -35,7 +36,6 @@ private:
 public:
 
     bool mFramebufferResized = false;
-    std::vector<GraphicsPipeline*> mGraphicsPipelines;
     std::vector<VkFence> mInFlightFences;
     std::vector<VkFence> mImagesInFlight;
 

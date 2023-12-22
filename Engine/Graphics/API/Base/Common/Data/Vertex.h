@@ -7,7 +7,6 @@
 #include <vulkan/vulkan_core.h>
 #include <array>
 
-#include "Base/Common/Buffers/AllocatedVertexBuffer.h"
 #include "glm/glm.hpp"
 
 class Vertex {

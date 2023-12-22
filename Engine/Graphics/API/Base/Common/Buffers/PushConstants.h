@@ -7,7 +7,5 @@
 #include "glm/glm.hpp"
 class PushConstants{
 public:
-    glm::mat4 view;
-    glm::mat4 proj;
     glm::mat4 model;
 };
