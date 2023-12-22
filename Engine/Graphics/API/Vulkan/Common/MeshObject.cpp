@@ -85,7 +85,6 @@ void Renderer::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
                        VK_SHADER_STAGE_VERTEX_BIT, 0,
                        sizeof(PushConstants), &mPushConstants);
 
-    //vkCmdDraw(aCommandBuffer, mVertices.size(), 1, 0, 0);
     //vkCmdDrawIndexed(aCommandBuffer, static_cast<uint32_t>(mMesh->GetIndices
     //().size()),1,0, 0, 0);
     vkCmdDraw(aCommandBuffer, mMesh->GetVertices().size(), 1, 0, 0);
