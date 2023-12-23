@@ -12,8 +12,11 @@
 #include "VulkanGraphicsImpl.h"
 #include "File Management/FileManagement.h"
 #include "..\Base\Common\Buffers\PushConstants.h"
+#include "Base/Common/Material.h"
+#include "Base/Common/Data/GPUCameraData.h"
 #include "glog/logging.h"
 #include "Helpers/VulkanInitialization.h"
+#include "Objects/Camera.h"
 
 void GraphicsPipeline::Create() {
     // Vertex Buffer
@@ -146,7 +149,7 @@ void GraphicsPipeline::Create() {
     }
 
     mDepthStencil = VulkanInitialization::DepthStencilCreateInfo(true, true,
-        VK_COMPARE_OP_LESS_OR_EQUAL);
+                                                                 VK_COMPARE_OP_LESS_OR_EQUAL);
 
 
     VkGraphicsPipelineCreateInfo pipelineInfo{};
@@ -224,13 +227,28 @@ void GraphicsPipeline::AddRenderer(Renderer *aRenderer) {
 }
 
 void GraphicsPipeline::Draw(VkCommandBuffer aCommandBuffer, uint32_t
-                            aImageIndex, uint32_t aCurrentFrame,
-                            glm::mat4 aCameraViewMatrix) const {
+                            aImageIndex, uint32_t aCurrentFrame, const Camera &aActiveCamera) const {
     vkCmdBindPipeline(aCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                       mGraphicsPipeline);
 
+    FrameData currentFrame = gGraphics->mRenderPipelineManager.GetCurrentFrame();
+
+    GPUCameraData camData;
+    camData.mPerspectiveMatrix = aActiveCamera.GetPerspectiveMatrix();
+    camData.mViewMatrix = aActiveCamera.GetViewMatrix();
+    camData.mViewProjectionMatrix = aActiveCamera.GetViewProjectionMatrix();
+
+
     for (auto &mRenderer: mRenderers) {
-        mRenderer->Render(aCommandBuffer, aImageIndex, aCurrentFrame,
-                          aCameraViewMatrix);
+
+        auto materialDescriptorSet = mRenderer->mMaterial->GetDescriptorSet();
+        vkCmdBindDescriptorSets(aCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout, 0,
+                                1, &materialDescriptorSet, 0, nullptr);
+        void *data;
+        vmaMapMemory(gGraphics->mAllocator, currentFrame.mCameraBuffer.mAllocation, &data);
+        memcpy(data, &camData, sizeof(GPUCameraData));
+        vmaUnmapMemory(gGraphics->mAllocator, currentFrame.mCameraBuffer.mAllocation);
+
+        mRenderer->Render(aCommandBuffer, aImageIndex, aCurrentFrame);
     }
 }

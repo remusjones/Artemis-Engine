@@ -21,23 +21,8 @@ void Scene::Construct(const char *aSceneName) {
 void Scene::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
                    uint32_t aCurrentFrame) {
 
-    FrameData currentFrame = gGraphics->mRenderPipelineManager.GetCurrentFrame();
-    GPUCameraData camData;
-    camData.mPerspectiveMatrix = mActiveCamera->GetPerspectiveMatrix();
-    camData.mViewMatrix = mActiveCamera->GetViewMatrix();
-    camData.mViewProjectionMatrix = mActiveCamera->GetViewProjectionMatrix();
-
     for (const auto obj: mGraphicsPipelines) {
-
-        vkCmdBindDescriptorSets(aCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, obj->mPipelineLayout, 0,
-            1, &currentFrame.mGlobalDescriptor, 0, nullptr);
-        void* data;
-        vmaMapMemory(gGraphics->mAllocator, currentFrame.mCameraBuffer.mAllocation, &data);
-        memcpy(data, &camData, sizeof(GPUCameraData));
-        vmaUnmapMemory(gGraphics->mAllocator, currentFrame.mCameraBuffer.mAllocation);
-
-        obj->Draw(aCommandBuffer, aImageIndex, aCurrentFrame,
-                  mActiveCamera->GetViewProjectionMatrix());
+        obj->Draw(aCommandBuffer, aImageIndex, aCurrentFrame, *mActiveCamera);
     }
 }
 

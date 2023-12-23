@@ -20,11 +20,11 @@ public:
 
     void SetBuffers(const AllocatedBuffer& aBuffer, const uint8_t aBinding, const uint8_t aIndex);
 
+    VkDescriptorSet GetDescriptorSet() const {return mDescriptorSet;}
     void Destroy();
 
 private:
     const MaterialBase *mMaterialBase;
-    VkDescriptorSet nDescriptorSet = VK_NULL_HANDLE;
     VkDescriptorSetLayout mLayout = VK_NULL_HANDLE;
-    VkDescriptorSet mSet;
+    VkDescriptorSet mDescriptorSet;
 };

@@ -27,7 +27,7 @@ public:
     virtual ~Renderer() = default;
 
     virtual void Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
-                        uint32_t aCurrentFrame, glm::mat4 aProjectionMatrix);
+                        uint32_t aCurrentFrame);
     void LoadMesh(const char* aPath) const { mMesh->LoadFromObject(aPath); }
     virtual void CreateRenderer(GraphicsPipeline &aBoundGraphicsPipeline) = 0;
     virtual void DestroyRenderer() = 0;
@@ -54,7 +54,7 @@ public:
     void CreateRenderer(GraphicsPipeline &aBoundGraphicsPipeline) override;
     void DestroyRenderer() override;
     void Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
-                uint32_t aCurrentFrame, glm::mat4 aCameraViewMatrix) override;
+                uint32_t aCurrentFrame) override;
 
     // TODO: Move name to a metadata tag instead
     const char *mName;

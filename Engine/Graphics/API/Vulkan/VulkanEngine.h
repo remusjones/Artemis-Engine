@@ -24,6 +24,7 @@ public:
                     );
 
     const FrameData& GetCurrentFrame() { return mFrameData[mCurrentFrame]; }
+    const FrameData& GetFrame(int32_t aIndex) { return mFrameData[aIndex];}
     void CreateCommandPool();
     void CreateCommandBuffers();
     void CreateDescriptors();

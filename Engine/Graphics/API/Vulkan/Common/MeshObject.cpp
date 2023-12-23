@@ -43,8 +43,12 @@ void MeshObject::CreateRenderer(
     mMesh = new Mesh();
     mMaterial = new Material();
 
-    mMaterial->AddBinding(1, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+
+    // Binds Camera Uniform Buffer
+    mMaterial->AddBinding(0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
     mMaterial->Create(mMaterial, mName);
+    for (int i = 0; i < VulkanEngine::MAX_FRAMES_IN_FLIGHT; i++)
+        mMaterial->SetBuffers(gGraphics->mRenderPipelineManager.GetFrame(i).mCameraBuffer, 0, 0);
 }
 
 void MeshObject::DestroyRenderer() {
@@ -54,15 +58,13 @@ void MeshObject::DestroyRenderer() {
 }
 
 void MeshObject::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
-                        uint32_t aCurrentFrame, glm::mat4 aCameraViewMatrix) {
-
+                        uint32_t aCurrentFrame) {
     mPushConstants.model = mTransform.mTransformationMatrix;
-    Renderer::Render(aCommandBuffer, aImageIndex, aCurrentFrame,
-                     aCameraViewMatrix);
+    Renderer::Render(aCommandBuffer, aImageIndex, aCurrentFrame);
 }
 
 void Renderer::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
-                      uint32_t aCurrentFrame, glm::mat4 aProjectionMatrix) {
+                      uint32_t aCurrentFrame) {
     mMesh->Bind(aCommandBuffer);
 
     vkCmdPushConstants(aCommandBuffer, mGraphicsPipeline->mPipelineLayout,

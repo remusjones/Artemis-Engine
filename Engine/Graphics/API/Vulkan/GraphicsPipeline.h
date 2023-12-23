@@ -7,6 +7,8 @@
 
 #include <vector>
 #include <glm/fwd.hpp>
+
+#include "Objects/Camera.h"
 class Material;
 class MaterialBase;
 class Renderer;
@@ -23,7 +25,7 @@ public:
 
     void AddRenderer(Renderer* aRenderer);
     void Draw(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex, uint32_t
-    aCurrentFrame, glm::mat4 aCameraViewMatrix) const;
+              aCurrentFrame, const Camera &aActiveCamera) const;
     void Create();
     void Destroy() const;
 

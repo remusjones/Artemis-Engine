@@ -40,6 +40,8 @@ void SandboxScene::Construct(const char *aSceneName) {
     mObjects.push_back(mMonkey);
     mObjects.push_back(mMonkey2);
 
+
+
     mActiveCamera = new Camera();
     mActiveCamera->mTransform.SetPosition({0, 0, -5.0f});
 

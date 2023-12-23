@@ -25,7 +25,7 @@ void Material::Create(const MaterialBase *aBaseMaterial, const char *aMaterialNa
     alloc_info.descriptorPool = gGraphics->mRenderPipelineManager.mDescriptorPool;
     alloc_info.descriptorSetCount = 1;
     alloc_info.pSetLayouts = &mLayout;
-    VkResult err = vkAllocateDescriptorSets(gGraphics->mLogicalDevice, &alloc_info, &mSet);
+    VkResult err = vkAllocateDescriptorSets(gGraphics->mLogicalDevice, &alloc_info, &mDescriptorSet);
     if (err == VK_ERROR_OUT_OF_POOL_MEMORY) {
         throw std::runtime_error("Out of pool memory");
     }
@@ -53,7 +53,7 @@ void Material::SetBuffers(const AllocatedBuffer &aBuffer, const uint8_t aBinding
 
     VkWriteDescriptorSet writeDescription = {};
     writeDescription.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    writeDescription.dstSet = mSet;
+    writeDescription.dstSet = mDescriptorSet;
     writeDescription.dstBinding = aBinding;
     writeDescription.descriptorCount = binding.descriptorCount;
 
@@ -65,5 +65,5 @@ void Material::SetBuffers(const AllocatedBuffer &aBuffer, const uint8_t aBinding
 
 void Material::Destroy() {
     vkDestroyDescriptorSetLayout(gGraphics->mLogicalDevice, mLayout, nullptr);
-    vkFreeDescriptorSets(gGraphics->mLogicalDevice, gGraphics->mRenderPipelineManager.mDescriptorPool, 1, &mSet);
+    vkFreeDescriptorSets(gGraphics->mLogicalDevice, gGraphics->mRenderPipelineManager.mDescriptorPool, 1, &mDescriptorSet);
 }
