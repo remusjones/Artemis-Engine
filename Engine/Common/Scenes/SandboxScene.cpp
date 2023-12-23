@@ -15,7 +15,14 @@
 #include "Vulkan/Common/MeshObject.h"
 
 void SandboxScene::Construct(const char *aSceneName) {
+
+    // Create basic mesh pipeline
     GraphicsPipeline *meshPipeline = new GraphicsPipeline("Mesh Pipeline");
+
+    meshPipeline->AddShader("/Shaders/3DObject_v.spv",
+                                 VK_SHADER_STAGE_VERTEX_BIT);
+    meshPipeline->AddShader("/Shaders/VertexLit_f.spv",
+                                 VK_SHADER_STAGE_FRAGMENT_BIT);
 
     mMonkey = new MeshObject();
     mMonkey->CreateObject(*meshPipeline, "Monkey");
@@ -29,7 +36,6 @@ void SandboxScene::Construct(const char *aSceneName) {
     mMonkey2->mMesh->LoadFromObject(
         (FileManagement::GetWorkingDirectory() +
          std::string("/../Models/monkey_flat.obj")).c_str());
-
 
     mMonkey->mTransform.SetPosition({-2, 0, 0});
     mMonkey2->mTransform.SetPosition({2, 0, 0});

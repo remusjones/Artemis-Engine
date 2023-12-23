@@ -23,7 +23,7 @@ class Renderer {
 public:
     Renderer() = default;
 
-    virtual ~Renderer();
+    virtual ~Renderer() = default;
 
     virtual void Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
                         uint32_t aCurrentFrame, glm::mat4 aProjectionMatrix);

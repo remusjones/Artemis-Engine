@@ -38,10 +38,7 @@ void MeshObject::CreateRenderer(
     GraphicsPipeline &aBoundGraphicsPipeline) {
     // Load Shaders
     mGraphicsPipeline = &aBoundGraphicsPipeline;
-    mGraphicsPipeline->AddShader("/Shaders/3DObject_v.spv",
-                                 VK_SHADER_STAGE_VERTEX_BIT);
-    mGraphicsPipeline->AddShader("/Shaders/VertexLit_f.spv",
-                                 VK_SHADER_STAGE_FRAGMENT_BIT);
+
     mGraphicsPipeline->AddRenderer(this);
     mMesh = new Mesh();
 }
@@ -55,9 +52,6 @@ void MeshObject::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
     mPushConstants.model = aCameraViewMatrix * mTransform.mTransformationMatrix;
     Renderer::Render(aCommandBuffer, aImageIndex, aCurrentFrame,
                      aCameraViewMatrix);
-}
-
-Renderer::~Renderer() {
 }
 
 void Renderer::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
