@@ -29,7 +29,7 @@ void VulkanEngine::Initialize(VkDevice &aLogicalDevice,
     // Configuration info population
     vkGetPhysicalDeviceProperties(mPhysicalDevice, &mDeviceProperties);
     mFrameData.resize(MAX_FRAMES_IN_FLIGHT);
-    CreateDescriptors();
+    CreateDescriptorPool();
     CreateCommandPool();
 }
 
@@ -113,7 +113,7 @@ AllocatedBuffer VulkanEngine::CreateBuffer(size_t aAllocSize, VkBufferUsageFlags
 }
 
 
-void VulkanEngine::CreateDescriptors() {
+void VulkanEngine::CreateDescriptorPool() {
     //create a descriptor pool that will hold 10 uniform buffers
     std::vector<VkDescriptorPoolSize> sizes =
     {

@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "Base/Common/Buffers/AllocatedBuffer.h"
+#include "Base/Common/Data/GPULightingData.h"
 
 class GraphicsPipeline;
 class Camera;
@@ -30,5 +31,6 @@ public:
     std::vector<MeshObject *> mObjects;
     // TODO: cleanup these in scene, instead of engine
     std::vector<GraphicsPipeline *> mGraphicsPipelines;
-    const char *mSceneName;
+    GPULightingData mSceneLightingData;
+    const char *mSceneName; //
 };

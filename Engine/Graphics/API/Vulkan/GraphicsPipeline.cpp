@@ -231,8 +231,8 @@ void GraphicsPipeline::AddRenderer(Renderer *aRenderer) {
 
 void GraphicsPipeline::Draw(VkCommandBuffer aCommandBuffer, uint32_t
                             aImageIndex, uint32_t aCurrentFrame,
-                            const Camera &aActiveCamera
-
+                            const Camera &aActiveCamera,
+                            const GPULightingData& aLightingData
                             ) const {
     vkCmdBindPipeline(aCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                       mGraphicsPipeline);
@@ -243,8 +243,6 @@ void GraphicsPipeline::Draw(VkCommandBuffer aCommandBuffer, uint32_t
     camData.mPerspectiveMatrix = aActiveCamera.GetPerspectiveMatrix();
     camData.mViewMatrix = aActiveCamera.GetViewMatrix();
     camData.mViewProjectionMatrix = aActiveCamera.GetViewProjectionMatrix();
-
-    GPULightingData sceneLightingData;
 
 
 
@@ -262,7 +260,7 @@ void GraphicsPipeline::Draw(VkCommandBuffer aCommandBuffer, uint32_t
         vmaUnmapMemory(gGraphics->mAllocator, currentFrame.mCameraBuffer.mAllocation);
 
         vmaMapMemory(gGraphics->mAllocator, currentFrame.mLightingBuffer.mAllocation, &data);
-        memcpy(data, &sceneLightingData, sizeof(GPULightingData));
+        memcpy(data, &aLightingData, sizeof(GPULightingData));
         vmaUnmapMemory(gGraphics->mAllocator, currentFrame.mLightingBuffer.mAllocation);
 
 

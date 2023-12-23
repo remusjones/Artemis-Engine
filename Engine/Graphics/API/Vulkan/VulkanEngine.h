@@ -27,7 +27,7 @@ public:
     const FrameData& GetFrame(int32_t aIndex) { return mFrameData[aIndex];}
     void CreateCommandPool();
     void CreateCommandBuffers();
-    void CreateDescriptors();
+    void CreateDescriptorPool();
     void DrawFrame(Scene& aActiveScene);
     void CreateSyncObjects();
     void Cleanup();
