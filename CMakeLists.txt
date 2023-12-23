@@ -59,6 +59,7 @@ add_executable(${PROJECT_NAME} main.cpp
         Engine/Graphics/API/Base/Common/Data/GPUCameraData.h
         Engine/Graphics/API/Vulkan/Helpers/BindingsHelper.h
         Engine/Graphics/API/Base/Common/Data/FrameData.h
+        Engine/Graphics/API/Base/Common/Data/GPULightingData.h
 )
 
 # Include Vulkan Headers
