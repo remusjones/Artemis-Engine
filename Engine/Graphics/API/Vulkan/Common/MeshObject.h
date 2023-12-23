@@ -21,15 +21,15 @@ class AllocatedVertexBuffer;
 
 class Renderer {
 public:
-    Renderer();
+    Renderer() = default;
 
     virtual ~Renderer();
 
     virtual void Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
                         uint32_t aCurrentFrame, glm::mat4 aProjectionMatrix);
 
-    virtual void InitializeRenderer(GraphicsPipeline &aBoundGraphicsPipeline) =
-    0;
+    virtual void CreateRenderer(GraphicsPipeline &aBoundGraphicsPipeline) = 0;
+    virtual void DestroyRenderer() = 0;
     GraphicsPipeline *mGraphicsPipeline;
 
     Mesh* mMesh;
@@ -49,8 +49,8 @@ public:
                       const char *aName = "Default");
 
 
-    void InitializeRenderer(GraphicsPipeline &aBoundGraphicsPipeline) override;
-
+    void CreateRenderer(GraphicsPipeline &aBoundGraphicsPipeline) override;
+    void DestroyRenderer() override;
     void Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
                 uint32_t aCurrentFrame, glm::mat4 aCameraViewMatrix) override;
 

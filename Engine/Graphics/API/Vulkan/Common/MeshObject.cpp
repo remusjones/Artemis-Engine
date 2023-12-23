@@ -22,6 +22,7 @@ void MeshObject::Tick(float aDeltaTime) {
 }
 
 void MeshObject::Cleanup() {
+    DestroyRenderer();
     Super::Cleanup();
 }
 
@@ -30,10 +31,10 @@ void MeshObject::CreateObject(GraphicsPipeline &aBoundGraphicsPipeline,
     mName = aName;
     LOG(INFO) << "Creating Object: " << mName;
 
-    InitializeRenderer(aBoundGraphicsPipeline);
+    CreateRenderer(aBoundGraphicsPipeline);
 }
 
-void MeshObject::InitializeRenderer(
+void MeshObject::CreateRenderer(
     GraphicsPipeline &aBoundGraphicsPipeline) {
     // Load Shaders
     mGraphicsPipeline = &aBoundGraphicsPipeline;
@@ -45,19 +46,18 @@ void MeshObject::InitializeRenderer(
     mMesh = new Mesh();
 }
 
+void MeshObject::DestroyRenderer() {
+    delete mMesh;
+}
+
 void MeshObject::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
                         uint32_t aCurrentFrame, glm::mat4 aCameraViewMatrix) {
-
     mPushConstants.model = aCameraViewMatrix * mTransform.mTransformationMatrix;
     Renderer::Render(aCommandBuffer, aImageIndex, aCurrentFrame,
                      aCameraViewMatrix);
 }
 
-Renderer::Renderer() {
-}
-
 Renderer::~Renderer() {
-    delete mMesh;
 }
 
 void Renderer::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
