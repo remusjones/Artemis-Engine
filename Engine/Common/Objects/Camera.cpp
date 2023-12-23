@@ -20,3 +20,11 @@ glm::mat4 Camera::GetPerspectiveMatrix() const {
 glm::mat4 Camera::GetViewMatrix() const {
     return glm::translate(glm::mat4(1.f), mTransform.Position());
 }
+
+GPUCameraData Camera::GetCameraInformation() const {
+    GPUCameraData information{};
+    information.mLocationMatrix = mTransform.mTransformationMatrix;
+    information.mPerspectiveMatrix = GetPerspectiveMatrix();
+    information.mViewMatrix = GetViewMatrix();
+    return information;
+}

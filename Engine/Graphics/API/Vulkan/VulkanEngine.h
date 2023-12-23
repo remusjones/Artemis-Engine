@@ -6,7 +6,7 @@
 #include <vector>
 #include "VulkanSwapChain.h"
 #include "Base/Common/Data/Vertex.h"
-#include "Base/Common/Buffers/Buffer.h"
+#include "Base/Common/Data/FrameData.h"
 
 class Material;
 class Scene;
@@ -30,13 +30,14 @@ public:
     void CreateSyncObjects();
     void Cleanup();
 
+    AllocatedBuffer CreateBuffer(size_t aAllocSize, VkBufferUsageFlags aUsage, VmaMemoryUsage vmaMemoryUsage);
+
 private:
     void CleanupOldSyncObjects();
 
 public:
 
     bool mFramebufferResized = false;
-    std::vector<VkFence> mInFlightFences;
     std::vector<VkFence> mImagesInFlight;
 
     VulkanSwapChain* mSwapChain;
@@ -44,7 +45,6 @@ public:
 
     VkQueue mGraphicsQueue;
     VkQueue mPresentQueue;
-    VkCommandPool mCommandPool;
     static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 private:
 
@@ -53,10 +53,8 @@ private:
     VkPhysicalDevice mPhysicalDevice;
     VkPhysicalDeviceProperties mDeviceProperties;
 
-    std::vector<VkCommandBuffer> mCommandBuffers;
-    // Semaphores and Fences
-    std::vector<VkSemaphore>  mImageAvailableSemaphores;
-    std::vector<VkSemaphore>  mRenderFinishedSemaphores;
+    std::vector<FrameData> mFrameData;
+
     std::vector<VkFence> mInFlightFencesToDestroy;
     std::vector<VkSemaphore>  mImageAvailableSemaphoresToDestroy;
     std::vector<VkSemaphore>  mRenderFinishedSemaphoresToDestroy;

@@ -41,8 +41,8 @@ void GraphicsPipeline::Create() {
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
-    viewport.width = (float) gGraphics->mSwapChain->mSwapChainExtent.width;
-    viewport.height = (float) gGraphics->mSwapChain->mSwapChainExtent.height;
+    viewport.width = static_cast<float>(gGraphics->mSwapChain->mSwapChainExtent.width);
+    viewport.height = static_cast<float>(gGraphics->mSwapChain->mSwapChainExtent.height);
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
 

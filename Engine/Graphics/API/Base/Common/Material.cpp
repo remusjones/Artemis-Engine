@@ -30,5 +30,6 @@ void Material::AddBinding(const uint32_t aBinding, const uint32_t aCount,
 }
 
 void Material::Destroy() {
-    //vkFreeDescriptorSets(gGraphics->GetVkDevice(), gGraphics->GetDesciptorPool(), 1, &mSet);
+    vkDestroyDescriptorSetLayout(gGraphics->mLogicalDevice, mLayout, nullptr);
+   // vkFreeDescriptorSets(gGraphics->mLogicalDevice, gGraphics->mDescriptorPool, 1, nullptr);
 }

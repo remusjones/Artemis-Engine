@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include "Base/Common/Data/GPUCameraData.h"
 #include "Math/Transform.h"
 
 
@@ -11,5 +12,7 @@ public:
 
     glm::mat4 GetPerspectiveMatrix() const;
     glm::mat4 GetViewMatrix() const;
+    GPUCameraData GetCameraInformation() const;
+
     Transform mTransform;
 };

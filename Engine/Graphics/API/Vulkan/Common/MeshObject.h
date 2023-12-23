@@ -17,7 +17,7 @@ class Material;
 class VulkanEngine;
 class GraphicsPipeline;
 class Buffer;
-class UniformBuffer;
+class CameraInformationBuffer;
 class AllocatedVertexBuffer;
 
 class Renderer {
@@ -34,6 +34,7 @@ public:
     GraphicsPipeline *mGraphicsPipeline;
 
     Mesh* mMesh;
+    Material* mMaterial;
     PushConstants mPushConstants{};
 };
 

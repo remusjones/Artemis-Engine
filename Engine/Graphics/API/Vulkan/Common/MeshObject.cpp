@@ -41,10 +41,16 @@ void MeshObject::CreateRenderer(
 
     mGraphicsPipeline->AddRenderer(this);
     mMesh = new Mesh();
+    mMaterial = new Material();
+
+    mMaterial->AddBinding(1, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+    mMaterial->Create(mMaterial, mName);
 }
 
 void MeshObject::DestroyRenderer() {
     delete mMesh;
+    mMaterial->Destroy();
+    delete mMaterial;
 }
 
 void MeshObject::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,

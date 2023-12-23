@@ -28,6 +28,12 @@ public:
     void Destroy() const;
 
 
+    void BindDescriptor();
+    void BindPushConstant(VkPushConstantRange aPushConstant);
+
+
+
+
 private:
     void CreateDescriptorPool();
     void CreateDescriptorSets();
@@ -41,4 +47,7 @@ public:
     std::vector<const MaterialBase*> mMaterials = {};
     std::vector<Renderer*> mRenderers = {};
     VkPipelineDepthStencilStateCreateInfo mDepthStencil;
+
+    VkDescriptorSetLayout mDescriptorSetLayout;
+    std::vector<VkDescriptorSet> mDescriptorSets;
 };

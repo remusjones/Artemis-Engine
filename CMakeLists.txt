@@ -26,9 +26,6 @@ add_executable(${PROJECT_NAME} main.cpp
         Engine/Graphics/API/Base/Common/RendererBase.h
         Engine/Applications/IApplication.h
         Engine/Graphics/API/Base/Common/Material.h
-        Engine/Graphics/API/Base/Common/Buffers/Buffer.h
-        Engine/Graphics/API/Base/Common/Buffers/Buffer.cpp
-        Engine/Graphics/API/Base/Common/Buffers/Buffer.h
         Engine/Graphics/API/Base/Common/Material.cpp
         Engine/Graphics/API/Base/Common/Material.h
         Engine/Graphics/API/Vulkan/Common/MeshObject.cpp
@@ -38,8 +35,6 @@ add_executable(${PROJECT_NAME} main.cpp
         Engine/Graphics/API/Vulkan/GraphicsPipeline.cpp
         Engine/Graphics/API/Vulkan/GraphicsPipeline.h
         Engine/Graphics/API/Base/Common/Buffers/PushConstants.h
-        Engine/Graphics/API/Base/Common/Buffers/VertexBuffer.cpp
-        Engine/Graphics/API/Base/Common/Buffers/VertexBuffer.h
         Engine/Graphics/API/Base/Common/Buffers/AllocatedVertexBuffer.h
         Engine/Graphics/API/Base/Common/Buffers/AllocatedVertexBuffer.cpp
         Engine/Graphics/API/Base/Common/Buffers/AllocatedVertexBuffer.cpp
@@ -60,6 +55,10 @@ add_executable(${PROJECT_NAME} main.cpp
         Engine/Common/Scenes/SandboxScene.h
         Engine/Common/Objects/Super.cpp
         Engine/Common/Objects/Super.h
+        Engine/Graphics/API/Base/Common/Data/GPUCameraData.cpp
+        Engine/Graphics/API/Base/Common/Data/GPUCameraData.h
+        Engine/Graphics/API/Vulkan/Helpers/BindingsHelper.h
+        Engine/Graphics/API/Base/Common/Data/FrameData.h
 )
 
 # Include Vulkan Headers
