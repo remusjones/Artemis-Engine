@@ -139,52 +139,7 @@ void VulkanEngine::CreateDescriptors() {
                                                  VMA_MEMORY_USAGE_CPU_TO_GPU);
     }
 
-    return;
-
-    for (int i = 0; i < mFrameData.size(); i++) {
-        mFrameData[i].mCameraBuffer = CreateBuffer(sizeof(GPUCameraData),
-                                                   VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
-
-        //allocate one descriptor set for each frame
-        VkDescriptorSetAllocateInfo allocInfo = {};
-        allocInfo.pNext = nullptr;
-        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        //using the pool we just set
-        allocInfo.descriptorPool = mDescriptorPool;
-        //only 1 descriptor
-        allocInfo.descriptorSetCount = 1;
-        //using the global data layout
-        allocInfo.pSetLayouts = &mGlobalSetLayout;
-
-        vkAllocateDescriptorSets(mLogicalDevice, &allocInfo, &mFrameData[i].mGlobalDescriptor);
-
-        //information about the buffer we want to point at in the descriptor
-        VkDescriptorBufferInfo binfo;
-        //it will be the camera buffer
-        binfo.buffer = mFrameData[i].mCameraBuffer.mBuffer;
-        //at 0 offset
-        binfo.offset = 0;
-        //of the size of a camera data struct
-        binfo.range = sizeof(GPUCameraData);
-
-        VkWriteDescriptorSet setWrite = {};
-        setWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        setWrite.pNext = nullptr;
-
-        //we are going to write into binding number 0
-        setWrite.dstBinding = 0;
-        //of the global descriptor
-        setWrite.dstSet = mFrameData[i].mGlobalDescriptor;
-
-        setWrite.descriptorCount = 1;
-        //and the type is uniform buffer1
-        setWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        setWrite.pBufferInfo = &binfo;
-
-
-        vkUpdateDescriptorSets(mLogicalDevice, 1, &setWrite, 0, nullptr);
-        }
-    }
+}
 
     bool semaphoresNeedToBeRecreated = false;
 
