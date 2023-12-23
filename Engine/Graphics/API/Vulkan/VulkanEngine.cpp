@@ -9,6 +9,7 @@
 
 #include "Base/Common/Material.h"
 #include "Base/Common/Data/GPUCameraData.h"
+#include "Base/Common/Data/GPULightingData.h"
 #include "glog/logging.h"
 #include "Scenes/Scene.h"
 
@@ -46,6 +47,7 @@ void VulkanEngine::Cleanup() {
         vkDestroyCommandPool(mLogicalDevice, mFrameData[i].mCommandPool, nullptr);
 
         mFrameData[i].mCameraBuffer.Destroy();
+        mFrameData[i].mLightingBuffer.Destroy();
     }
     vkDestroyDescriptorSetLayout(mLogicalDevice, mGlobalSetLayout, nullptr);
     vkDestroyDescriptorPool(mLogicalDevice, mDescriptorPool, nullptr);
@@ -127,26 +129,14 @@ void VulkanEngine::CreateDescriptors() {
 
     vkCreateDescriptorPool(mLogicalDevice, &createInfo, nullptr, &mDescriptorPool);
 
-
-    VkDescriptorSetLayoutBinding camBufferBinding = {};
-    camBufferBinding.binding = 0;
-    camBufferBinding.descriptorCount = 1;
-    camBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    camBufferBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-
-    VkDescriptorSetLayoutCreateInfo setinfo = {};
-    setinfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    setinfo.pNext = nullptr;
-    setinfo.bindingCount = 1;
-    setinfo.flags = 0;
-    setinfo.pBindings = &camBufferBinding;
-
-    vkCreateDescriptorSetLayout(mLogicalDevice, &setinfo, nullptr, &mGlobalSetLayout);
-
     for (int i = 0; i < mFrameData.size(); i++) {
         mFrameData[i].mCameraBuffer = CreateBuffer(sizeof(GPUCameraData),
                                                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                                 VMA_MEMORY_USAGE_CPU_TO_GPU);
+
+        mFrameData[i].mLightingBuffer = CreateBuffer(sizeof(GPULightingData),
+                                                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                                 VMA_MEMORY_USAGE_CPU_TO_GPU);
     }
 
     return;

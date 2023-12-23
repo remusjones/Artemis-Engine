@@ -17,5 +17,6 @@ struct FrameData {
 
 
     AllocatedBuffer mCameraBuffer;
+    AllocatedBuffer mLightingBuffer;
     VkDescriptorSet mGlobalDescriptor;
 };

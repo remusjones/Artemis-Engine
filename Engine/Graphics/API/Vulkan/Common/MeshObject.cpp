@@ -46,9 +46,18 @@ void MeshObject::CreateRenderer(
 
     // Binds Camera Uniform Buffer
     mMaterial->AddBinding(0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+
+    //// Binds Lighting Uniform Buffer
+    mMaterial->AddBinding(1, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+
+
     mMaterial->Create(mMaterial, mName);
     for (int i = 0; i < VulkanEngine::MAX_FRAMES_IN_FLIGHT; i++)
         mMaterial->SetBuffers(gGraphics->mRenderPipelineManager.GetFrame(i).mCameraBuffer, 0, 0);
+
+    for (int i = 0; i < VulkanEngine::MAX_FRAMES_IN_FLIGHT; i++)
+        mMaterial->SetBuffers(gGraphics->mRenderPipelineManager.GetFrame(i).mLightingBuffer, 1, 0);
+
 }
 
 void MeshObject::DestroyRenderer() {

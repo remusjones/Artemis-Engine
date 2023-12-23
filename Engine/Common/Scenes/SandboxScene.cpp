@@ -11,14 +11,13 @@
 #include "Vulkan/Common/MeshObject.h"
 
 void SandboxScene::Construct(const char *aSceneName) {
-
     // Create basic mesh pipeline
     GraphicsPipeline *meshPipeline = new GraphicsPipeline("Mesh Pipeline");
 
     meshPipeline->AddShader("/Shaders/3DObject_v.spv",
-                                 VK_SHADER_STAGE_VERTEX_BIT);
+                            VK_SHADER_STAGE_VERTEX_BIT);
     meshPipeline->AddShader("/Shaders/VertexLit_f.spv",
-                                 VK_SHADER_STAGE_FRAGMENT_BIT);
+                            VK_SHADER_STAGE_FRAGMENT_BIT);
 
     mMonkey = new MeshObject();
     mMonkey->CreateObject(*meshPipeline, "Monkey");
@@ -36,15 +35,16 @@ void SandboxScene::Construct(const char *aSceneName) {
     mMonkey->mTransform.SetPosition({-2, 0, 0});
     mMonkey2->mTransform.SetPosition({2, 0, 0});
 
-    AddGraphicsPipeline(meshPipeline);
     mObjects.push_back(mMonkey);
     mObjects.push_back(mMonkey2);
-
 
 
     mActiveCamera = new Camera();
     mActiveCamera->mTransform.SetPosition({0, 0, -5.0f});
 
+
+
+    AddGraphicsPipeline(meshPipeline);
     Scene::Construct(aSceneName);
 }
 
