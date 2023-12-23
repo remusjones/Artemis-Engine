@@ -22,7 +22,7 @@ void Material::Create(const MaterialBase *aBaseMaterial, const char *aMaterialNa
 
     VkDescriptorSetAllocateInfo alloc_info = {};
     alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    alloc_info.descriptorPool = gGraphics->mRenderPipelineManager.mDescriptorPool;
+    alloc_info.descriptorPool = gGraphics->mVulkanEngine.mDescriptorPool;
     alloc_info.descriptorSetCount = 1;
     alloc_info.pSetLayouts = &mLayout;
     VkResult err = vkAllocateDescriptorSets(gGraphics->mLogicalDevice, &alloc_info, &mDescriptorSet);
@@ -65,5 +65,5 @@ void Material::SetBuffers(const AllocatedBuffer &aBuffer, const uint8_t aBinding
 
 void Material::Destroy() {
     vkDestroyDescriptorSetLayout(gGraphics->mLogicalDevice, mLayout, nullptr);
-    vkFreeDescriptorSets(gGraphics->mLogicalDevice, gGraphics->mRenderPipelineManager.mDescriptorPool, 1, &mDescriptorSet);
+    vkFreeDescriptorSets(gGraphics->mLogicalDevice, gGraphics->mVulkanEngine.mDescriptorPool, 1, &mDescriptorSet);
 }

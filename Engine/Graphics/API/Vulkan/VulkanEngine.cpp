@@ -52,13 +52,6 @@ void VulkanEngine::Cleanup() {
     vkDestroyDescriptorSetLayout(mLogicalDevice, mGlobalSetLayout, nullptr);
     vkDestroyDescriptorPool(mLogicalDevice, mDescriptorPool, nullptr);
     vkDestroyRenderPass(mLogicalDevice, mSwapChain->mRenderPass, nullptr);
-    // release all loaded shaders
-
-    for (const auto &loadedMaterial: mLoadedMaterials) {
-        loadedMaterial->Destroy();
-        delete loadedMaterial;
-    }
-    mLoadedMaterials.resize(0, nullptr);
 }
 
 void VulkanEngine::CreateCommandPool() {
@@ -268,13 +261,13 @@ void VulkanEngine::CreateDescriptorPool() {
 
         result = vkQueuePresentKHR(mPresentQueue, &presentInfo);
 
-        if (mFramebufferResized) {
+        if (mRebuildFrameBuffer) {
             mSwapChain->RecreateSwapChain();
 
             CreateCommandBuffers();
             // Sync objects aren't atomic, so we have to regenerate them at the end of the current frame
             semaphoresNeedToBeRecreated = true;
-            mFramebufferResized = false;
+            mRebuildFrameBuffer = false;
         }
         if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
             mSwapChain->RecreateSwapChain();

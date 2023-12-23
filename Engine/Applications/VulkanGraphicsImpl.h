@@ -99,7 +99,7 @@ private:
     bool CheckValidationLayerSupport() const;
 
 public:
-    VulkanEngine mRenderPipelineManager;
+    VulkanEngine mVulkanEngine;
     VulkanSwapChain *mSwapChain;
     VkInstance mVulkanInstance;
     SDL_Window *mWindow{nullptr}; // TODO: Move to interface

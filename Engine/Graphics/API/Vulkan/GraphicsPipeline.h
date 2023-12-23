@@ -6,8 +6,6 @@
 
 
 #include <vector>
-#include <glm/fwd.hpp>
-
 #include "Base/Common/Data/GPULightingData.h"
 #include "Objects/Camera.h"
 class Material;
@@ -27,15 +25,11 @@ public:
     void AddRenderer(Renderer* aRenderer);
     void Draw(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex, uint32_t
               aCurrentFrame, const Camera &aActiveCamera, const GPULightingData &aLightingData) const;
+
     void Create();
     void Destroy() const;
-
-
     void BindDescriptor();
     void BindPushConstant(VkPushConstantRange aPushConstant);
-
-
-
 
 private:
     void CreateUniformBufferLayouts();

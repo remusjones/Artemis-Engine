@@ -17,4 +17,5 @@ public:
 private:
     MeshObject *mMonkey;
     MeshObject *mMonkey2;
+    MeshObject *mLight;
 };

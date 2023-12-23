@@ -31,7 +31,7 @@ glm::vec3 Transform::Scale() const {
 }
 
 void Transform::SetPosition(const glm::vec3 aNewPosition) {
-    mTransformationMatrix = translate(glm::mat4(1.f), aNewPosition);
+    mTransformationMatrix = translate(mTransformationMatrix, aNewPosition);
 }
 
 void Transform::SetRotation(glm::vec3 aNewRotation) {
@@ -40,5 +40,5 @@ void Transform::SetRotation(glm::vec3 aNewRotation) {
 }
 
 void Transform::SetScale(glm::vec3 aNewScale) {
-    mTransformationMatrix = glm::scale(mTransformationMatrix, aNewScale);
+    mTransformationMatrix *= glm::scale(glm::mat4(1.f), aNewScale);
 }

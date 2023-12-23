@@ -12,48 +12,43 @@ class Material;
 class Scene;
 class GraphicsPipeline;
 
-class VulkanEngine
-{
+class VulkanEngine {
 public:
+    void Initialize(VkDevice &aLogicalDevice,
+                    VulkanSwapChain *aSwapChain,
+                    VkPhysicalDevice &aPhysicalDevice,
+                    VkQueue &aGraphicsQueue,
+                    VkQueue &aPresentQueue
+    );
 
-    void Initialize(VkDevice& aLogicalDevice,
-                    VulkanSwapChain* aSwapChain,
-                    VkPhysicalDevice& aPhysicalDevice,
-                    VkQueue& aGraphicsQueue,
-                    VkQueue& aPresentQueue
-                    );
+    const FrameData &GetCurrentFrame() { return mFrameData[mCurrentFrame]; }
+    const FrameData &GetFrame(int32_t aIndex) { return mFrameData[aIndex]; }
 
-    const FrameData& GetCurrentFrame() { return mFrameData[mCurrentFrame]; }
-    const FrameData& GetFrame(int32_t aIndex) { return mFrameData[aIndex];}
+    void QueueFrameBufferRebuild() {mRebuildFrameBuffer = true;}
     void CreateCommandPool();
     void CreateCommandBuffers();
     void CreateDescriptorPool();
-    void DrawFrame(Scene& aActiveScene);
+    void DrawFrame(Scene &aActiveScene);
     void CreateSyncObjects();
     void Cleanup();
-    AllocatedBuffer CreateBuffer(size_t aAllocSize, VkBufferUsageFlags aUsage, VmaMemoryUsage vmaMemoryUsage);
 
+    AllocatedBuffer CreateBuffer(size_t aAllocSize, VkBufferUsageFlags aUsage, VmaMemoryUsage vmaMemoryUsage);
 
 private:
     void CleanupOldSyncObjects();
 
 public:
-
-    bool mFramebufferResized = false;
     std::vector<VkFence> mImagesInFlight;
+    VulkanSwapChain *mSwapChain;
 
-    VulkanSwapChain* mSwapChain;
-    std::vector<Material*> mLoadedMaterials{}; // TODO: move to scene?
     VkQueue mGraphicsQueue;
     VkQueue mPresentQueue;
     VkDescriptorSetLayout mGlobalSetLayout;
     VkDescriptorPool mDescriptorPool;
     static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
-
-
 private:
-
+    bool mRebuildFrameBuffer = false;
     // Cached Variables for layouts
     VkDevice mLogicalDevice;
     VkPhysicalDevice mPhysicalDevice;
@@ -62,9 +57,8 @@ private:
     std::vector<FrameData> mFrameData;
 
     std::vector<VkFence> mInFlightFencesToDestroy;
-    std::vector<VkSemaphore>  mImageAvailableSemaphoresToDestroy;
-    std::vector<VkSemaphore>  mRenderFinishedSemaphoresToDestroy;
+    std::vector<VkSemaphore> mImageAvailableSemaphoresToDestroy;
+    std::vector<VkSemaphore> mRenderFinishedSemaphoresToDestroy;
 
     size_t mCurrentFrame = 0;
 };
-

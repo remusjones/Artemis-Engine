@@ -42,15 +42,10 @@ void main() {
     vec3 viewDir = normalize(-vec3(inPushConstants.model * vec4(inPosition, 1.0)));
     vec3 reflectDir = reflect(-lightDir, worldNormal);
 
-
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), lightingData.shininess);
-
-
-
     vec3 specular = lightingData.specularStrength * spec * lightingData.color / (1.0 + 0.1 * distance + 0.01 * (distance * distance));
-
     vec3 result = (ambient + diffuse + specular) * inColor;
 
-    fragColor = result; // Using vec3 for RGB color
+    fragColor = result;
 
 }

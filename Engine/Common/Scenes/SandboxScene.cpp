@@ -32,11 +32,21 @@ void SandboxScene::Construct(const char *aSceneName) {
         (FileManagement::GetWorkingDirectory() +
          std::string("/../Models/monkey_flat.obj")).c_str());
 
+
+    mLight = new MeshObject();
+    mLight->CreateObject(*meshPipeline, "Light");
+    mLight->LoadMesh(
+        (FileManagement::GetWorkingDirectory() +
+         std::string("/../Models/sphere.obj")).c_str());
+
+
     mMonkey->mTransform.SetPosition({-2, 0, 0});
     mMonkey2->mTransform.SetPosition({2, 0, 0});
+    mLight->mTransform.SetScale({0.1f, 0.1f, 0.1f});
 
     mObjects.push_back(mMonkey);
     mObjects.push_back(mMonkey2);
+    mObjects.push_back(mLight);
 
 
     mActiveCamera = new Camera();
@@ -48,15 +58,21 @@ void SandboxScene::Construct(const char *aSceneName) {
 }
 
 float deltaAccumulated;
+
 void SandboxScene::Tick(float aDeltaTime) {
     mMonkey->mTransform.mTransformationMatrix = glm::rotate
     (mMonkey->mTransform.mTransformationMatrix,
-     aDeltaTime/10,
+     aDeltaTime / 10,
      glm::vec3(0.0f, 1.0f, 1.0f));
 
-    deltaAccumulated += aDeltaTime/3;
-    mSceneLightingData.position.x = 2 * std::sin(2 * M_PI * 1 * deltaAccumulated);
-    mSceneLightingData.position.y = 1.0f;  // Keep it constant or modify as needed
+    deltaAccumulated += aDeltaTime / 5 ;
+
+    float yPosition = 0.01f * sin(2 * M_PI * 1 * deltaAccumulated);
+
+    mLight->mTransform.SetPosition({0, yPosition, 0.0f});
+
+
+    mSceneLightingData.position = mLight->mTransform.Position();
 
     mMonkey2->mTransform.mTransformationMatrix = glm::rotate
     (mMonkey2->mTransform.mTransformationMatrix,

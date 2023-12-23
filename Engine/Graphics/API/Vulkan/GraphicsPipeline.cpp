@@ -237,7 +237,7 @@ void GraphicsPipeline::Draw(VkCommandBuffer aCommandBuffer, uint32_t
     vkCmdBindPipeline(aCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                       mGraphicsPipeline);
 
-    FrameData currentFrame = gGraphics->mRenderPipelineManager.GetCurrentFrame();
+    FrameData currentFrame = gGraphics->mVulkanEngine.GetCurrentFrame();
 
     GPUCameraData camData;
     camData.mPerspectiveMatrix = aActiveCamera.GetPerspectiveMatrix();

@@ -71,7 +71,7 @@ void VulkanGraphicsImpl::Update() {
         }
         if (!(SDL_GetWindowFlags(mWindow) & SDL_WINDOW_MINIMIZED)) {
             this->mActiveScene->Tick(mDeltaTime);
-            this->mRenderPipelineManager.DrawFrame(*mActiveScene);
+            this->mVulkanEngine.DrawFrame(*mActiveScene);
         }
 
         // Calculate Frames-Per-Second
@@ -117,7 +117,7 @@ VulkanGraphicsImpl::VulkanGraphicsImpl(const char *aWindowName,
 
 static void WindowResizedCallback(void *userdata, SDL_Event *event) {
     if (event->window.type == SDL_EVENT_WINDOW_RESIZED) {
-        gGraphics->mRenderPipelineManager.mFramebufferResized = true;
+        gGraphics->mVulkanEngine.QueueFrameBufferRebuild();
     }
 }
 
@@ -220,7 +220,7 @@ void VulkanGraphicsImpl::DestroyScenes() const {
 }
 
 void VulkanGraphicsImpl::CreateGraphicsPipeline() {
-    mRenderPipelineManager.Initialize(mLogicalDevice,
+    mVulkanEngine.Initialize(mLogicalDevice,
                                       mSwapChain,
                                       mPhysicalDevice,
                                       mGraphicsQueue,
@@ -228,12 +228,12 @@ void VulkanGraphicsImpl::CreateGraphicsPipeline() {
     );
 
     CreateScenes();
-    mRenderPipelineManager.CreateSyncObjects();
+    mVulkanEngine.CreateSyncObjects();
     mSwapChain->CreateFrameBuffers();
 }
 
 void VulkanGraphicsImpl::DestroyGraphicsPipeline() {
-    mRenderPipelineManager.Cleanup();
+    mVulkanEngine.Cleanup();
     mSwapChain->Cleanup();
     delete mSwapChain;
 }

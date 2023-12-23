@@ -53,10 +53,10 @@ void MeshObject::CreateRenderer(
 
     mMaterial->Create(mMaterial, mName);
     for (int i = 0; i < VulkanEngine::MAX_FRAMES_IN_FLIGHT; i++)
-        mMaterial->SetBuffers(gGraphics->mRenderPipelineManager.GetFrame(i).mCameraBuffer, 0, 0);
+        mMaterial->SetBuffers(gGraphics->mVulkanEngine.GetFrame(i).mCameraBuffer, 0, 0);
 
     for (int i = 0; i < VulkanEngine::MAX_FRAMES_IN_FLIGHT; i++)
-        mMaterial->SetBuffers(gGraphics->mRenderPipelineManager.GetFrame(i).mLightingBuffer, 1, 0);
+        mMaterial->SetBuffers(gGraphics->mVulkanEngine.GetFrame(i).mLightingBuffer, 1, 0);
 
 }
 
