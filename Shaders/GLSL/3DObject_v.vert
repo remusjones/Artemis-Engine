@@ -37,7 +37,6 @@ void main() {
     float distance = length(lightingData.position - vec3(inPushConstants.model * vec4(inPosition, 1.0)));
 
     vec3 ambient = lightingData.ambientStrength * lightingData.color;
-    ambient = max(ambient, vec3(0.2));
     float diff = max(dot(worldNormal, lightDir), 0.0);
     vec3 diffuse = diff * lightingData.color / (1.0 + 0.1 * distance + 0.01 * (distance * distance));
     vec3 viewDir = normalize(-vec3(inPushConstants.model * vec4(inPosition, 1.0)));

@@ -54,18 +54,14 @@ void SandboxScene::Tick(float aDeltaTime) {
      aDeltaTime/10,
      glm::vec3(0.0f, 1.0f, 1.0f));
 
-    deltaAccumulated += aDeltaTime / 10;
-    mSceneLightingData.shininess = deltaAccumulated;
+    deltaAccumulated += aDeltaTime/3;
     mSceneLightingData.position.x = 2 * std::sin(2 * M_PI * 1 * deltaAccumulated);
     mSceneLightingData.position.y = 1.0f;  // Keep it constant or modify as needed
-    mSceneLightingData.position.z = 0.0f;  // Keep it constant or modify as needed
-    //mSceneLightingData.color = glm::vec3(1, 1, 1);
-    //mSceneLightingData.shininess = 32;
 
-   // mMonkey2->mTransform.mTransformationMatrix = glm::rotate
-   // (mMonkey2->mTransform.mTransformationMatrix,
-   //  aDeltaTime,
-   //  glm::vec3(0.0f, 0.8f, -1.0f));
+    mMonkey2->mTransform.mTransformationMatrix = glm::rotate
+    (mMonkey2->mTransform.mTransformationMatrix,
+     aDeltaTime,
+     glm::vec3(0.0f, 0.8f, -1.0f));
 
 
     Scene::Tick(aDeltaTime);
