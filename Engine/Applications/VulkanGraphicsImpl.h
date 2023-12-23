@@ -13,6 +13,9 @@
 class Scene;
 class VulkanSwapChain;
 class MeshObject;
+
+// TODO: This should really only contain window information, and initial vulkan creation. Everything else
+// TODO: should probably go within the Engine class
 class VulkanGraphicsImpl : public IApplication
 {
 public:
@@ -58,9 +61,6 @@ private:
     void CreateSurface();
     void DestroySurface() const;
 
-    void CreateDescriptorPool();
-    void DestroyDescriptorPool() const;
-
     void CreateGraphicsPipeline();
     void DestroyGraphicsPipeline();
 
@@ -84,7 +84,6 @@ private:
     bool CheckValidationLayerSupport() const;
 
 public:
-    // TODO Move to HEAP
     VulkanEngine mRenderPipelineManager;
     VulkanSwapChain* mSwapChain;
     VkInstance mVulkanInstance;
@@ -93,7 +92,6 @@ public:
     VkPhysicalDevice mPhysicalDevice = VK_NULL_HANDLE;
     VkSurfaceKHR mSurface;
     VmaAllocator mAllocator;
-    VkDescriptorPool mDescriptorPool;
 
 private:
 

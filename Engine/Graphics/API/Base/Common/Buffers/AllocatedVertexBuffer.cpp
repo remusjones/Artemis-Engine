@@ -22,6 +22,8 @@ AllocatedVertexBuffer::AllocatedVertexBuffer(const std::vector<Vertex> &aVertice
 }
 
 AllocatedVertexBuffer::~AllocatedVertexBuffer() {
+    mVerticesBuffer->Destroy();
     delete mVerticesBuffer;
+    mIndicesBuffer->Destroy();
     delete mIndicesBuffer;
 }

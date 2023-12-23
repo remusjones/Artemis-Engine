@@ -55,7 +55,8 @@ void MeshObject::DestroyRenderer() {
 
 void MeshObject::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
                         uint32_t aCurrentFrame, glm::mat4 aCameraViewMatrix) {
-    mPushConstants.model = aCameraViewMatrix * mTransform.mTransformationMatrix;
+
+    mPushConstants.model = mTransform.mTransformationMatrix;
     Renderer::Render(aCommandBuffer, aImageIndex, aCurrentFrame,
                      aCameraViewMatrix);
 }

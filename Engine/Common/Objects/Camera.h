@@ -10,6 +10,7 @@
 class Camera {
 public:
 
+    glm::mat4 GetViewProjectionMatrix() const;
     glm::mat4 GetPerspectiveMatrix() const;
     glm::mat4 GetViewMatrix() const;
     GPUCameraData GetCameraInformation() const;

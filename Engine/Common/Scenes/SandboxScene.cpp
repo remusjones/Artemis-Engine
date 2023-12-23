@@ -3,11 +3,7 @@
 //
 
 #include "SandboxScene.h"
-
-#include <exdisp.h>
-
 #include "VulkanGraphicsImpl.h"
-#include "Base/Common/Data/Mesh.h"
 #include "File Management/FileManagement.h"
 #include "glog/logging.h"
 #include "Objects/Camera.h"

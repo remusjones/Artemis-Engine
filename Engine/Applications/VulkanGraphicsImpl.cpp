@@ -49,9 +49,6 @@ void VulkanGraphicsImpl::InitializeVulkan() {
 }
 
 void VulkanGraphicsImpl::ShutdownVulkan() const {
-
-
-
     vmaDestroyAllocator(mAllocator);
 }
 
@@ -210,26 +207,6 @@ void VulkanGraphicsImpl::CreateSurface() {
 
 void VulkanGraphicsImpl::DestroySurface() const {
     vkDestroySurfaceKHR(mVulkanInstance, mSurface, nullptr);
-}
-
-void VulkanGraphicsImpl::CreateDescriptorPool() {
-    VkDescriptorPoolSize poolSize{};
-    poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSize.descriptorCount = VulkanEngine::MAX_FRAMES_IN_FLIGHT;
-
-    VkDescriptorPoolCreateInfo poolInfo;
-    poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    poolInfo.poolSizeCount = 1;
-    poolInfo.pPoolSizes = &poolSize;
-    poolInfo.maxSets = VulkanEngine::MAX_FRAMES_IN_FLIGHT;
-
-    if (vkCreateDescriptorPool(mLogicalDevice, &poolInfo, nullptr, &mDescriptorPool)) {
-        throw std::runtime_error("failed to create descriptor pool");
-    }
-}
-
-void VulkanGraphicsImpl::DestroyDescriptorPool() const {
-    vkDestroyDescriptorPool(mLogicalDevice, mDescriptorPool, nullptr);
 }
 
 void VulkanGraphicsImpl::CreateScenes() {

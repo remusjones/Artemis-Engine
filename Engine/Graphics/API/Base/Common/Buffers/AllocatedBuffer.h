@@ -12,8 +12,10 @@ public:
     VkBufferUsageFlags aUsageFlags);
     ~AllocatedBuffer();
 
-    void CreateBuffer(VkDeviceSize aSize, VkBufferUsageFlags aUsage, VkMemoryPropertyFlags aProperties, VkBuffer &aBuffer,
+    void Create(VkDeviceSize aSize, VkBufferUsageFlags aUsage, VkBuffer &aBuffer,
                       VmaAllocation &aAllocation);
+
+    void Destroy();
 
     VkBuffer mBuffer;
     VmaAllocation mAllocation;

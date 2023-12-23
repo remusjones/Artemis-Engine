@@ -135,6 +135,11 @@ void GraphicsPipeline::Create() {
     pipelineLayoutInfo.pushConstantRangeCount = 1;
     pipelineLayoutInfo.pPushConstantRanges = &pushConstant;
 
+    //hook the global set layout
+    pipelineLayoutInfo.setLayoutCount = 1;
+    pipelineLayoutInfo.pSetLayouts = &gGraphics->mRenderPipelineManager.mGlobalSetLayout;
+
+
     if (vkCreatePipelineLayout(gGraphics->mLogicalDevice, &pipelineLayoutInfo,
                                nullptr, &mPipelineLayout) != VK_SUCCESS) {
         throw std::runtime_error("failed to create pipeline layout");

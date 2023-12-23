@@ -6,10 +6,8 @@
 
 #include <glm/glm.hpp>
 
-#include "Base/Common/Buffers/AllocatedBuffer.h"
-
 struct GPUCameraData {
     glm::mat4 mPerspectiveMatrix;
     glm::mat4 mViewMatrix;
-    glm::mat4 mLocationMatrix;
+    glm::mat4 mViewProjectionMatrix;
 };

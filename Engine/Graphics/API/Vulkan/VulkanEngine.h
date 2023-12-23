@@ -23,14 +23,15 @@ public:
                     VkQueue& aPresentQueue
                     );
 
+    const FrameData& GetCurrentFrame() { return mFrameData[mCurrentFrame]; }
     void CreateCommandPool();
     void CreateCommandBuffers();
-
+    void CreateDescriptors();
     void DrawFrame(Scene& aActiveScene);
     void CreateSyncObjects();
     void Cleanup();
-
     AllocatedBuffer CreateBuffer(size_t aAllocSize, VkBufferUsageFlags aUsage, VmaMemoryUsage vmaMemoryUsage);
+
 
 private:
     void CleanupOldSyncObjects();
@@ -41,11 +42,15 @@ public:
     std::vector<VkFence> mImagesInFlight;
 
     VulkanSwapChain* mSwapChain;
-    std::vector<Material*> mLoadedMaterials{};
-
+    std::vector<Material*> mLoadedMaterials{}; // TODO: move to scene?
     VkQueue mGraphicsQueue;
     VkQueue mPresentQueue;
+    VkDescriptorSetLayout mGlobalSetLayout;
+    VkDescriptorPool mDescriptorPool;
     static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
+
+
+
 private:
 
     // Cached Variables for layouts

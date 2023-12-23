@@ -14,7 +14,7 @@ int main() {
     try {
         app->Run();
     } catch (const std::exception& e) {
-        std::cerr << e.what() << std::endl;
+        LOG(ERROR) << e.what();
         return EXIT_FAILURE;
     }
 

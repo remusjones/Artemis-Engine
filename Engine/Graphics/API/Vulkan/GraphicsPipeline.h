@@ -35,8 +35,6 @@ public:
 
 
 private:
-    void CreateDescriptorPool();
-    void CreateDescriptorSets();
     void CreateUniformBufferLayouts();
 
 public:
@@ -47,7 +45,4 @@ public:
     std::vector<const MaterialBase*> mMaterials = {};
     std::vector<Renderer*> mRenderers = {};
     VkPipelineDepthStencilStateCreateInfo mDepthStencil;
-
-    VkDescriptorSetLayout mDescriptorSetLayout;
-    std::vector<VkDescriptorSet> mDescriptorSets;
 };
