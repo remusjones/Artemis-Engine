@@ -21,8 +21,8 @@ public:
     VulkanGraphicsImpl(const char* aWindowName, int aWindowWidth, int aWindowHeight);
     VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& aAvailableFormats);
     VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& aAvailablePresentModes);
-    VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& aCapabilities);
-    SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice aDevice);
+    VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& aCapabilities) const;
+    SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice aDevice) const;
     QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice aDevice) const;
     QueueFamilyIndices GetQueueFamilyIndices() const {return mFamilyIndices;};
 
@@ -30,9 +30,11 @@ private:
 
     // Init Vulkan & Supporting Vulkan
     void InitializeVulkan();
+    void ShutdownVulkan() const;
 
     // Create Window
     void InitializeWindow();
+    void ShutdownWindow() const;
 
     // Main Engine Loop
     void Update();
@@ -42,18 +44,28 @@ private:
 
     // Create Instance of Vulkan
     void CreateInstance();
+    void DestroyInstance() const;
 
     // Setup Debug Messenger for debug conditions
-    void SetupDebugMessenger();
+    void CreateDebugMessenger();
+    void DestroyDebugMessenger();
 
     // specify queues to be created & features for engine
     void CreateLogicalDevice();
+    void DestroyLogicalDevice();
 
     // Create WSI > Vulkan bridge
     void CreateSurface();
+    void DestroySurface() const;
+
+    void CreateDescriptorPool();
+    void DestroyDescriptorPool() const;
 
     void CreateGraphicsPipeline();
+    void DestroyGraphicsPipeline();
+
     void CreateScenes();
+    void DestroyScenes() const;
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
             VkDebugUtilsMessageSeverityFlagBitsEXT aMessageSeverity,
@@ -69,7 +81,7 @@ private:
 
     void DestroyDebugUtilsMessengerEXT(VkInstance aInstance, VkDebugUtilsMessengerEXT aDebugMessenger, const VkAllocationCallbacks* aAllocator);
     void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& aCreateInfo);
-    bool CheckValidationLayerSupport();
+    bool CheckValidationLayerSupport() const;
 
 public:
     // TODO Move to HEAP
@@ -81,6 +93,7 @@ public:
     VkPhysicalDevice mPhysicalDevice = VK_NULL_HANDLE;
     VkSurfaceKHR mSurface;
     VmaAllocator mAllocator;
+    VkDescriptorPool mDescriptorPool;
 
 private:
 
@@ -103,7 +116,7 @@ private:
 
     void InitializePhysicalDevice();
     bool IsDeviceSuitable(VkPhysicalDevice aPhysicalDevice);
-    bool CheckDeviceExtensionSupport(VkPhysicalDevice aPhysicalDevice);
+    bool CheckDeviceExtensionSupport(VkPhysicalDevice aPhysicalDevice) const;
 
 
     VkPhysicalDeviceFeatures mDeviceFeatures{};

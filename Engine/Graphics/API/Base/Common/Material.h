@@ -12,8 +12,9 @@ class Buffer;
 class Material : public MaterialBase {
 public:
     void Create(const MaterialBase* aBaseMaterial, const char* aMaterialName);
-    void SetBuffer(const Buffer* aBuffer);
-
+    void AddBinding(const uint32_t aBinding, const uint32_t aCount,
+    const VkDescriptorType aType, VkShaderStageFlagBits aShaderStage);
+    void Destroy();
 private:
     const MaterialBase* mMaterialBase;
     VkDescriptorSet nDescriptorSet = VK_NULL_HANDLE;

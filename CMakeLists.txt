@@ -16,8 +16,6 @@ add_executable(${PROJECT_NAME} main.cpp
         "Engine/Graphics/API/Vulkan/VulkanEngine.cpp"
         "Engine/Graphics/API/Vulkan/VulkanEngine.h"
         "Engine/Graphics/API/Vulkan/VulkanSystemStructs.h"
-        "Engine/Graphics/API/Vulkan/Common/VulkanMaterial.cpp"
-        "Engine/Graphics/API/Vulkan/Common/VulkanMaterial.h"
         "Engine/IO/File Management/FileManagement.cpp"
         "Engine/IO/File Management/FileManagement.h"
         "Engine/Graphics/API/Vulkan/VulkanSwapChain.cpp"
@@ -61,7 +59,8 @@ add_executable(${PROJECT_NAME} main.cpp
         Engine/Common/Scenes/SandboxScene.cpp
         Engine/Common/Scenes/SandboxScene.h
         Engine/Common/Objects/Super.cpp
-        Engine/Common/Objects/Super.h)
+        Engine/Common/Objects/Super.h
+)
 
 # Include Vulkan Headers
 include_directories("${VULKAN_SDK}/Include")

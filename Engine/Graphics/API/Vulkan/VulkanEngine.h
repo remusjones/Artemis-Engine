@@ -5,10 +5,10 @@
 
 #include <vector>
 #include "VulkanSwapChain.h"
-#include "Common/VulkanMaterial.h"
 #include "Base/Common/Data/Vertex.h"
 #include "Base/Common/Buffers/Buffer.h"
 
+class Material;
 class Scene;
 class GraphicsPipeline;
 
@@ -40,13 +40,14 @@ public:
     std::vector<VkFence> mImagesInFlight;
 
     VulkanSwapChain* mSwapChain;
-    std::vector<VulkanMaterial*> mLoadedMaterials{};
+    std::vector<Material*> mLoadedMaterials{};
 
     VkQueue mGraphicsQueue;
     VkQueue mPresentQueue;
     VkCommandPool mCommandPool;
     static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 private:
+
     // Cached Variables for layouts
     VkDevice mLogicalDevice;
     VkPhysicalDevice mPhysicalDevice;
@@ -61,12 +62,5 @@ private:
     std::vector<VkSemaphore>  mRenderFinishedSemaphoresToDestroy;
 
     size_t mCurrentFrame = 0;
-
-    //TODO: move these into a specific object
-    const std::vector<uint16_t> indices = {
-            0, 1, 2, 2, 3, 0
-    };
-
-
 };
 

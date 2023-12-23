@@ -6,6 +6,8 @@
 #include "GraphicsPipeline.h"
 #include "VulkanGraphicsImpl.h"
 #include <iostream>
+
+#include "Base/Common/Material.h"
 #include "glog/logging.h"
 #include "Scenes/Scene.h"
 
@@ -46,13 +48,10 @@ void VulkanEngine::Cleanup() {
     vkDestroyRenderPass(mLogicalDevice, mSwapChain->mRenderPass, nullptr);
     // release all loaded shaders
 
-    for (auto &loadedMaterial: mLoadedMaterials) {
-        VulkanMaterial *targetMaterial = loadedMaterial;
-
-        targetMaterial->CleanupShaderModules(mLogicalDevice);
+    for (const auto &loadedMaterial: mLoadedMaterials) {
+        loadedMaterial->Destroy();
         delete loadedMaterial;
     }
-
     mLoadedMaterials.resize(0, nullptr);
 }
 
