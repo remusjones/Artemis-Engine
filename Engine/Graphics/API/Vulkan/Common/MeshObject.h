@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "..\..\Base\Common\Buffers\PushConstants.h"
+#include "Base/Common/Data/Mesh.h"
 #include "Base/Common/Data/Vertex.h"
 #include "Math/Transform.h"
 #include "Objects/Super.h"
@@ -27,7 +28,7 @@ public:
 
     virtual void Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
                         uint32_t aCurrentFrame, glm::mat4 aProjectionMatrix);
-
+    void LoadMesh(const char* aPath) const { mMesh->LoadFromObject(aPath); }
     virtual void CreateRenderer(GraphicsPipeline &aBoundGraphicsPipeline) = 0;
     virtual void DestroyRenderer() = 0;
     GraphicsPipeline *mGraphicsPipeline;
