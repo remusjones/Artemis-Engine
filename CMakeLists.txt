@@ -79,13 +79,34 @@ add_subdirectory(${LIBRARIES_PATH}glm glm)
 
 # https://github.com/libsdl-org/SDL.git
 set(SDL_DIRECTX OFF) # Disable due to not supporting directx at the moment
-add_subdirectory(${LIBRARIES_PATH}SDL EXCLUDE_FROM_ALL)
+add_subdirectory(${LIBRARIES_PATH}SDL)
 
 # https://github.com/charles-lunarg/vk-bootstrap.git
 add_subdirectory(${LIBRARIES_PATH}VulkanMemoryAllocator VulkanMemoryAllocator)
 
 # https://github.com/tinyobjloader/tinyobjloader.git
 add_subdirectory(${LIBRARIES_PATH}tinyobjloader tinyobjloader)
+
+# https://github.com/ocornut/imgui.git
+
+message("Adding ImGui")
+
+set(IMGUI_PATH "${LIBRARIES_PATH}/imgui")
+add_library(imgui STATIC ${IMGUI_PATH})
+target_include_directories(imgui PUBLIC ${IMGUI_PATH} ${IMGUI_PATH}/backends)
+
+target_sources(imgui PUBLIC
+
+        "${IMGUI_PATH}/imgui.h"
+        "${IMGUI_PATH}/imgui.cpp"
+        "${IMGUI_PATH}/imgui_demo.cpp"
+        "${IMGUI_PATH}/imgui_draw.cpp"
+        "${IMGUI_PATH}/imgui_widgets.cpp"
+        "${IMGUI_PATH}/imgui_tables.cpp"
+        "${IMGUI_PATH}/backends/imgui_impl_vulkan.cpp"
+        "${IMGUI_PATH}/backends/imgui_impl_sdl3.cpp"
+)
+target_link_libraries(imgui SDL3::SDL3)
 
 # Compile SPV Shaders TODO: Move to Vulkan only CMake script
 add_custom_target(CompileSPVShaders
@@ -96,7 +117,7 @@ add_custom_target(CompileSPVShaders
 
 add_dependencies(${PROJECT_NAME} CompileSPVShaders)
 # Link libraries
-target_link_libraries(${PROJECT_NAME} )
+target_link_libraries(${PROJECT_NAME})
 target_link_libraries(
         ${PROJECT_NAME}
         Vulkan::Vulkan
@@ -104,5 +125,6 @@ target_link_libraries(
         glog
         SDL3::SDL3
         GPUOpen::VulkanMemoryAllocator
-        tinyobjloader)
+        tinyobjloader
+        imgui)
 

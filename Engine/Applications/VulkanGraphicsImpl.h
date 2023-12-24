@@ -3,6 +3,7 @@
 // Generic VulkanGraphicsImpl process to run the "project"
 //
 #pragma once
+#include <functional>
 #include <vector>
 #include <SDL_video.h>
 
@@ -38,6 +39,10 @@ private:
     // Init Vulkan & Supporting Vulkan
     void InitializeVulkan();
 
+    void InitializeImgui();
+    void ShutdownImgui() const;
+
+    // void ImmediateSubmit(std::function<void(VkCommandBuffer cmd)>&& function);
     void ShutdownVulkan() const;
 
     // Create Window
@@ -116,6 +121,7 @@ private:
     int mWindowHeight;
     const char *mWindowName;
     float mDeltaTime;
+    VkDescriptorPool mImguiPool;
 
     // Vulkan Impls
     std::vector<VkExtensionProperties> mExtensions;

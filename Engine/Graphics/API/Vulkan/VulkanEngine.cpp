@@ -3,10 +3,14 @@
 //
 #include <fstream>
 #include "VulkanEngine.h"
+
+#include <imgui_impl_vulkan.h>
+
 #include "GraphicsPipeline.h"
 #include "VulkanGraphicsImpl.h"
 #include <iostream>
 
+#include "imgui.h"
 #include "Base/Common/Material.h"
 #include "Base/Common/Data/GPUCameraData.h"
 #include "Base/Common/Data/GPULightingData.h"
@@ -206,9 +210,10 @@ void VulkanEngine::CreateDescriptorPool() {
 
         vkCmdBeginRenderPass(currentCommandBuffer, &renderPassInfo,
                              VK_SUBPASS_CONTENTS_INLINE);
-
+        ImGui::Render();
         aActiveScene.Render(currentCommandBuffer, imageIndex, mCurrentFrame);
 
+        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), currentCommandBuffer);
         vkCmdEndRenderPass(currentCommandBuffer);
 
         if (vkEndCommandBuffer(currentCommandBuffer) != VK_SUCCESS) {

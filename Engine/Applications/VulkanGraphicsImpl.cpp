@@ -4,16 +4,21 @@
 #define VMA_IMPLEMENTATION
 #define VK_USE_PLATFORM_WIN32_KHR
 #include "VulkanGraphicsImpl.h"
-#include <stdexcept>
+#include <chrono>
+#include <cstdint>
 #include <cstring>
 #include <iostream>
-#include <set>
-#include <cstdint>
-#include <chrono>
 #include <SDL.h>
+#include <SDL3/SDL.h>
 #include <SDL_vulkan.h>
-#include "Scenes/SandboxScene.h"
+#include <set>
+#include <stdexcept>
+#include <backends/imgui_impl_sdl3.h>
+#include <backends/imgui_impl_vulkan.h>
+
+#include "imgui.h"
 #include "glog/logging.h"
+#include "Scenes/SandboxScene.h"
 #include "Vulkan/Common/MeshObject.h"
 
 VulkanGraphics *gGraphics = nullptr;
@@ -33,6 +38,7 @@ void VulkanGraphicsImpl::InitializeVulkan() {
     InitializePhysicalDevice();
     CreateLogicalDevice();
 
+
     VmaAllocatorCreateInfo allocatorInfo = {};
     allocatorInfo.physicalDevice = mPhysicalDevice;
     allocatorInfo.device = mLogicalDevice;
@@ -46,6 +52,65 @@ void VulkanGraphicsImpl::InitializeVulkan() {
                            mRenderPass,
                            this);
     CreateGraphicsPipeline();
+    InitializeImgui();
+}
+
+void VulkanGraphicsImpl::InitializeImgui() {
+    //1: create descriptor pool for IMGUI
+    // the size of the pool is very oversize, but it's copied from imgui demo itself.
+    VkDescriptorPoolSize pool_sizes[] =
+    {
+        {VK_DESCRIPTOR_TYPE_SAMPLER, 1000},
+        {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000},
+        {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000},
+        {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000},
+        {VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000},
+        {VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000},
+        {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000},
+        {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000},
+        {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000},
+        {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000},
+        {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000}
+    };
+
+    VkDescriptorPoolCreateInfo pool_info = {};
+    pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+    pool_info.maxSets = 1000;
+    pool_info.poolSizeCount = std::size(pool_sizes);
+    pool_info.pPoolSizes = pool_sizes;
+
+    vkCreateDescriptorPool(mLogicalDevice, &pool_info, nullptr, &mImguiPool);
+
+
+    // 2: initialize imgui library
+
+    //this initializes the core structures of imgui
+    ImGui::CreateContext();
+
+    //this initializes imgui for SDL
+    ImGui_ImplSDL3_InitForVulkan(mWindow);
+
+    //this initializes imgui for Vulkan
+    ImGui_ImplVulkan_InitInfo init_info = {};
+    init_info.Instance = mVulkanInstance;
+    init_info.PhysicalDevice = mPhysicalDevice;
+    init_info.Device = mLogicalDevice;
+    init_info.Queue = mGraphicsQueue;
+    init_info.DescriptorPool = mImguiPool;
+    init_info.MinImageCount = 3;
+    init_info.ImageCount = 3;
+    init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+
+    ImGui_ImplVulkan_Init(&init_info, mVulkanEngine.mSwapChain->mRenderPass);
+
+    ImGui_ImplVulkan_CreateFontsTexture();
+}
+
+void VulkanGraphicsImpl::ShutdownImgui() const {
+    ImGui_ImplVulkan_Shutdown();
+    ImGui_ImplSDL3_Shutdown();
+    vkDestroyDescriptorPool(mLogicalDevice, mImguiPool, nullptr);
 }
 
 void VulkanGraphicsImpl::ShutdownVulkan() const {
@@ -63,15 +128,26 @@ void VulkanGraphicsImpl::Update() {
     int frameCount = 0;
     SDL_Event e;
     bool bQuitting = false;
+    bool bWindowOpen = true;
 
     //main loop
     while (!bQuitting) {
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_EVENT_QUIT) bQuitting = true;
+
+            ImGui_ImplSDL3_ProcessEvent(&e);
         }
         if (!(SDL_GetWindowFlags(mWindow) & SDL_WINDOW_MINIMIZED)) {
+            ImGui_ImplVulkan_NewFrame();
+            ImGui_ImplSDL3_NewFrame();
+            ImGui::NewFrame();
+
+            ImGui::ShowDemoWindow(&bWindowOpen);
+
             this->mActiveScene->Tick(mDeltaTime);
             this->mVulkanEngine.DrawFrame(*mActiveScene);
+            ImGui::UpdatePlatformWindows();
+            ImGui::RenderPlatformWindowsDefault();
         }
 
         // Calculate Frames-Per-Second
@@ -96,6 +172,7 @@ void VulkanGraphicsImpl::Update() {
 void VulkanGraphicsImpl::Cleanup() {
     vkDeviceWaitIdle(mLogicalDevice);
     DestroyScenes();
+    ShutdownImgui();
     DestroyGraphicsPipeline();
     ShutdownVulkan();
     DestroyLogicalDevice();
@@ -221,10 +298,10 @@ void VulkanGraphicsImpl::DestroyScenes() const {
 
 void VulkanGraphicsImpl::CreateGraphicsPipeline() {
     mVulkanEngine.Initialize(mLogicalDevice,
-                                      mSwapChain,
-                                      mPhysicalDevice,
-                                      mGraphicsQueue,
-                                      mPresentQueue
+                             mSwapChain,
+                             mPhysicalDevice,
+                             mGraphicsQueue,
+                             mPresentQueue
     );
 
     CreateScenes();
@@ -418,28 +495,23 @@ VkPresentModeKHR VulkanGraphicsImpl::ChooseSwapPresentMode(
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-VkExtent2D VulkanGraphicsImpl::ChooseSwapExtent(
-    const VkSurfaceCapabilitiesKHR &capabilities) const {
-    if (capabilities.currentExtent.width != UINT32_MAX) {
-        return capabilities.currentExtent;
-    } else {
-        int *width = nullptr;
-        int *height = nullptr;
-        SDL_GetWindowSizeInPixels(mWindow, width, height);
-        VkExtent2D actualExtent = {
-            static_cast<uint32_t>(*width),
-            static_cast<uint32_t>(*height)
-        };
+VkExtent2D VulkanGraphicsImpl::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities) const {
+    int width;
+    int height;
+    SDL_GetWindowSize(mWindow, &width, &height);
+    VkExtent2D actualExtent = {
+        static_cast<uint32_t>(width),
+        static_cast<uint32_t>(height)
+    };
 
-        actualExtent.width = std::clamp(actualExtent.width,
-                                        capabilities.minImageExtent.width,
-                                        capabilities.maxImageExtent.width);
-        actualExtent.height = std::clamp(actualExtent.height,
-                                         capabilities.minImageExtent.height,
-                                         capabilities.maxImageExtent.height);
+    actualExtent.width = std::clamp(actualExtent.width,
+                                    capabilities.minImageExtent.width,
+                                    capabilities.maxImageExtent.width);
+    actualExtent.height = std::clamp(actualExtent.height,
+                                     capabilities.minImageExtent.height,
+                                     capabilities.maxImageExtent.height);
 
-        return actualExtent;
-    }
+    return actualExtent;
 }
 
 bool VulkanGraphicsImpl::CheckDeviceExtensionSupport(
