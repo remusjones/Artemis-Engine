@@ -60,7 +60,8 @@ add_executable(${PROJECT_NAME} main.cpp
         Engine/Graphics/API/Vulkan/Helpers/BindingsHelper.h
         Engine/Graphics/API/Base/Common/Data/FrameData.h
         Engine/Graphics/API/Base/Common/Data/GPULightingData.h
-)
+        Engine/Common/Objects/ImGuiLayer.cpp
+        Engine/Common/Objects/ImGuiLayer.h)
 
 # Include Vulkan Headers
 include_directories("${VULKAN_SDK}/Include")

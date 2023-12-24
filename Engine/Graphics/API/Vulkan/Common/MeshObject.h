@@ -10,6 +10,7 @@
 #include "Base/Common/Data/Mesh.h"
 #include "Base/Common/Data/Vertex.h"
 #include "Math/Transform.h"
+#include "Objects/ImGuiLayer.h"
 #include "Objects/Super.h"
 
 class Mesh;
@@ -44,7 +45,7 @@ public:
 
 /*Attempts to abstract the required components for rendering to
  * identify what can be seperated from render pipeline */
-class MeshObject : public Renderer, Super {
+class MeshObject : public Renderer, Super, ImGuiLayer {
 public:
     void Construct() override;
 
@@ -52,7 +53,7 @@ public:
 
     void Cleanup() override;
 
-    virtual void RenderImGui();
+    void OnImGuiRender() override;
 
     void CreateObject(GraphicsPipeline &aBoundGraphicsPipeline,
                       const char *aName = "Default");

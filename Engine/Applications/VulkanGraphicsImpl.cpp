@@ -142,10 +142,9 @@ void VulkanGraphicsImpl::Update() {
             ImGui_ImplSDL3_NewFrame();
             ImGui::NewFrame();
 
-            ImGui::ShowDemoWindow(&bWindowOpen);
-
             this->mActiveScene->Tick(mDeltaTime);
             this->mVulkanEngine.DrawFrame(*mActiveScene);
+
             ImGui::UpdatePlatformWindows();
             ImGui::RenderPlatformWindowsDefault();
         }

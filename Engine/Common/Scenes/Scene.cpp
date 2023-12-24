@@ -26,23 +26,21 @@ void Scene::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
         obj->Draw(aCommandBuffer, aImageIndex, aCurrentFrame, *mActiveCamera, mSceneLightingData);
     }
 
-    RenderImGui();
+    OnImGuiRender();
 }
 
-void Scene::RenderImGui() {
+void Scene::OnImGuiRender() {
     ImGui::Begin(mSceneName);
-
 
     if (ImGui::CollapsingHeader("Objects")) {
         for (const auto obj: mObjects) {
             ImGui::BeginGroup();
                 ImGui::Indent();
-                obj->RenderImGui();
+                obj->OnImGuiRender();
                 ImGui::Unindent();
             ImGui::EndGroup();
         }
     }
-
 
     ImGui::End();
 }

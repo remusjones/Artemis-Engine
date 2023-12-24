@@ -73,7 +73,7 @@ void MeshObject::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
     Renderer::Render(aCommandBuffer, aImageIndex, aCurrentFrame);
 }
 
-void MeshObject::RenderImGui() {
+void MeshObject::OnImGuiRender() {
     if (ImGui::CollapsingHeader(mName)) {
         ImGui::Indent();
         glm::vec3 pos = mTransform.Position();

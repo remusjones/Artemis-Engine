@@ -21,14 +21,10 @@ public:
     void RotateAround(float aAngle, glm::vec3 aRotation);
     void SetScale(glm::vec3 aNewScale);
 
-
-
     glm::mat4 GetCombinedMatrix() const;
     glm::mat4 GetRotationMatrix() const { return mRotationMatrix; }
     glm::mat4 GetTranslationMatrix() const { return mTranslationMatrix; }
     glm::mat4 GetScaleMatrix() const { return mScaleMatrix; }
-
-
 
 private:
     glm::mat4 mTranslationMatrix;

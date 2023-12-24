@@ -7,12 +7,13 @@
 
 #include "Base/Common/Buffers/AllocatedBuffer.h"
 #include "Base/Common/Data/GPULightingData.h"
+#include "Objects/ImGuiLayer.h"
 
 class GraphicsPipeline;
 class Camera;
 class MeshObject;
 
-class Scene {
+class Scene : ImGuiLayer{
 public:
     virtual ~Scene() = default;
 
@@ -21,7 +22,7 @@ public:
     virtual void Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
                         uint32_t aCurrentFrame);
 
-    virtual void RenderImGui();
+    void OnImGuiRender() override;
     virtual void Tick(float aDeltaTime);
 
     virtual void Cleanup();
