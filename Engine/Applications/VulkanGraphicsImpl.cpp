@@ -122,7 +122,10 @@ void VulkanGraphicsImpl::Update() {
     auto startTime = std::chrono::high_resolution_clock::now();
     auto fpsStartTime = std::chrono::high_resolution_clock::now();
 
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     // Create FPS Window Header
+
     const std::string fpsHeader = mWindowName + std::string(" | FPS: ");
 
     int frameCount = 0;
@@ -141,10 +144,12 @@ void VulkanGraphicsImpl::Update() {
             ImGui_ImplVulkan_NewFrame();
             ImGui_ImplSDL3_NewFrame();
             ImGui::NewFrame();
+            ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+
+            ImGui::ShowDemoWindow(&bWindowOpen);
 
             this->mActiveScene->Tick(mDeltaTime);
             this->mVulkanEngine.DrawFrame(*mActiveScene);
-
             ImGui::UpdatePlatformWindows();
             ImGui::RenderPlatformWindowsDefault();
         }
