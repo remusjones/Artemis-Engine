@@ -67,8 +67,7 @@ void SandboxScene::Tick(float aDeltaTime) {
 
     deltaAccumulated += aDeltaTime / 5 ;
 
-    float yPosition = 0.01f * sin(2 * M_PI * 1 * deltaAccumulated);
-
+    float yPosition = 0.15f * sin(2 * M_PI * 1 * deltaAccumulated);
     mLight->mTransform.SetPosition({0, yPosition, 0.0f});
 
 
