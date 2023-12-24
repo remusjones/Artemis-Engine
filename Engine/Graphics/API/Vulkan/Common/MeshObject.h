@@ -28,13 +28,17 @@ public:
 
     virtual void Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
                         uint32_t aCurrentFrame);
-    void LoadMesh(const char* aPath) const { mMesh->LoadFromObject(aPath); }
+
+    void LoadMesh(const char *aPath) const { mMesh->LoadFromObject(aPath); }
+
     virtual void CreateRenderer(GraphicsPipeline &aBoundGraphicsPipeline) = 0;
+
     virtual void DestroyRenderer() = 0;
+
     GraphicsPipeline *mGraphicsPipeline;
 
-    Mesh* mMesh;
-    Material* mMaterial;
+    Mesh *mMesh;
+    Material *mMaterial;
     PushConstants mPushConstants{};
 };
 
@@ -42,17 +46,22 @@ public:
  * identify what can be seperated from render pipeline */
 class MeshObject : public Renderer, Super {
 public:
-
     void Construct() override;
+
     void Tick(float aDeltaTime) override;
+
     void Cleanup() override;
+
+    virtual void RenderImGui();
 
     void CreateObject(GraphicsPipeline &aBoundGraphicsPipeline,
                       const char *aName = "Default");
 
 
     void CreateRenderer(GraphicsPipeline &aBoundGraphicsPipeline) override;
+
     void DestroyRenderer() override;
+
     void Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
                 uint32_t aCurrentFrame) override;
 

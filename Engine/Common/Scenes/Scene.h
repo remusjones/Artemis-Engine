@@ -21,6 +21,7 @@ public:
     virtual void Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
                         uint32_t aCurrentFrame);
 
+    virtual void RenderImGui();
     virtual void Tick(float aDeltaTime);
 
     virtual void Cleanup();
@@ -28,9 +29,9 @@ public:
     void AddGraphicsPipeline(GraphicsPipeline *aGraphicsPipeline);
 
     Camera *mActiveCamera;
-    std::vector<MeshObject *> mObjects;
     // TODO: cleanup these in scene, instead of engine
     std::vector<GraphicsPipeline *> mGraphicsPipelines;
     GPULightingData mSceneLightingData;
     const char *mSceneName; //
+    std::vector<MeshObject *> mObjects;
 };

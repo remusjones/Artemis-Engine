@@ -7,6 +7,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "glog/logging.h"
 #include "MeshObject.h"
+
+#include "imgui.h"
 #include "Base/Common/Material.h"
 #include "Base/Common/Buffers/PushConstants.h"
 #include "VulkanGraphicsImpl.h"
@@ -57,7 +59,6 @@ void MeshObject::CreateRenderer(
 
     for (int i = 0; i < VulkanEngine::MAX_FRAMES_IN_FLIGHT; i++)
         mMaterial->SetBuffers(gGraphics->mVulkanEngine.GetFrame(i).mLightingBuffer, 1, 0);
-
 }
 
 void MeshObject::DestroyRenderer() {
@@ -68,8 +69,29 @@ void MeshObject::DestroyRenderer() {
 
 void MeshObject::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
                         uint32_t aCurrentFrame) {
-    mPushConstants.model = mTransform.mTransformationMatrix;
+    mPushConstants.model = mTransform.GetCombinedMatrix();
     Renderer::Render(aCommandBuffer, aImageIndex, aCurrentFrame);
+}
+
+void MeshObject::RenderImGui() {
+    if (ImGui::CollapsingHeader(mName)) {
+        ImGui::Indent();
+        glm::vec3 pos = mTransform.Position();
+        glm::vec3 rot = mTransform.Euler();
+        glm::vec3 scale = mTransform.Scale();
+
+        const std::string hash = std::string("##") + mName;
+        if (ImGui::InputFloat3((hash+"Position" + hash).c_str(), &pos[0])) {
+            mTransform.SetPosition(pos);
+        }
+        if (ImGui::InputFloat3(("Rotation" + hash).c_str(), &rot[0])) {
+            mTransform.SetRotation(rot);
+        }
+        if (ImGui::InputFloat3(("Scale" + hash).c_str(), &scale[0])) {
+            mTransform.SetScale(scale);
+        }
+        ImGui::Unindent();
+    }
 }
 
 void Renderer::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,

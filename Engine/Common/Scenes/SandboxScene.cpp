@@ -60,23 +60,14 @@ void SandboxScene::Construct(const char *aSceneName) {
 float deltaAccumulated;
 
 void SandboxScene::Tick(float aDeltaTime) {
-    mMonkey->mTransform.mTransformationMatrix = glm::rotate
-    (mMonkey->mTransform.mTransformationMatrix,
-     aDeltaTime / 10,
-     glm::vec3(0.0f, 1.0f, 1.0f));
 
-    deltaAccumulated += aDeltaTime / 5 ;
-
-    float yPosition = 0.15f * sin(2 * M_PI * 1 * deltaAccumulated);
+    deltaAccumulated += aDeltaTime / 5;
+    float yPosition = 1.0f * sin(2 * M_PI * 1 * deltaAccumulated);
     mLight->mTransform.SetPosition({0, yPosition, 0.0f});
 
-
     mSceneLightingData.position = mLight->mTransform.Position();
-
-    mMonkey2->mTransform.mTransformationMatrix = glm::rotate
-    (mMonkey2->mTransform.mTransformationMatrix,
-     aDeltaTime,
-     glm::vec3(0.0f, 0.8f, -1.0f));
+    mMonkey->mTransform.RotateAround(aDeltaTime / 5, glm::vec3(0.0f, 1, 0));
+    mMonkey2->mTransform.RotateAround(aDeltaTime / 10, glm::vec3(0.0f, 1.0f, 1.0f));
 
 
     Scene::Tick(aDeltaTime);

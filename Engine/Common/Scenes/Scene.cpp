@@ -4,6 +4,7 @@
 
 #include "Scene.h"
 
+#include "imgui.h"
 #include "VulkanGraphicsImpl.h"
 #include "glog/logging.h"
 #include "Objects/Camera.h"
@@ -12,6 +13,7 @@
 
 
 void Scene::Construct(const char *aSceneName) {
+    mSceneName = aSceneName;
     for (const auto obj: mObjects) {
         obj->Construct();
     }
@@ -20,10 +22,29 @@ void Scene::Construct(const char *aSceneName) {
 
 void Scene::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
                    uint32_t aCurrentFrame) {
-
     for (const auto obj: mGraphicsPipelines) {
         obj->Draw(aCommandBuffer, aImageIndex, aCurrentFrame, *mActiveCamera, mSceneLightingData);
     }
+
+    RenderImGui();
+}
+
+void Scene::RenderImGui() {
+    ImGui::Begin(mSceneName);
+
+
+    if (ImGui::CollapsingHeader("Objects")) {
+        for (const auto obj: mObjects) {
+            ImGui::BeginGroup();
+                ImGui::Indent();
+                obj->RenderImGui();
+                ImGui::Unindent();
+            ImGui::EndGroup();
+        }
+    }
+
+
+    ImGui::End();
 }
 
 void Scene::Tick(float aDeltaTime) {
