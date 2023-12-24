@@ -81,7 +81,7 @@ void MeshObject::RenderImGui() {
         glm::vec3 scale = mTransform.Scale();
 
         const std::string hash = std::string("##") + mName;
-        if (ImGui::InputFloat3((hash+"Position" + hash).c_str(), &pos[0])) {
+        if (ImGui::InputFloat3(("Position" + hash).c_str(), &pos[0])) {
             mTransform.SetPosition(pos);
         }
         if (ImGui::InputFloat3(("Rotation" + hash).c_str(), &rot[0])) {
