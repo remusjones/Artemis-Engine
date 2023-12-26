@@ -13,7 +13,7 @@
 #include "imgui.h"
 #include "Base/Common/Material.h"
 #include "Base/Common/Data/GPUCameraData.h"
-#include "Base/Common/Data/GPULightingData.h"
+#include "Base/Common/Data/GPUSceneData.h"
 #include "glog/logging.h"
 #include "Scenes/Scene.h"
 
@@ -131,7 +131,7 @@ void VulkanEngine::CreateDescriptorPool() {
                                                    VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                                    VMA_MEMORY_USAGE_CPU_TO_GPU);
 
-        mFrameData[i].mLightingBuffer = CreateBuffer(sizeof(GPULightingData),
+        mFrameData[i].mLightingBuffer = CreateBuffer(sizeof(GPUSceneData),
                                                      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                                      VMA_MEMORY_USAGE_CPU_TO_GPU);
     }

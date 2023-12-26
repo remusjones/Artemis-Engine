@@ -23,7 +23,7 @@ void Scene::Construct(const char *aSceneName) {
 void Scene::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
                    uint32_t aCurrentFrame) {
     for (const auto obj: mGraphicsPipelines) {
-        obj->Draw(aCommandBuffer, aImageIndex, aCurrentFrame, *mActiveCamera, mSceneLightingData);
+        obj->Draw(aCommandBuffer, *this);
     }
 
     OnImGuiRender();

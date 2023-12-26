@@ -13,6 +13,7 @@
 #include "Objects/ImGuiLayer.h"
 #include "Objects/Super.h"
 
+class Scene;
 class Mesh;
 class Material;
 class VulkanEngine;
@@ -27,8 +28,7 @@ public:
 
     virtual ~Renderer() = default;
 
-    virtual void Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
-                        uint32_t aCurrentFrame);
+    virtual void Render(VkCommandBuffer aCommandBuffer, const Scene& aScene);
 
     void LoadMesh(const char *aPath) const { mMesh->LoadFromObject(aPath); }
 
@@ -63,8 +63,7 @@ public:
 
     void DestroyRenderer() override;
 
-    void Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
-                uint32_t aCurrentFrame) override;
+    void Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) override;
 
     // TODO: Move name to a metadata tag instead
     const char *mName;

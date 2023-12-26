@@ -14,10 +14,11 @@
 #include "..\Base\Common\Buffers\PushConstants.h"
 #include "Base/Common/Material.h"
 #include "Base/Common/Data/GPUCameraData.h"
-#include "Base/Common/Data/GPULightingData.h"
+#include "Base/Common/Data/GPUSceneData.h"
 #include "glog/logging.h"
 #include "Helpers/VulkanInitialization.h"
 #include "Objects/Camera.h"
+#include "Scenes/Scene.h"
 
 void GraphicsPipeline::Create() {
     // Vertex Buffer
@@ -229,22 +230,9 @@ void GraphicsPipeline::AddRenderer(Renderer *aRenderer) {
     mRenderers.push_back(aRenderer);
 }
 
-void GraphicsPipeline::Draw(VkCommandBuffer aCommandBuffer, uint32_t
-                            aImageIndex, uint32_t aCurrentFrame,
-                            const Camera &aActiveCamera,
-                            const GPULightingData& aLightingData
-                            ) const {
+void GraphicsPipeline::Draw(VkCommandBuffer aCommandBuffer, Scene &aScene) const {
     vkCmdBindPipeline(aCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                       mGraphicsPipeline);
-
-    FrameData currentFrame = gGraphics->mVulkanEngine.GetCurrentFrame();
-
-    GPUCameraData camData;
-    camData.mPerspectiveMatrix = aActiveCamera.GetPerspectiveMatrix();
-    camData.mViewMatrix = aActiveCamera.GetViewMatrix();
-    camData.mViewProjectionMatrix = aActiveCamera.GetViewProjectionMatrix();
-
-
 
     for (auto &mRenderer: mRenderers) {
 
@@ -252,18 +240,6 @@ void GraphicsPipeline::Draw(VkCommandBuffer aCommandBuffer, uint32_t
         vkCmdBindDescriptorSets(aCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout, 0,
                                 1, &materialDescriptorSet, 0, nullptr);
 
-
-        void *data;
-
-        vmaMapMemory(gGraphics->mAllocator, currentFrame.mCameraBuffer.mAllocation, &data);
-        memcpy(data, &camData, sizeof(GPUCameraData));
-        vmaUnmapMemory(gGraphics->mAllocator, currentFrame.mCameraBuffer.mAllocation);
-
-        vmaMapMemory(gGraphics->mAllocator, currentFrame.mLightingBuffer.mAllocation, &data);
-        memcpy(data, &aLightingData, sizeof(GPULightingData));
-        vmaUnmapMemory(gGraphics->mAllocator, currentFrame.mLightingBuffer.mAllocation);
-
-
-        mRenderer->Render(aCommandBuffer, aImageIndex, aCurrentFrame);
+        mRenderer->Render(aCommandBuffer, aScene);
     }
 }

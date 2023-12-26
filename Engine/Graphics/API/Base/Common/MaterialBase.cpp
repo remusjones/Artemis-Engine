@@ -10,7 +10,6 @@ void MaterialBase::AddBinding(const uint32_t aBinding, const uint32_t aCount, co
     VkDescriptorSetLayoutBinding binding = {};
     binding.binding = aBinding;
     binding.descriptorCount = aCount;
-    //TODO: Replace with actual input ..
     binding.descriptorType = static_cast<VkDescriptorType>(0 << 1);
     binding.stageFlags = aStage;
     mBindings.push_back(binding);

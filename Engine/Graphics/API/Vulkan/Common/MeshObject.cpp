@@ -13,6 +13,7 @@
 #include "Base/Common/Buffers/PushConstants.h"
 #include "VulkanGraphicsImpl.h"
 #include "Base/Common/Data/Mesh.h"
+#include "Scenes/Scene.h"
 #include "Vulkan/GraphicsPipeline.h"
 
 void MeshObject::Construct() {
@@ -49,16 +50,21 @@ void MeshObject::CreateRenderer(
     // Binds Camera Uniform Buffer
     mMaterial->AddBinding(0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
 
-    //// Binds Lighting Uniform Buffer
+    // Binds Lighting Uniform Buffer
     mMaterial->AddBinding(1, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
 
+    // Material Properties
+    mMaterial->AddBinding(2, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
 
     mMaterial->Create(mMaterial, mName);
+
     for (int i = 0; i < VulkanEngine::MAX_FRAMES_IN_FLIGHT; i++)
         mMaterial->SetBuffers(gGraphics->mVulkanEngine.GetFrame(i).mCameraBuffer, 0, 0);
 
     for (int i = 0; i < VulkanEngine::MAX_FRAMES_IN_FLIGHT; i++)
         mMaterial->SetBuffers(gGraphics->mVulkanEngine.GetFrame(i).mLightingBuffer, 1, 0);
+
+    mMaterial->CreateProperties(2, MaterialProperties());
 }
 
 void MeshObject::DestroyRenderer() {
@@ -67,37 +73,63 @@ void MeshObject::DestroyRenderer() {
     delete mMaterial;
 }
 
-void MeshObject::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
-                        uint32_t aCurrentFrame) {
+void MeshObject::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
     mPushConstants.model = mTransform.GetCombinedMatrix();
-    Renderer::Render(aCommandBuffer, aImageIndex, aCurrentFrame);
+    Renderer::Render(aCommandBuffer, aScene);
 }
 
 void MeshObject::OnImGuiRender() {
     if (ImGui::CollapsingHeader(mName)) {
         ImGui::Indent();
+
+        ImGui::SeparatorText("Transform");
         glm::vec3 pos = mTransform.Position();
         glm::vec3 rot = mTransform.Euler();
         glm::vec3 scale = mTransform.Scale();
 
         const std::string hash = std::string("##") + mName;
-        if (ImGui::InputFloat3(("Position" + hash).c_str(), &pos[0])) {
+        if (ImGui::DragFloat3(("Position" + hash).c_str(), &pos[0])) {
             mTransform.SetPosition(pos);
         }
-        if (ImGui::InputFloat3(("Rotation" + hash).c_str(), &rot[0])) {
+        if (ImGui::DragFloat3(("Rotation" + hash).c_str(), &rot[0])) {
             mTransform.SetRotation(rot);
         }
-        if (ImGui::InputFloat3(("Scale" + hash).c_str(), &scale[0])) {
+        if (ImGui::DragFloat3(("Scale" + hash).c_str(), &scale[0])) {
             mTransform.SetScale(scale);
+        }
+
+        ImGui::SeparatorText("Material");
+        if (ImGui::DragFloat(("Shininess" + hash).c_str(), &mMaterial->mMaterialProperties.mShininess)) {
+        }
+        if (ImGui::DragFloat(("Specular" + hash).c_str(), &mMaterial->mMaterialProperties.mSpecularStrength)) {
         }
         ImGui::Unindent();
     }
 }
 
-void Renderer::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
-                      uint32_t aCurrentFrame) {
-    mMesh->Bind(aCommandBuffer);
+void Renderer::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
+    FrameData currentFrame = gGraphics->mVulkanEngine.GetCurrentFrame();
+    GPUCameraData camData;
+    camData.mPerspectiveMatrix = aScene.mActiveCamera->GetPerspectiveMatrix();
+    camData.mViewMatrix = aScene.mActiveCamera->GetViewMatrix();
+    camData.mViewProjectionMatrix = aScene.mActiveCamera->GetViewProjectionMatrix();
 
+
+    void *data;
+
+    vmaMapMemory(gGraphics->mAllocator, currentFrame.mCameraBuffer.mAllocation, &data);
+    memcpy(data, &camData, sizeof(GPUCameraData));
+    vmaUnmapMemory(gGraphics->mAllocator, currentFrame.mCameraBuffer.mAllocation);
+
+    vmaMapMemory(gGraphics->mAllocator, currentFrame.mLightingBuffer.mAllocation, &data);
+    memcpy(data, &aScene.mSceneData, sizeof(GPUSceneData));
+    vmaUnmapMemory(gGraphics->mAllocator, currentFrame.mLightingBuffer.mAllocation);
+
+    vmaMapMemory(gGraphics->mAllocator, mMaterial->mPropertiesBuffer.mAllocation, &data);
+    memcpy(data, &mMaterial->mMaterialProperties, sizeof(MaterialProperties));
+    vmaUnmapMemory(gGraphics->mAllocator, mMaterial->mPropertiesBuffer.mAllocation);
+
+    mMesh->Bind(aCommandBuffer);
     vkCmdPushConstants(aCommandBuffer, mGraphicsPipeline->mPipelineLayout,
                        VK_SHADER_STAGE_VERTEX_BIT, 0,
                        sizeof(PushConstants), &mPushConstants);

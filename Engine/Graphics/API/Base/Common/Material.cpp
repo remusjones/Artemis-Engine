@@ -31,6 +31,16 @@ void Material::Create(const MaterialBase *aBaseMaterial, const char *aMaterialNa
     }
 }
 
+void Material::CreateProperties(const uint32_t aBinding, const MaterialProperties &aMaterialProperties) {
+
+    mMaterialProperties = aMaterialProperties;
+    mPropertiesBuffer = gGraphics->mVulkanEngine.CreateBuffer(sizeof(MaterialProperties),VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+    VMA_MEMORY_USAGE_CPU_TO_GPU);
+
+    for (int i = 0; i < VulkanEngine::MAX_FRAMES_IN_FLIGHT; i++)
+        SetBuffers(mPropertiesBuffer, aBinding, 0);
+}
+
 void Material::AddBinding(const uint32_t aBinding, const uint32_t aCount,
                           const VkDescriptorType aType, VkShaderStageFlagBits aShaderStage) {
     VkDescriptorSetLayoutBinding binding{};
@@ -66,4 +76,7 @@ void Material::SetBuffers(const AllocatedBuffer &aBuffer, const uint8_t aBinding
 void Material::Destroy() {
     vkDestroyDescriptorSetLayout(gGraphics->mLogicalDevice, mLayout, nullptr);
     vkFreeDescriptorSets(gGraphics->mLogicalDevice, gGraphics->mVulkanEngine.mDescriptorPool, 1, &mDescriptorSet);
+
+    if (mPropertiesBuffer.mBuffer)
+        mPropertiesBuffer.Destroy();
 }

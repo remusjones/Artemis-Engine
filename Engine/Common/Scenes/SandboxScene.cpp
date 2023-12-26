@@ -65,7 +65,7 @@ void SandboxScene::Tick(float aDeltaTime) {
     float yPosition = 1.0f * sin(2 * M_PI * 1 * deltaAccumulated);
     mLight->mTransform.SetPosition({0, yPosition, 0.0f});
 
-    mSceneLightingData.position = mLight->mTransform.Position();
+    mSceneData.position = mLight->mTransform.Position();
     mMonkey->mTransform.RotateAround(aDeltaTime / 5, glm::vec3(0.0f, 1, 0));
     mMonkey2->mTransform.RotateAround(aDeltaTime / 10, glm::vec3(0.0f, 1.0f, 1.0f));
 

@@ -15,9 +15,12 @@ layout(set = 0, binding = 1) uniform LightingBuffer{
     vec3 position;
     vec3 color;
     float ambientStrength;
+} lightingData;
+
+layout(set = 0, binding = 2) uniform MaterialProperties{
     float specularStrength;
     float shininess;
-} lightingData;
+} materialProperties;
 
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec3 inNormal;
@@ -42,8 +45,8 @@ void main() {
     vec3 viewDir = normalize(-vec3(inPushConstants.model * vec4(inPosition, 1.0)));
     vec3 reflectDir = reflect(-lightDir, worldNormal);
 
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), lightingData.shininess);
-    vec3 specular = lightingData.specularStrength * spec * lightingData.color / (1.0 + 0.1 * distance + 0.01 * (distance * distance));
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), materialProperties.shininess);
+    vec3 specular = materialProperties.specularStrength * spec * lightingData.color / (1.0 + 0.1 * distance + 0.01 * (distance * distance));
     vec3 result = (ambient + diffuse + specular) * inColor;
 
     fragColor = result;
