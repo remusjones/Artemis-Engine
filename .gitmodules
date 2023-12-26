@@ -22,3 +22,7 @@
     path = Libraries/imgui
     url = https://github.com/ocornut/imgui.git
     branch = docking
+[submodule "stb"]
+    path = Libraries/stb
+    url = https://github.com/nothings/stb.git
+    branch = master

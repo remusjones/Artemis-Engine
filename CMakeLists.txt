@@ -72,30 +72,32 @@ include_directories(Engine/IO)
 include_directories(Engine/Common)
 
 # https://github.com/google/glog.git
+message("Adding glog")
 set(WITH_GFLAGS OFF) # We aren't using gflags, so disable it
 add_subdirectory(${LIBRARIES_PATH}glog glog)
 
 # https://github.com/g-truc/glm.git
+message("Adding glm")
 add_subdirectory(${LIBRARIES_PATH}glm glm)
 
 # https://github.com/libsdl-org/SDL.git
+message("Adding sdl")
 set(SDL_DIRECTX OFF) # Disable due to not supporting directx at the moment
 add_subdirectory(${LIBRARIES_PATH}SDL)
 
-# https://github.com/charles-lunarg/vk-bootstrap.git
+# https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
+message("Adding VulkanMemoryAllocator")
 add_subdirectory(${LIBRARIES_PATH}VulkanMemoryAllocator VulkanMemoryAllocator)
 
 # https://github.com/tinyobjloader/tinyobjloader.git
+message("Adding tinyobjloader")
 add_subdirectory(${LIBRARIES_PATH}tinyobjloader tinyobjloader)
 
 # https://github.com/ocornut/imgui.git
-
 message("Adding ImGui")
-
 set(IMGUI_PATH "${LIBRARIES_PATH}/imgui")
 add_library(imgui STATIC ${IMGUI_PATH})
 target_include_directories(imgui PUBLIC ${IMGUI_PATH} ${IMGUI_PATH}/backends)
-
 target_sources(imgui PUBLIC
 
         "${IMGUI_PATH}/imgui.h"
@@ -108,6 +110,10 @@ target_sources(imgui PUBLIC
         "${IMGUI_PATH}/backends/imgui_impl_sdl3.cpp"
 )
 target_link_libraries(imgui SDL3::SDL3)
+
+message("Adding stb")
+set(STB_SOURCES "${LIBRARIES_PATH}stb/stb_image.h")
+target_include_directories(${PROJECT_NAME} INTERFACE "${LIBRARIES_PATH}stb")
 
 # Compile SPV Shaders TODO: Move to Vulkan only CMake script
 add_custom_target(CompileSPVShaders
