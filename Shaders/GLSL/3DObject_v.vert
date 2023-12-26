@@ -18,10 +18,12 @@ layout(set = 0, binding = 1) uniform LightingBuffer{
 } lightingData;
 
 layout(set = 0, binding = 2) uniform MaterialProperties{
+    vec4 color;
     float specularStrength;
     float shininess;
 } materialProperties;
 
+// Vertex Information
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec3 inNormal;
 layout(location = 2) in vec3 inColor;
@@ -47,8 +49,8 @@ void main() {
 
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), materialProperties.shininess);
     vec3 specular = materialProperties.specularStrength * spec * lightingData.color / (1.0 + 0.1 * distance + 0.01 * (distance * distance));
-    vec3 result = (ambient + diffuse + specular) * inColor;
 
+    vec3 result = (ambient + diffuse + specular) * (inColor * vec3(materialProperties.color));
     fragColor = result;
 
 }

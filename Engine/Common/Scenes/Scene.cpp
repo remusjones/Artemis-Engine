@@ -32,9 +32,9 @@ void Scene::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
 void Scene::OnImGuiRender() {
     ImGui::Begin(mSceneName);
 
-    if (ImGui::CollapsingHeader(GetHashedName("Scene Information"))) {
+    if (ImGui::CollapsingHeader("Scene Information")) {
         ImGui::ColorEdit3(GetHashedName("Lighting Color"), &mSceneData.color[0]);
-        ImGui::DragFloat(GetHashedName("Lighting Strength"), &mSceneData.ambientStrength);
+        ImGui::DragFloat(GetHashedName("Ambient Lighting"), &mSceneData.ambientStrength, 0.1f);
     }
 
 if (ImGui::CollapsingHeader("Objects")) {

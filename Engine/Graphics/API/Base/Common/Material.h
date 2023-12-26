@@ -5,14 +5,15 @@
 #pragma once
 
 
+#include <glm/vec4.hpp>
 #include <vulkan/vulkan_core.h>
 #include "MaterialBase.h"
 #include "Buffers/AllocatedBuffer.h"
 
 class Buffer;
 
-class MaterialProperties {
-public:
+struct MaterialProperties {
+    glm::vec4 mColor = glm::vec4(1, 1, 1, 1);
     // TODO: Input Images for thes properties?
     float mSpecularStrength = 1;
     float mShininess = 32;

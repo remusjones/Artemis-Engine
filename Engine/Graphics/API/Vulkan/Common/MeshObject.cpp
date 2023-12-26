@@ -98,6 +98,7 @@ void MeshObject::OnImGuiRender() {
         }
 
         ImGui::SeparatorText("Material");
+        ImGui::ColorEdit4(GetHashedName("Color"), &mMaterial->mMaterialProperties.mColor[0]);
         if (ImGui::DragFloat(GetHashedName("Shininess"),
             &mMaterial->mMaterialProperties.mShininess, 0.1f)) {
         }
