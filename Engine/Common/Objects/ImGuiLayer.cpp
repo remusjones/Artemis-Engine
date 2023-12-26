@@ -9,12 +9,13 @@
 #include "glog/logging.h"
 
 
-ImGuiLayer::ImGuiLayer() {
-    mGUID = GetGUID();
-}
+ImGuiLayer::ImGuiLayer() = default;
 
-const char *ImGuiLayer::GetUniqueLabel(const char *aFieldName) const {
-    return std::string(std::string(aFieldName) + "##" + mGUID).c_str();
+const char *ImGuiLayer::GetUniqueLabel(const char *aLabel)  {
+    if (mGUID.empty())
+        mGUID = GetGUID();
+
+    return std::string(std::string(aLabel) + "##" + mGUID).c_str();
 }
 
 

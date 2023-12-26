@@ -9,7 +9,7 @@ class ImGuiLayer {
 public:
     ImGuiLayer();
     virtual void OnImGuiRender() = 0; // TODO: Invoke from single point in app
-    const char* GetUniqueLabel(const char* aFieldName) const;
+    const char* GetUniqueLabel(const char* aLabel);
 
 private:
 

@@ -83,15 +83,11 @@ void VulkanGraphicsImpl::InitializeImgui() {
     vkCreateDescriptorPool(mLogicalDevice, &pool_info, nullptr, &mImguiPool);
 
 
-    // 2: initialize imgui library
 
-    //this initializes the core structures of imgui
     ImGui::CreateContext();
 
-    //this initializes imgui for SDL
     ImGui_ImplSDL3_InitForVulkan(mWindow);
 
-    //this initializes imgui for Vulkan
     ImGui_ImplVulkan_InitInfo init_info = {};
     init_info.Instance = mVulkanInstance;
     init_info.PhysicalDevice = mPhysicalDevice;
@@ -146,10 +142,9 @@ void VulkanGraphicsImpl::Update() {
             ImGui::NewFrame();
             ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
-            ImGui::ShowDemoWindow(&bWindowOpen);
-
             this->mActiveScene->Tick(mDeltaTime);
             this->mVulkanEngine.DrawFrame(*mActiveScene);
+
             ImGui::UpdatePlatformWindows();
             ImGui::RenderPlatformWindowsDefault();
         }

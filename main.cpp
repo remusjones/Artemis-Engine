@@ -10,7 +10,7 @@
 int main() {
 
     LOG(INFO) << "Initializing Application";
-    IApplication* app = new VulkanGraphicsImpl("Engine", 800, 600);
+    IApplication* app = new VulkanGraphicsImpl("Engine", 1200, 800);
     try {
         app->Run();
     } catch (const std::exception& e) {
