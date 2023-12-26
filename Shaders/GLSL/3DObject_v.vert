@@ -13,6 +13,7 @@ layout(set = 0, binding = 0) uniform CameraBuffer{
 
 layout(set = 0, binding = 1) uniform LightingBuffer{
     vec3 position;
+    float lightIntensity ;
     vec3 color;
     float ambientStrength;
 } lightingData;
@@ -43,14 +44,17 @@ void main() {
 
     vec3 ambient = lightingData.ambientStrength * lightingData.color;
     float diff = max(dot(worldNormal, lightDir), 0.0);
-    vec3 diffuse = diff * lightingData.color / (1.0 + 0.1 * distance + 0.01 * (distance * distance));
+    vec3 diffuse = diff * lightingData.color * lightingData.lightIntensity / (1.0 + 0.1 * distance + 0.01 * (distance
+    * distance));
     vec3 viewDir = normalize(-vec3(inPushConstants.model * vec4(inPosition, 1.0)));
     vec3 reflectDir = reflect(-lightDir, worldNormal);
 
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), materialProperties.shininess);
-    vec3 specular = materialProperties.specularStrength * spec * lightingData.color / (1.0 + 0.1 * distance + 0.01 * (distance * distance));
+    vec3 specular = materialProperties.specularStrength * spec *
+        (lightingData.color * lightingData.lightIntensity) /(1 + 0.1 * distance + 0.01 * (distance * distance));
 
-    vec3 result = (ambient + diffuse + specular) * (inColor * vec3(materialProperties.color));
+    // Uses vertex color as influence
+    vec3 result = (ambient + diffuse + (specular)) * (inColor * vec3(materialProperties.color));
     fragColor = result;
 
 }

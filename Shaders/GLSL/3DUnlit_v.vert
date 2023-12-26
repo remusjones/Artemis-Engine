@@ -13,6 +13,7 @@ layout(set = 0, binding = 0) uniform CameraBuffer{
 
 layout(set = 0, binding = 1) uniform LightingBuffer{
     vec3 position;
+    float lightStrength;
     vec3 color;
     float ambientStrength;
 } lightingData;

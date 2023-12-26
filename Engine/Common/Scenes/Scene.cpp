@@ -33,11 +33,12 @@ void Scene::OnImGuiRender() {
     ImGui::Begin(mSceneName);
 
     if (ImGui::CollapsingHeader("Scene Information")) {
-        ImGui::ColorEdit3(GetHashedName("Lighting Color"), &mSceneData.color[0]);
-        ImGui::DragFloat(GetHashedName("Ambient Lighting"), &mSceneData.ambientStrength, 0.1f);
+        ImGui::ColorEdit3(GetUniqueLabel("Directional Light Color"), &mSceneData.color[0]);
+        ImGui::DragFloat(GetUniqueLabel("Directional Light Intensity"), &mSceneData.lightIntensity, 0.0125f);
+        ImGui::DragFloat(GetUniqueLabel("Ambient Lighting"), &mSceneData.ambientStrength, 0.1f);
     }
 
-if (ImGui::CollapsingHeader("Objects")) {
+    if (ImGui::CollapsingHeader("Objects")) {
         for (const auto obj: mObjects) {
             ImGui::BeginGroup();
             ImGui::Indent();
