@@ -53,7 +53,6 @@ void VulkanEngine::Cleanup() {
         mFrameData[i].mCameraBuffer.Destroy();
         mFrameData[i].mLightingBuffer.Destroy();
     }
-    vkDestroyDescriptorSetLayout(mLogicalDevice, mGlobalSetLayout, nullptr);
     vkDestroyDescriptorPool(mLogicalDevice, mDescriptorPool, nullptr);
     vkDestroyRenderPass(mLogicalDevice, mSwapChain->mRenderPass, nullptr);
 }

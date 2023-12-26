@@ -87,23 +87,24 @@ void MeshObject::OnImGuiRender() {
         glm::vec3 rot = mTransform.Euler();
         glm::vec3 scale = mTransform.Scale();
 
-        const std::string hash = std::string("##") + mName;
-        if (ImGui::DragFloat3(("Position" + hash).c_str(), &pos[0], 0.1f)) {
+        if (ImGui::DragFloat3(GetHashedName("Position"), &pos[0], 0.1f)) {
             mTransform.SetPosition(pos);
         }
-        if (ImGui::DragFloat3(("Rotation" + hash).c_str(), &rot[0], 0.1f)) {
+        if (ImGui::DragFloat3(GetHashedName("Rotation"), &rot[0], 0.1f)) {
             mTransform.SetRotation(rot);
         }
-        if (ImGui::DragFloat3(("Scale" + hash).c_str(), &scale[0], 0.1f)) {
+        if (ImGui::DragFloat3(GetHashedName("Scale"), &scale[0], 0.1f)) {
             mTransform.SetScale(scale);
         }
 
         ImGui::SeparatorText("Material");
-        if (ImGui::DragFloat(("Shininess" + hash).c_str(), &mMaterial->mMaterialProperties.mShininess, 0.1f)) {
+        if (ImGui::DragFloat(GetHashedName("Shininess"),
+            &mMaterial->mMaterialProperties.mShininess, 0.1f)) {
         }
-        if (ImGui::DragFloat(("Specular" + hash).c_str(), &mMaterial->mMaterialProperties.mSpecularStrength, 0.1f)) {
+        if (ImGui::DragFloat(GetHashedName("Specular"),
+            &mMaterial->mMaterialProperties.mSpecularStrength, 0.1f)) {
         }
-    ImGui::Unindent();
+        ImGui::Unindent();
     }
 }
 

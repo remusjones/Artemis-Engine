@@ -32,12 +32,17 @@ void Scene::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
 void Scene::OnImGuiRender() {
     ImGui::Begin(mSceneName);
 
-    if (ImGui::CollapsingHeader("Objects")) {
+    if (ImGui::CollapsingHeader(GetHashedName("Scene Information"))) {
+        ImGui::ColorEdit3(GetHashedName("Lighting Color"), &mSceneData.color[0]);
+        ImGui::DragFloat(GetHashedName("Lighting Strength"), &mSceneData.ambientStrength);
+    }
+
+if (ImGui::CollapsingHeader("Objects")) {
         for (const auto obj: mObjects) {
             ImGui::BeginGroup();
-                ImGui::Indent();
-                obj->OnImGuiRender();
-                ImGui::Unindent();
+            ImGui::Indent();
+            obj->OnImGuiRender();
+            ImGui::Unindent();
             ImGui::EndGroup();
         }
     }
