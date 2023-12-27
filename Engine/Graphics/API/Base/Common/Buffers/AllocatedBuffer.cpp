@@ -22,12 +22,10 @@ AllocatedBuffer::~AllocatedBuffer() {
 void AllocatedBuffer::Create(VkDeviceSize aSize,
                              VkBufferUsageFlags aUsage,
                              VkBuffer &aBuffer, VmaAllocation &aAllocation) {
-    //allocate vertex buffer
+
     VkBufferCreateInfo bufferInfo = {};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    //this is the total size, in bytes, of the buffer we are allocating
     bufferInfo.size = aSize;
-    //this buffer is going to be used as a Vertex Buffer
     bufferInfo.usage = aUsage;
 
     VmaAllocationCreateInfo vmaallocInfo = {};

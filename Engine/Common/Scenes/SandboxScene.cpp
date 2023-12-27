@@ -3,6 +3,8 @@
 //
 
 #include "SandboxScene.h"
+
+#include "LoadUtilities.h"
 #include "VulkanGraphicsImpl.h"
 #include "Base/Common/Material.h"
 #include "File Management/FileManagement.h"
@@ -10,6 +12,7 @@
 #include "Objects/Camera.h"
 #include "Vulkan/GraphicsPipeline.h"
 #include "Vulkan/Common/MeshObject.h"
+#include "Vulkan/Helpers/VulkanInitialization.h"
 
 void SandboxScene::Construct(const char *aSceneName) {
     // Create basic mesh pipeline
@@ -17,15 +20,15 @@ void SandboxScene::Construct(const char *aSceneName) {
     GraphicsPipeline *unlitMeshPipeline = new GraphicsPipeline("Unlit Mesh Pipeline");
 
     litMeshPipeline->AddShader("/Shaders/3DObject_v.spv",
-                            VK_SHADER_STAGE_VERTEX_BIT);
+                               VK_SHADER_STAGE_VERTEX_BIT);
     litMeshPipeline->AddShader("/Shaders/Lit_f.spv",
-                            VK_SHADER_STAGE_FRAGMENT_BIT);
+                               VK_SHADER_STAGE_FRAGMENT_BIT);
 
 
     unlitMeshPipeline->AddShader("/Shaders/3DUnlit_v.spv",
-                            VK_SHADER_STAGE_VERTEX_BIT);
+                                 VK_SHADER_STAGE_VERTEX_BIT);
     unlitMeshPipeline->AddShader("/Shaders/Lit_f.spv",
-                            VK_SHADER_STAGE_FRAGMENT_BIT);
+                                 VK_SHADER_STAGE_FRAGMENT_BIT);
 
 
     mMonkey = new MeshObject();
@@ -58,6 +61,17 @@ void SandboxScene::Construct(const char *aSceneName) {
     mObjects.push_back(mLight);
 
 
+    // TODO: Condense into init func
+
+    Texture texture;
+    LoadUtilities::LoadImageFromDisk(gGraphics, "../Textures/lost_empire-RGBA.png", texture.image);
+    VkImageViewCreateInfo imageinfo = VulkanInitialization::ImageViewCreateInfo(
+        VK_FORMAT_R8G8B8A8_SRGB, texture.image.mImage,
+        VK_IMAGE_ASPECT_COLOR_BIT);
+    vkCreateImageView(gGraphics->mLogicalDevice, &imageinfo, nullptr, &texture.imageView);
+    mLoadedTextures["diffuse"] = texture;
+
+
     mActiveCamera = new Camera();
     mActiveCamera->mTransform.SetPosition({0, 0, -5.0f});
 
@@ -75,7 +89,7 @@ void SandboxScene::Tick(float aDeltaTime) {
 
     mLight->mTransform.SetPosition({0, yPosition, 0.0f});
     mLight->mMaterial->mMaterialProperties.mColor =
-    glm::vec4(mSceneData.color.x,mSceneData.color.y,mSceneData.color.z,1);
+            glm::vec4(mSceneData.color.x, mSceneData.color.y, mSceneData.color.z, 1);
 
     mSceneData.position = mLight->mTransform.Position();
 
@@ -87,5 +101,11 @@ void SandboxScene::Tick(float aDeltaTime) {
 }
 
 void SandboxScene::Cleanup() {
+    for (const auto loadedTextures: mLoadedTextures) {
+        vmaDestroyImage(gGraphics->mAllocator,
+                        loadedTextures.second.image.mImage,
+                        loadedTextures.second.image.mAllocation);
+        vkDestroyImageView(gGraphics->mLogicalDevice, loadedTextures.second.imageView, nullptr);
+    }
     Scene::Cleanup();
 }

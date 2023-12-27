@@ -83,7 +83,6 @@ void VulkanGraphicsImpl::InitializeImgui() {
     vkCreateDescriptorPool(mLogicalDevice, &pool_info, nullptr, &mImguiPool);
 
 
-
     ImGui::CreateContext();
 
     ImGui_ImplSDL3_InitForVulkan(mWindow);
@@ -118,7 +117,7 @@ void VulkanGraphicsImpl::Update() {
     auto startTime = std::chrono::high_resolution_clock::now();
     auto fpsStartTime = std::chrono::high_resolution_clock::now();
 
-    ImGuiIO& io = ImGui::GetIO();
+    ImGuiIO &io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     // Create FPS Window Header
 
@@ -303,9 +302,9 @@ void VulkanGraphicsImpl::CreateGraphicsPipeline() {
                              mPresentQueue
     );
 
-    CreateScenes();
     mVulkanEngine.CreateSyncObjects();
     mSwapChain->CreateFrameBuffers();
+    CreateScenes();
 }
 
 void VulkanGraphicsImpl::DestroyGraphicsPipeline() {

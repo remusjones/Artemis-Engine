@@ -4,7 +4,7 @@
 
 #pragma once
 #include <vulkan/vulkan_core.h>
-#include "Buffers/AllocatedBuffer.h"
+#include "AllocatedBuffer.h"
 
 class AllocatedImage {
 public:

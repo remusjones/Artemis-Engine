@@ -15,6 +15,7 @@
 #include "Base/Common/Data/GPUCameraData.h"
 #include "Base/Common/Data/GPUSceneData.h"
 #include "glog/logging.h"
+#include "Helpers/VulkanInitialization.h"
 #include "Scenes/Scene.h"
 
 void VulkanEngine::Initialize(VkDevice &aLogicalDevice,
@@ -40,6 +41,9 @@ void VulkanEngine::Initialize(VkDevice &aLogicalDevice,
 void VulkanEngine::Cleanup() {
     CleanupOldSyncObjects();
 
+    vkDestroyCommandPool(mLogicalDevice, mUploadContext.mCommandPool, nullptr);
+    vkDestroyFence(mLogicalDevice, mUploadContext.mUploadFence, nullptr);
+
     // Destroy Frame data
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         vkDestroySemaphore(mLogicalDevice, mFrameData[i].mPresentSemaphore,
@@ -57,26 +61,72 @@ void VulkanEngine::Cleanup() {
     vkDestroyRenderPass(mLogicalDevice, mSwapChain->mRenderPass, nullptr);
 }
 
+void VulkanEngine::SubmitBufferCommand(std::function<void(VkCommandBuffer cmd)> &&function) {
+    VkCommandBuffer cmd = mUploadContext.mCommandBuffer;
+    VkCommandBufferBeginInfo cmdBeginInfo = VulkanInitialization::CommandBufferBeginInfo(
+        VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+
+    vkBeginCommandBuffer(cmd, &cmdBeginInfo);
+    function(cmd);
+    vkResetFences(mLogicalDevice, 1, &mUploadContext.mUploadFence);
+    vkEndCommandBuffer(cmd);
+
+    VkSubmitInfo submit = VulkanInitialization::SubmitInfo(&cmd);
+
+
+    vkQueueSubmit(mGraphicsQueue, 1, &submit, mUploadContext.mUploadFence);
+    vkWaitForFences(mLogicalDevice, 1, &mUploadContext.mUploadFence, true, 9999999999);
+    vkResetFences(mLogicalDevice, 1, &mUploadContext.mUploadFence);
+    vkResetCommandPool(mLogicalDevice, mUploadContext.mCommandPool, 0);
+}
+
+void VulkanEngine::CreateUploadContext() {
+    auto queueFamilies = gGraphics->GetQueueFamilyIndices();
+    VkCommandPoolCreateInfo poolInfo{};
+    poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    poolInfo.queueFamilyIndex = queueFamilies.mGraphicsFamily.value();
+
+    if (vkCreateCommandPool(mLogicalDevice, &poolInfo, nullptr, &mUploadContext.mCommandPool) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create command pool");
+    }
+
+    VkCommandBufferAllocateInfo cmdAllocInfo = VulkanInitialization::CommandBufferAllocateInfo(mUploadContext
+        .mCommandPool, 1, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+    vkAllocateCommandBuffers(mLogicalDevice, &cmdAllocInfo, &mUploadContext.mCommandBuffer);
+
+
+    VkFenceCreateInfo info = {};
+    info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    info.pNext = nullptr;
+    info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+    vkCreateFence(mLogicalDevice, &info, nullptr, &mUploadContext.mUploadFence);
+}
+
 void VulkanEngine::CreateCommandPool() {
     LOG(INFO) << "Creating Command Pool";
+
+    auto queueFamilies = gGraphics->GetQueueFamilyIndices();
+    VkCommandPoolCreateInfo poolInfo{};
+    poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    poolInfo.queueFamilyIndex = queueFamilies.mGraphicsFamily.value();
+
     for (int i = 0; i < mFrameData.size(); i++) {
-        auto queueFamilies = gGraphics->GetQueueFamilyIndices();
-
-        VkCommandPoolCreateInfo poolInfo{};
-        poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-        poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-        poolInfo.queueFamilyIndex = queueFamilies.mGraphicsFamily.value();
-
         if (vkCreateCommandPool(mLogicalDevice, &poolInfo, nullptr, &mFrameData[i].mCommandPool) != VK_SUCCESS) {
             throw std::runtime_error("failed to create command pool");
         }
     }
+
+
+    CreateUploadContext();
     CreateCommandBuffers();
 }
 
 void VulkanEngine::CreateCommandBuffers() {
     for (int i = 0; i < mFrameData.size(); i++) {
-        VkCommandBufferAllocateInfo allocInfo{};
+        VkCommandBufferAllocateInfo allocInfo;
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.commandPool = mFrameData[i].mCommandPool;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;

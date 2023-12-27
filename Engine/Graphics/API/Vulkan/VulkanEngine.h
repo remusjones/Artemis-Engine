@@ -3,6 +3,7 @@
 //
 #pragma once
 
+#include <functional>
 #include <vector>
 #include "VulkanSwapChain.h"
 #include "Base/Common/Data/Vertex.h"
@@ -11,6 +12,13 @@
 class Material;
 class Scene;
 class GraphicsPipeline;
+
+struct UploadContext
+{
+    VkFence mUploadFence;
+    VkCommandPool mCommandPool;
+    VkCommandBuffer mCommandBuffer;
+};
 
 class VulkanEngine {
 public:
@@ -23,8 +31,9 @@ public:
 
     const FrameData &GetCurrentFrame() { return mFrameData[mCurrentFrame]; }
     const FrameData &GetFrame(int32_t aIndex) { return mFrameData[aIndex]; }
-
+    void SubmitBufferCommand(std::function<void(VkCommandBuffer cmd)>&& function);
     void QueueFrameBufferRebuild() {mRebuildFrameBuffer = true;}
+    void CreateUploadContext();
     void CreateCommandPool();
     void CreateCommandBuffers();
     void CreateDescriptorPool();
@@ -44,6 +53,8 @@ public:
     VkQueue mGraphicsQueue;
     VkQueue mPresentQueue;
     VkDescriptorPool mDescriptorPool;
+    UploadContext mUploadContext;
+
     static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
 private:

@@ -43,7 +43,7 @@ add_executable(${PROJECT_NAME} main.cpp
         Engine/Graphics/API/Base/Common/Buffers/AllocatedBuffer.h
         Engine/Graphics/API/Base/Common/Data/Mesh.cpp
         Engine/Graphics/API/Base/Common/Data/Mesh.h
-        Engine/Graphics/API/Base/Common/AllocatedImage.h
+        Engine/Graphics/API/Base/Common/Buffers/AllocatedImage.h
         Engine/Graphics/API/Vulkan/Helpers/VulkanInitialization.h
         Engine/Common/Scenes/Scene.cpp
         Engine/Common/Scenes/Scene.h
@@ -61,7 +61,12 @@ add_executable(${PROJECT_NAME} main.cpp
         Engine/Graphics/API/Base/Common/Data/FrameData.h
         Engine/Graphics/API/Base/Common/Data/GPUSceneData.h
         Engine/Common/Objects/ImGuiLayer.cpp
-        Engine/Common/Objects/ImGuiLayer.h)
+        Engine/Common/Objects/ImGuiLayer.h
+        Engine/Graphics/API/Base/Common/Image.h
+        Engine/Graphics/API/Base/Common/Image.cpp
+        Engine/IO/LoadUtilities.cpp
+        Engine/IO/LoadUtilities.h
+        Engine/Graphics/API/Base/Common/Buffers/Texture.h)
 
 # Include Vulkan Headers
 include_directories("${VULKAN_SDK}/Include")
@@ -99,7 +104,6 @@ set(IMGUI_PATH "${LIBRARIES_PATH}/imgui")
 add_library(imgui STATIC ${IMGUI_PATH})
 target_include_directories(imgui PUBLIC ${IMGUI_PATH} ${IMGUI_PATH}/backends)
 target_sources(imgui PUBLIC
-
         "${IMGUI_PATH}/imgui.h"
         "${IMGUI_PATH}/imgui.cpp"
         "${IMGUI_PATH}/imgui_demo.cpp"
@@ -113,7 +117,7 @@ target_link_libraries(imgui SDL3::SDL3)
 
 message("Adding stb")
 set(STB_SOURCES "${LIBRARIES_PATH}stb/stb_image.h")
-target_include_directories(${PROJECT_NAME} INTERFACE "${LIBRARIES_PATH}stb")
+include_directories("${LIBRARIES_PATH}stb/")
 
 # Compile SPV Shaders TODO: Move to Vulkan only CMake script
 add_custom_target(CompileSPVShaders

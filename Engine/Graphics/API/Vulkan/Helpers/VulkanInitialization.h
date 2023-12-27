@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#include "Base/Common/AllocatedImage.h"
+#include "../../Base/Common/Buffers/AllocatedImage.h"
 
 class VulkanInitialization {
     VulkanInitialization() = default;
@@ -62,6 +62,47 @@ public:
         info.stencilTestEnable = VK_FALSE;
 
         return info;
+    }
+	static VkCommandBufferBeginInfo CommandBufferBeginInfo(VkCommandBufferUsageFlags flags /*= 0*/)
+    {
+    	VkCommandBufferBeginInfo info = {};
+    	info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    	info.pNext = nullptr;
+
+    	info.pInheritanceInfo = nullptr;
+    	info.flags = flags;
+    	return info;
+    }
+
+	static VkCommandBufferAllocateInfo CommandBufferAllocateInfo(VkCommandPool pool, uint32_t count /*= 1*/,
+	VkCommandBufferLevel level /*=
+	VK_COMMAND_BUFFER_LEVEL_PRIMARY*/)
+    {
+    	VkCommandBufferAllocateInfo info = {};
+    	info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    	info.pNext = nullptr;
+
+    	info.commandPool = pool;
+    	info.commandBufferCount = count;
+    	info.level = level;
+    	return info;
+    }
+
+	static VkSubmitInfo SubmitInfo(VkCommandBuffer* cmd)
+    {
+    	VkSubmitInfo info = {};
+    	info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    	info.pNext = nullptr;
+
+    	info.waitSemaphoreCount = 0;
+    	info.pWaitSemaphores = nullptr;
+    	info.pWaitDstStageMask = nullptr;
+    	info.commandBufferCount = 1;
+    	info.pCommandBuffers = cmd;
+    	info.signalSemaphoreCount = 0;
+    	info.pSignalSemaphores = nullptr;
+
+    	return info;
     }
 
 };

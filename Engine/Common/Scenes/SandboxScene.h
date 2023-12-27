@@ -3,7 +3,10 @@
 //
 
 #pragma once
+#include <unordered_map>
+
 #include "Scene.h"
+#include "Base/Common/Buffers/Texture.h"
 
 
 class SandboxScene final : public Scene {
@@ -15,6 +18,9 @@ public:
     void Cleanup() override;
 
 private:
+    std::unordered_map<std::string, Texture> mLoadedTextures;
+
+
     MeshObject *mMonkey;
     MeshObject *mMonkey2;
     MeshObject *mLight;

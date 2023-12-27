@@ -5,7 +5,7 @@
 #include <vector>
 #include <vulkan/vulkan_core.h>
 
-#include "Base/Common/AllocatedImage.h"
+#include "../Base/Common/Buffers/AllocatedImage.h"
 
 class VulkanGraphicsImpl;
 

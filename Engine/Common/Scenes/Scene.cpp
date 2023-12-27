@@ -33,8 +33,8 @@ void Scene::OnImGuiRender() {
     ImGui::Begin(mSceneName);
 
     if (ImGui::CollapsingHeader("Scene Information")) {
-        ImGui::ColorEdit3(GetUniqueLabel("Directional Light Color"), &mSceneData.color[0]);
-        ImGui::DragFloat(GetUniqueLabel("Directional Light Intensity"), &mSceneData.lightIntensity, 0.0125f);
+        ImGui::ColorEdit3(GetUniqueLabel("Point Light Color"), &mSceneData.color[0]);
+        ImGui::DragFloat(GetUniqueLabel("Point Light Intensity"), &mSceneData.lightIntensity, 0.0125f);
         ImGui::DragFloat(GetUniqueLabel("Ambient Lighting"), &mSceneData.ambientStrength, 0.1f);
     }
 
