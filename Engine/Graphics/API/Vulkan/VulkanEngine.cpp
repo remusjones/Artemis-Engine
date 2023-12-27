@@ -55,7 +55,7 @@ void VulkanEngine::Cleanup() {
         vkDestroyCommandPool(mLogicalDevice, mFrameData[i].mCommandPool, nullptr);
 
         mFrameData[i].mCameraBuffer.Destroy();
-        mFrameData[i].mLightingBuffer.Destroy();
+        mFrameData[i].mSceneBuffer.Destroy();
     }
     vkDestroyDescriptorPool(mLogicalDevice, mDescriptorPool, nullptr);
     vkDestroyRenderPass(mLogicalDevice, mSwapChain->mRenderPass, nullptr);
@@ -100,20 +100,20 @@ void VulkanEngine::CreateUploadContext() {
     info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     info.pNext = nullptr;
     info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
     vkCreateFence(mLogicalDevice, &info, nullptr, &mUploadContext.mUploadFence);
+    mInFlightFencesToDestroy.push_back(mUploadContext.mUploadFence);
 }
 
 void VulkanEngine::CreateCommandPool() {
     LOG(INFO) << "Creating Command Pool";
 
-    auto queueFamilies = gGraphics->GetQueueFamilyIndices();
-    VkCommandPoolCreateInfo poolInfo{};
-    poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-    poolInfo.queueFamilyIndex = queueFamilies.mGraphicsFamily.value();
 
     for (int i = 0; i < mFrameData.size(); i++) {
+        auto queueFamilies = gGraphics->GetQueueFamilyIndices();
+        VkCommandPoolCreateInfo poolInfo{};
+        poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+        poolInfo.queueFamilyIndex = queueFamilies.mGraphicsFamily.value();
         if (vkCreateCommandPool(mLogicalDevice, &poolInfo, nullptr, &mFrameData[i].mCommandPool) != VK_SUCCESS) {
             throw std::runtime_error("failed to create command pool");
         }
@@ -135,6 +135,14 @@ void VulkanEngine::CreateCommandBuffers() {
         if (vkAllocateCommandBuffers(mLogicalDevice, &allocInfo, &mFrameData[i].mCommandBuffer) != VK_SUCCESS) {
             throw std::runtime_error("failed to allocate command buffers");
         }
+    }
+}
+
+void VulkanEngine::DestroyCommandPool() {
+
+    vkDestroyCommandPool(mLogicalDevice, mUploadContext.mCommandPool, nullptr);
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+        vkDestroyCommandPool(mLogicalDevice, mFrameData[i].mCommandPool, nullptr);
     }
 }
 
@@ -160,10 +168,12 @@ AllocatedBuffer VulkanEngine::CreateBuffer(size_t aAllocSize, VkBufferUsageFlags
 
 
 void VulkanEngine::CreateDescriptorPool() {
-    //create a descriptor pool that will hold 10 uniform buffers
     std::vector<VkDescriptorPoolSize> sizes =
     {
-        {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 10}
+        {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 10},
+        {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 10},
+        {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 10},
+        {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 10}
     };
 
     VkDescriptorPoolCreateInfo createInfo = {};
@@ -180,9 +190,9 @@ void VulkanEngine::CreateDescriptorPool() {
                                                    VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                                    VMA_MEMORY_USAGE_CPU_TO_GPU);
 
-        mFrameData[i].mLightingBuffer = CreateBuffer(sizeof(GPUSceneData),
-                                                     VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                                                     VMA_MEMORY_USAGE_CPU_TO_GPU);
+        mFrameData[i].mSceneBuffer = CreateBuffer(sizeof(GPUSceneData),
+                                                  VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                                  VMA_MEMORY_USAGE_CPU_TO_GPU);
     }
 }
 
@@ -205,7 +215,6 @@ void VulkanEngine::DrawFrame(Scene &aActiveScene) {
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
         mSwapChain->RecreateSwapChain();
-        CreateCommandBuffers();
         // Sync objects aren't atomic, so we have to regenerate them at the end of the current frame
         semaphoresNeedToBeRecreated = true;
     } else if (result != VK_SUCCESS) {
@@ -317,7 +326,8 @@ void VulkanEngine::DrawFrame(Scene &aActiveScene) {
     if (mRebuildFrameBuffer) {
         mSwapChain->RecreateSwapChain();
 
-        CreateCommandBuffers();
+        DestroyCommandPool();
+        CreateCommandPool();
         // Sync objects aren't atomic, so we have to regenerate them at the end of the current frame
         semaphoresNeedToBeRecreated = true;
         mRebuildFrameBuffer = false;

@@ -28,8 +28,10 @@ layout(set = 0, binding = 2) uniform MaterialProperties{
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec3 inNormal;
 layout(location = 2) in vec3 inColor;
+layout(location = 3) in vec2 inTexCoord;
 
 layout(location = 0) out vec3 fragColor;
+layout(location = 1) out vec2 texCoord;
 
 void main() {
 
@@ -56,5 +58,6 @@ void main() {
     // Uses vertex color as influence
     vec3 result = (ambient + diffuse + (specular)) * (inColor * vec3(materialProperties.color));
     fragColor = result;
+    texCoord = inTexCoord;
 
 }

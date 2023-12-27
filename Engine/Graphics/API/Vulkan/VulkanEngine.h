@@ -13,8 +13,7 @@ class Material;
 class Scene;
 class GraphicsPipeline;
 
-struct UploadContext
-{
+struct UploadContext {
     VkFence mUploadFence;
     VkCommandPool mCommandPool;
     VkCommandBuffer mCommandBuffer;
@@ -31,14 +30,26 @@ public:
 
     const FrameData &GetCurrentFrame() { return mFrameData[mCurrentFrame]; }
     const FrameData &GetFrame(int32_t aIndex) { return mFrameData[aIndex]; }
-    void SubmitBufferCommand(std::function<void(VkCommandBuffer cmd)>&& function);
-    void QueueFrameBufferRebuild() {mRebuildFrameBuffer = true;}
+
+    void SubmitBufferCommand(std::function<void(VkCommandBuffer cmd)> &&function);
+
+    void QueueFrameBufferRebuild() { mRebuildFrameBuffer = true; }
+
     void CreateUploadContext();
+
     void CreateCommandPool();
+
     void CreateCommandBuffers();
+
+    void DestroyCommandPool();
+
     void CreateDescriptorPool();
+
+
     void DrawFrame(Scene &aActiveScene);
+
     void CreateSyncObjects();
+
     void Cleanup();
 
     AllocatedBuffer CreateBuffer(size_t aAllocSize, VkBufferUsageFlags aUsage, VmaMemoryUsage vmaMemoryUsage);

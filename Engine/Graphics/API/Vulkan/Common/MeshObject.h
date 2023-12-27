@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <vector>
 
 #include "..\..\Base\Common\Buffers\PushConstants.h"
 #include "Base/Common/Data/Mesh.h"
@@ -30,7 +29,7 @@ public:
 
     virtual void Render(VkCommandBuffer aCommandBuffer, const Scene& aScene);
 
-    void LoadMesh(const char *aPath) const { mMesh->LoadFromObject(aPath); }
+    void LoadMesh(const char *aPath, const char* aMtlPath = "") const { mMesh->LoadFromObject(aPath, aMtlPath); }
 
     virtual void CreateRenderer(GraphicsPipeline &aBoundGraphicsPipeline) = 0;
 

@@ -25,7 +25,7 @@ void Mesh::Bind(VkCommandBuffer aCommandBuffer) const {
                          0, VK_INDEX_TYPE_UINT16);
 }
 
-bool Mesh::LoadFromObject(const char *aFileName) {
+bool Mesh::LoadFromObject(const char *aFileName, const char *aMtlDirectory = "") {
     //attrib will contain the vertex arrays of the file
     tinyobj::attrib_t attrib;
     //shapes contains the info for each separate object in the file
@@ -38,7 +38,7 @@ bool Mesh::LoadFromObject(const char *aFileName) {
     std::string err;
 
     //load the OBJ file
-    LoadObj(&attrib, &shapes, &materials, &warn, &err, aFileName, nullptr);
+    LoadObj(&attrib, &shapes, &materials, &warn, &err, aFileName, aMtlDirectory);
 
     if (!warn.empty()) {
         LOG(WARNING) << warn;
@@ -84,6 +84,9 @@ bool Mesh::LoadFromObject(const char *aFileName) {
 
                 //we are setting the vertex color as the vertex normal. This is just for display purposes
                 newVertex.mColor = newVertex.mNormal;
+
+                newVertex.mUV.x  = attrib.texcoords[2 * idx.texcoord_index + 0];
+                newVertex.mUV.y =  1 - attrib.texcoords[2 * idx.texcoord_index + 1];
 
 
                 mIndices.push_back(idx.vertex_index);

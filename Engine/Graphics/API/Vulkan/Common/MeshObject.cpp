@@ -46,15 +46,20 @@ void MeshObject::CreateRenderer(
     mMesh = new Mesh();
     mMaterial = new Material();
 
+    // TODO: move to some Material Type instead of MeshObject ..
 
     // Binds Camera Uniform Buffer
     mMaterial->AddBinding(0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
 
-    // Binds Lighting Uniform Buffer
+    // Binds Scene Lighting Uniform Buffer
     mMaterial->AddBinding(1, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+
 
     // Material Properties
     mMaterial->AddBinding(2, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+
+    // Texture Binding
+    mMaterial->AddBinding(3, 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
 
     mMaterial->Create(mMaterial, mName);
 
@@ -62,7 +67,7 @@ void MeshObject::CreateRenderer(
         mMaterial->SetBuffers(gGraphics->mVulkanEngine.GetFrame(i).mCameraBuffer, 0, 0);
 
     for (int i = 0; i < VulkanEngine::MAX_FRAMES_IN_FLIGHT; i++)
-        mMaterial->SetBuffers(gGraphics->mVulkanEngine.GetFrame(i).mLightingBuffer, 1, 0);
+        mMaterial->SetBuffers(gGraphics->mVulkanEngine.GetFrame(i).mSceneBuffer, 1, 0);
 
     mMaterial->CreateProperties(2, MaterialProperties());
 }
@@ -100,10 +105,10 @@ void MeshObject::OnImGuiRender() {
         ImGui::SeparatorText("Material");
         ImGui::ColorEdit4(GetUniqueLabel("Color"), &mMaterial->mMaterialProperties.mColor[0]);
         if (ImGui::DragFloat(GetUniqueLabel("Shininess"),
-            &mMaterial->mMaterialProperties.mShininess, 0.1f)) {
+                             &mMaterial->mMaterialProperties.mShininess, 0.1f)) {
         }
         if (ImGui::DragFloat(GetUniqueLabel("Specular"),
-            &mMaterial->mMaterialProperties.mSpecularStrength, 0.1f)) {
+                             &mMaterial->mMaterialProperties.mSpecularStrength, 0.1f)) {
         }
         ImGui::Unindent();
     }
@@ -120,12 +125,15 @@ void Renderer::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
     void *data;
 
     vmaMapMemory(gGraphics->mAllocator, currentFrame.mCameraBuffer.mAllocation, &data);
+    if (data == nullptr)
+        return;
+
     memcpy(data, &camData, sizeof(GPUCameraData));
     vmaUnmapMemory(gGraphics->mAllocator, currentFrame.mCameraBuffer.mAllocation);
 
-    vmaMapMemory(gGraphics->mAllocator, currentFrame.mLightingBuffer.mAllocation, &data);
+    vmaMapMemory(gGraphics->mAllocator, currentFrame.mSceneBuffer.mAllocation, &data);
     memcpy(data, &aScene.mSceneData, sizeof(GPUSceneData));
-    vmaUnmapMemory(gGraphics->mAllocator, currentFrame.mLightingBuffer.mAllocation);
+    vmaUnmapMemory(gGraphics->mAllocator, currentFrame.mSceneBuffer.mAllocation);
 
     vmaMapMemory(gGraphics->mAllocator, mMaterial->mPropertiesBuffer.mAllocation, &data);
     memcpy(data, &mMaterial->mMaterialProperties, sizeof(MaterialProperties));

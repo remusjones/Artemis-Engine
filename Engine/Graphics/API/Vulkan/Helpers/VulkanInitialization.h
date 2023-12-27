@@ -73,7 +73,35 @@ public:
     	info.flags = flags;
     	return info;
     }
+	static VkWriteDescriptorSet WriteDescriptorImage(VkDescriptorType type,
+		VkDescriptorSet dstSet, VkDescriptorImageInfo* imageInfo, uint32_t binding)
+    {
+    	VkWriteDescriptorSet write = {};
+    	write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    	write.pNext = nullptr;
 
+    	write.dstBinding = binding;
+    	write.dstSet = dstSet;
+    	write.descriptorCount = 1;
+    	write.descriptorType = type;
+    	write.pImageInfo = imageInfo;
+
+    	return write;
+    }
+	static VkSamplerCreateInfo SamplerCreateInfo(VkFilter filters, VkSamplerAddressMode samplerAdressMode = VK_SAMPLER_ADDRESS_MODE_REPEAT)
+	{
+		VkSamplerCreateInfo info = {};
+		info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+		info.pNext = nullptr;
+
+		info.magFilter = filters;
+		info.minFilter = filters;
+		info.addressModeU = samplerAdressMode;
+		info.addressModeV = samplerAdressMode;
+		info.addressModeW = samplerAdressMode;
+
+		return info;
+	}
 	static VkCommandBufferAllocateInfo CommandBufferAllocateInfo(VkCommandPool pool, uint32_t count /*= 1*/,
 	VkCommandBufferLevel level /*=
 	VK_COMMAND_BUFFER_LEVEL_PRIMARY*/)

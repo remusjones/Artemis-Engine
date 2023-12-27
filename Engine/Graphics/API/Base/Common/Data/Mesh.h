@@ -17,7 +17,7 @@ public:
 
     void Bind(VkCommandBuffer aCommandBuffer) const;
 
-    bool LoadFromObject(const char *aFileName);
+    bool LoadFromObject(const char *aFileName, const char *aMtlDirectory);
 
     std::vector<Vertex> GetVertices() { return mVertices; };
     std::vector<int16_t> GetIndices() { return mIndices; };

@@ -11,14 +11,10 @@
 #include "Base/Common/Data/Vertex.h"
 #include "VulkanGraphicsImpl.h"
 #include "File Management/FileManagement.h"
-#include "..\Base\Common\Buffers\PushConstants.h"
+#include "Base/Common/Buffers/PushConstants.h"
 #include "Base/Common/Material.h"
-#include "Base/Common/Data/GPUCameraData.h"
-#include "Base/Common/Data/GPUSceneData.h"
 #include "glog/logging.h"
 #include "Helpers/VulkanInitialization.h"
-#include "Objects/Camera.h"
-#include "Scenes/Scene.h"
 
 void GraphicsPipeline::Create() {
     // Vertex Buffer
@@ -46,14 +42,14 @@ void GraphicsPipeline::Create() {
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
-    viewport.width = static_cast<float>(gGraphics->mSwapChain->mSwapChainExtent.width);
-    viewport.height = static_cast<float>(gGraphics->mSwapChain->mSwapChainExtent.height);
+    viewport.width = static_cast<float>(gGraphics->mSwapChain->mSwapChainExtent.width); // TODO: rebuild these on Resize
+    viewport.height = static_cast<float>(gGraphics->mSwapChain->mSwapChainExtent.height);// TODO: rebuild these on Resize
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
 
     VkRect2D scissor{};
     scissor.offset = {0, 0};
-    scissor.extent = gGraphics->mSwapChain->mSwapChainExtent;
+    scissor.extent = gGraphics->mSwapChain->mSwapChainExtent; // TODO: rebuild these on Resize
 
     VkPipelineViewportStateCreateInfo viewportState{};
     viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
