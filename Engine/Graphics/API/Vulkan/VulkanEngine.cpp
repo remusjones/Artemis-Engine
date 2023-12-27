@@ -60,7 +60,7 @@ void VulkanEngine::Cleanup() {
     vkDestroyRenderPass(mLogicalDevice, mSwapChain->mRenderPass, nullptr);
 }
 
-void VulkanEngine::SubmitBufferCommand(std::function<void(VkCommandBuffer cmd)> &&function) {
+void VulkanEngine::SubmitBufferCommand(std::function<void(VkCommandBuffer cmd)> &&function) const {
     VkCommandBuffer cmd = mUploadContext.mCommandBuffer;
     VkCommandBufferBeginInfo cmdBeginInfo = VulkanInitialization::CommandBufferBeginInfo(
         VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);

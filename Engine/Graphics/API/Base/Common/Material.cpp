@@ -7,6 +7,8 @@
 #include <stdexcept>
 
 #include "VulkanGraphicsImpl.h"
+#include "Buffers/Texture.h"
+#include "Vulkan/Helpers/VulkanInitialization.h"
 
 void Material::Create(const MaterialBase *aBaseMaterial, const char *aMaterialName) {
     mMaterialBase = aBaseMaterial;
@@ -29,16 +31,25 @@ void Material::Create(const MaterialBase *aBaseMaterial, const char *aMaterialNa
     if (err == VK_ERROR_OUT_OF_POOL_MEMORY) {
         throw std::runtime_error("Out of pool memory");
     }
+
+    for (auto boundTexture: mBoundTextures) {
+    }
 }
 
 void Material::CreateProperties(const uint32_t aBinding, const MaterialProperties &aMaterialProperties) {
-
     mMaterialProperties = aMaterialProperties;
-    mPropertiesBuffer = gGraphics->mVulkanEngine.CreateBuffer(sizeof(MaterialProperties),VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-    VMA_MEMORY_USAGE_CPU_TO_GPU);
+    mPropertiesBuffer = gGraphics->mVulkanEngine.CreateBuffer(sizeof(MaterialProperties),
+                                                              VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                                                              VMA_MEMORY_USAGE_CPU_TO_GPU);
 
     for (int i = 0; i < VulkanEngine::MAX_FRAMES_IN_FLIGHT; i++)
         SetBuffers(mPropertiesBuffer, aBinding, 0);
+}
+
+void Material::BindTexture(Texture &aTexture, const uint8_t aBinding) {
+    mBoundTextures[aBinding] = VulkanInitialization::WriteDescriptorImage(
+        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, GetDescriptorSet(), &aTexture.mImageBufferInfo, aBinding);
+    vkUpdateDescriptorSets(gGraphics->mLogicalDevice, 1, &mBoundTextures[aBinding], 0, nullptr);
 }
 
 void Material::AddBinding(const uint32_t aBinding, const uint32_t aCount,
@@ -52,10 +63,11 @@ void Material::AddBinding(const uint32_t aBinding, const uint32_t aCount,
 }
 
 void Material::SetBuffers(const AllocatedBuffer &aBuffer, const uint8_t aBinding, const uint8_t aIndex) {
-    const VkDescriptorSetLayoutBinding& binding = mBindings[aBinding];
+    const VkDescriptorSetLayoutBinding &binding = mBindings[aBinding];
 
-    auto* descriptors = static_cast<VkDescriptorBufferInfo *>(alloca(sizeof(VkDescriptorBufferInfo) * binding.descriptorCount));
-    for(int i = 0; i < binding.descriptorCount; i++) {
+    auto *descriptors = static_cast<VkDescriptorBufferInfo *>(alloca(
+        sizeof(VkDescriptorBufferInfo) * binding.descriptorCount));
+    for (int i = 0; i < binding.descriptorCount; i++) {
         descriptors[i].buffer = aBuffer.mBuffer;
         descriptors[i].offset = 0;
         descriptors[i].range = VK_WHOLE_SIZE;

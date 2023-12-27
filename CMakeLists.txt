@@ -66,7 +66,8 @@ add_executable(${PROJECT_NAME} main.cpp
         Engine/Graphics/API/Base/Common/Image.cpp
         Engine/IO/LoadUtilities.cpp
         Engine/IO/LoadUtilities.h
-        Engine/Graphics/API/Base/Common/Buffers/Texture.h)
+        Engine/Graphics/API/Base/Common/Buffers/Texture.h
+        Engine/Graphics/API/Base/Common/Buffers/Texture.cpp)
 
 # Include Vulkan Headers
 include_directories("${VULKAN_SDK}/Include")

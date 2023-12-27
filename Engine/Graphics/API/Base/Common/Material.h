@@ -5,11 +5,13 @@
 #pragma once
 
 
+#include <unordered_map>
 #include <glm/vec4.hpp>
 #include <vulkan/vulkan_core.h>
 #include "MaterialBase.h"
 #include "Buffers/AllocatedBuffer.h"
 
+class Texture;
 class Buffer;
 
 struct MaterialProperties {
@@ -25,6 +27,8 @@ public:
                 const char *aMaterialName);
 
     void CreateProperties(const uint32_t aBinding, const MaterialProperties &aMaterialProperties);
+
+    void BindTexture(Texture &aTexture, uint8_t aBinding);
 
     void AddBinding(const uint32_t aBinding, const uint32_t aCount,
                     const VkDescriptorType aType, VkShaderStageFlagBits aShaderStage);
@@ -43,4 +47,6 @@ private:
     const MaterialBase *mMaterialBase;
     VkDescriptorSetLayout mLayout = VK_NULL_HANDLE;
     VkDescriptorSet mDescriptorSet;
+
+    std::unordered_map<uint8_t, VkWriteDescriptorSet> mBoundTextures;
 };

@@ -16,13 +16,13 @@
 
 void SandboxScene::Construct(const char *aSceneName) {
     // Create basic mesh pipeline
-    GraphicsPipeline *litMeshPipeline = new GraphicsPipeline("Lit Mesh Pipeline");
+    GraphicsPipeline *vertexLitPipeline = new GraphicsPipeline("Lit Mesh Pipeline");
     GraphicsPipeline *unlitMeshPipeline = new GraphicsPipeline("Unlit Mesh Pipeline");
     GraphicsPipeline *texturedMeshPipeline = new GraphicsPipeline("Textured Mesh Pipeline");
 
-    litMeshPipeline->AddShader("/Shaders/3DObject_v.spv",
+    vertexLitPipeline->AddShader("/Shaders/3DVertexLit_v.spv",
                                VK_SHADER_STAGE_VERTEX_BIT);
-    litMeshPipeline->AddShader("/Shaders/Lit_f.spv",
+    vertexLitPipeline->AddShader("/Shaders/Lit_f.spv",
                                VK_SHADER_STAGE_FRAGMENT_BIT);
 
 
@@ -38,7 +38,7 @@ void SandboxScene::Construct(const char *aSceneName) {
 
 
     mMonkey = new MeshObject();
-    mMonkey->CreateObject(*litMeshPipeline, "Monkey");
+    mMonkey->CreateObject(*vertexLitPipeline, "Monkey");
     mMonkey->LoadMesh(
         (FileManagement::GetWorkingDirectory() +
          std::string("/../Models/monkey_smooth.obj")).c_str());
@@ -60,6 +60,7 @@ void SandboxScene::Construct(const char *aSceneName) {
 
     mMonkey->mTransform.SetPosition({-2, 0, 0});
     mTeapot->mTransform.SetPosition({2, 0, 0});
+    mTeapot->mTransform.SetScale({0.1f, 0.1f, 0.1f});
     mLight->mTransform.SetScale({0.1f, 0.1f, 0.1f});
 
     mObjects.push_back(mMonkey);
@@ -68,37 +69,20 @@ void SandboxScene::Construct(const char *aSceneName) {
 
 
     // TODO: Condense into texture create function
-    Texture texture;
-    LoadUtilities::LoadImageFromDisk(gGraphics, "../Textures/textureTest.png", texture.image);
-    VkImageViewCreateInfo imageinfo = VulkanInitialization::ImageViewCreateInfo(
-        VK_FORMAT_R8G8B8A8_SRGB, texture.image.mImage,
-        VK_IMAGE_ASPECT_COLOR_BIT);
-    vkCreateImageView(gGraphics->mLogicalDevice, &imageinfo, nullptr, &texture.imageView);
+    auto *texture = new Texture();
     mLoadedTextures["textureTest"] = texture;
 
+    texture->LoadImageFromDisk("../Textures/textureTest.png");
+    texture->Create();
+    mTeapot->mMaterial->BindTexture(*texture, 3);
 
     mActiveCamera = new Camera();
     mActiveCamera->mTransform.SetPosition({0, 0, -5.0f});
 
 
-    AddGraphicsPipeline(litMeshPipeline);
+    AddGraphicsPipeline(vertexLitPipeline);
     AddGraphicsPipeline(unlitMeshPipeline);
     AddGraphicsPipeline(texturedMeshPipeline);
-
-
-    // TODO Move to LoadTexture(...) call on material?
-    VkSamplerCreateInfo samplerInfo = VulkanInitialization::SamplerCreateInfo(VK_FILTER_NEAREST);
-    vkCreateSampler(gGraphics->mLogicalDevice, &samplerInfo, nullptr, &mBlockySampler);
-
-    VkDescriptorImageInfo imageBufferInfo;
-    imageBufferInfo.sampler = mBlockySampler;
-    imageBufferInfo.imageView = mLoadedTextures["textureTest"].imageView;
-    imageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-    VkWriteDescriptorSet texture1 = VulkanInitialization::WriteDescriptorImage(
-        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, mTeapot->mMaterial->GetDescriptorSet(), &imageBufferInfo, 3);
-
-    vkUpdateDescriptorSets(gGraphics->mLogicalDevice, 1, &texture1, 0, nullptr);
 
     Scene::Construct(aSceneName);
 }
@@ -123,12 +107,9 @@ void SandboxScene::Tick(float aDeltaTime) {
 }
 
 void SandboxScene::Cleanup() {
-    for (const auto loadedTextures: mLoadedTextures) {
-        vmaDestroyImage(gGraphics->mAllocator,
-                        loadedTextures.second.image.mImage,
-                        loadedTextures.second.image.mAllocation);
-        vkDestroyImageView(gGraphics->mLogicalDevice, loadedTextures.second.imageView, nullptr);
+    for (auto loadedTextures: mLoadedTextures) {
+        loadedTextures.second->Destroy();
+        delete loadedTextures.second;
     }
-    vkDestroySampler(gGraphics->mLogicalDevice, mBlockySampler, nullptr);
     Scene::Cleanup();
 }

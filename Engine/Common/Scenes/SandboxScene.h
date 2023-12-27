@@ -18,7 +18,7 @@ public:
     void Cleanup() override;
 
 private:
-    std::unordered_map<std::string, Texture> mLoadedTextures;
+    std::unordered_map<std::string, Texture*> mLoadedTextures;
 
     VkSampler mBlockySampler;
     MeshObject *mMonkey;

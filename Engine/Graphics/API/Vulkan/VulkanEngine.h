@@ -31,7 +31,7 @@ public:
     const FrameData &GetCurrentFrame() { return mFrameData[mCurrentFrame]; }
     const FrameData &GetFrame(int32_t aIndex) { return mFrameData[aIndex]; }
 
-    void SubmitBufferCommand(std::function<void(VkCommandBuffer cmd)> &&function);
+    void SubmitBufferCommand(std::function<void(VkCommandBuffer cmd)> &&function) const;
 
     void QueueFrameBufferRebuild() { mRebuildFrameBuffer = true; }
 
