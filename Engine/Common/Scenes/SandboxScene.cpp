@@ -88,11 +88,10 @@ void SandboxScene::Construct(const char *aSceneName) {
 
     // TODO Move to LoadTexture(...) call on material?
     VkSamplerCreateInfo samplerInfo = VulkanInitialization::SamplerCreateInfo(VK_FILTER_NEAREST);
-    VkSampler blockySampler;
-    vkCreateSampler(gGraphics->mLogicalDevice, &samplerInfo, nullptr, &blockySampler);
+    vkCreateSampler(gGraphics->mLogicalDevice, &samplerInfo, nullptr, &mBlockySampler);
 
     VkDescriptorImageInfo imageBufferInfo;
-    imageBufferInfo.sampler = blockySampler;
+    imageBufferInfo.sampler = mBlockySampler;
     imageBufferInfo.imageView = mLoadedTextures["textureTest"].imageView;
     imageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -130,5 +129,6 @@ void SandboxScene::Cleanup() {
                         loadedTextures.second.image.mAllocation);
         vkDestroyImageView(gGraphics->mLogicalDevice, loadedTextures.second.imageView, nullptr);
     }
+    vkDestroySampler(gGraphics->mLogicalDevice, mBlockySampler, nullptr);
     Scene::Cleanup();
 }
