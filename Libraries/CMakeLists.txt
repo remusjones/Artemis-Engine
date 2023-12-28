@@ -1,4 +1,8 @@
 # TODO: Move these into Libraries CMake
+# Find Vulkan
+find_package(Vulkan REQUIRED)
+include_directories("$ENV{VULKAN_SDK}/Include")
+
 # https://github.com/google/glog.git
 message("Adding glog")
 set(WITH_GFLAGS OFF) # We aren't using gflags, so disable it
@@ -43,9 +47,10 @@ message("Adding stb")
 set(STB_SOURCES "stb/stb_image.h")
 target_include_directories(${PROJECT_NAME} PRIVATE "stb/")
 
-
+# Link libraries
 target_link_libraries(
         ${PROJECT_NAME}
+        Vulkan::Vulkan
         glm::glm
         glog
         SDL3::SDL3

@@ -3,9 +3,6 @@ project(3DEngine)
 
 set(CMAKE_CXX_STANDARD 23)
 
-# Path to Libs
-set(LIBRARIES_PATH "Libraries/")
-
 add_executable(${PROJECT_NAME} main.cpp
         Engine/Applications/VulkanGraphicsImpl.cpp
         Engine/Applications/VulkanGraphicsImpl.h
@@ -71,9 +68,6 @@ include_directories(Engine/Applications)
 include_directories(Engine/IO)
 include_directories(Engine/Common)
 
-# Find Vulkan
-find_package(Vulkan REQUIRED)
-include_directories("$ENV{VULKAN_SDK}/Include")
 
 # Link Dependencies
 add_subdirectory(Libraries)
@@ -81,8 +75,4 @@ add_subdirectory(Libraries)
 # Compile SPIR-V Shaders
 add_subdirectory(Shaders)
 
-# Link libraries
-target_link_libraries(
-        ${PROJECT_NAME}
-        Vulkan::Vulkan)
 
