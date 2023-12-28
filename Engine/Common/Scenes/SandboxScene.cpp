@@ -89,6 +89,14 @@ void SandboxScene::Construct(const char *aSceneName) {
     sphereAlbedo->Create();
     mSphere->mMaterial->BindTexture(*sphereAlbedo, 3);
 
+    auto *sphereNormal = new Texture();
+    mLoadedTextures["sphereNormal"] = sphereNormal;
+    sphereNormal->LoadImageFromDisk("../Textures/Stone/Stone Wall_NRM.png");
+    sphereNormal->Create();
+    mSphere->mMaterial->BindTexture(*sphereNormal, 4);
+
+    // Supress vulkan validation until I have a default descriptor setter
+    mTeapot->mMaterial->BindTexture(*sphereNormal, 4);
 
     mActiveCamera = new Camera();
     mActiveCamera->mTransform.SetPosition({0, 0, -5.0f});

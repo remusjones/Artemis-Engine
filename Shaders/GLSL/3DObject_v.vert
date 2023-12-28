@@ -27,29 +27,18 @@ layout(location = 1) in vec3 inNormal;
 layout(location = 2) in vec3 inColor;
 layout(location = 3) in vec2 inTexCoord;
 
-layout(location = 0) out vec3 fragAmbient;
-layout(location = 1) out vec3 fragDiffuse;
-layout(location = 2) out vec3 fragSpecular;
-layout(location = 3) out vec2 fragTexCoord;
+layout(location = 0) out vec3 outColor;
+layout(location = 1) out vec2 outUV;
+layout(location = 2) out vec3 outFragPos;
+layout(location = 3) out vec3 outNormal;
 
 void main() {
+
     gl_Position = cameraData.viewproj * inPushConstants.model * vec4(inPosition, 1.0);
 
-    mat3 normalMatrix = transpose(inverse(mat3(inPushConstants.model)));
-    vec3 worldNormal = normalize(normalMatrix * inNormal);
-
-    vec3 lightDir = normalize(lightingData.position - vec3(inPushConstants.model * vec4(inPosition, 1.0)));
-    float distance = length(lightingData.position - vec3(inPushConstants.model * vec4(inPosition, 1.0)));
-
-    fragAmbient = lightingData.ambientStrength * lightingData.color;
-    float diff = max(dot(worldNormal, lightDir), 0.0);
-    fragDiffuse = diff * lightingData.color * lightingData.lightIntensity / (1.0 + 0.1 * distance + 0.01 * (distance * distance));
-
-    vec3 viewDir = normalize(-vec3(inPushConstants.model * vec4(inPosition, 1.0)));
-    vec3 reflectDir = reflect(-lightDir, worldNormal);
-
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), materialProperties.shininess);
-    fragSpecular = materialProperties.specularStrength * spec * (lightingData.color * lightingData.lightIntensity) / (1 + 0.1 * distance + 0.01 * (distance * distance));
-
-    fragTexCoord = inTexCoord;
+    vec4 fragPos =  inPushConstants.model * vec4(inPosition, 1.0f);
+    outFragPos = vec3(fragPos);
+    outNormal = mat3(transpose(inverse(inPushConstants.model))) * inNormal;
+    outColor = inColor;
+    outUV = inTexCoord;
 }
