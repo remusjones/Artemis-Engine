@@ -120,16 +120,8 @@ message("Adding stb")
 set(STB_SOURCES "${LIBRARIES_PATH}stb/stb_image.h")
 include_directories("${LIBRARIES_PATH}stb/")
 
-# Compile SPV Shaders
-# TODO: Move to Vulkan only CMake script
-# TODO: Make platform agnostic compilation
-add_custom_target(CompileSPVShaders
-        COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/CompileShaders.bat
-        COMMENT "Compiling SPV Shaders"
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        )
-
-add_dependencies(${PROJECT_NAME} CompileSPVShaders)
+# Compile SPIR-V Shaders
+add_subdirectory(Shaders)
 
 # Link libraries
 target_link_libraries(
