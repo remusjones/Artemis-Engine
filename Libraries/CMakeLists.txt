@@ -42,3 +42,14 @@ target_link_libraries(imgui SDL3::SDL3)
 message("Adding stb")
 set(STB_SOURCES "stb/stb_image.h")
 target_include_directories(${PROJECT_NAME} PRIVATE "stb/")
+
+
+target_link_libraries(
+        ${PROJECT_NAME}
+        glm::glm
+        glog
+        SDL3::SDL3
+        GPUOpen::VulkanMemoryAllocator
+        tinyobjloader
+        imgui)
+

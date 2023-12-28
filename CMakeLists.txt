@@ -75,18 +75,14 @@ include_directories(Engine/Common)
 find_package(Vulkan REQUIRED)
 include_directories("$ENV{VULKAN_SDK}/Include")
 
+# Link Dependencies
 add_subdirectory(Libraries)
+
 # Compile SPIR-V Shaders
 add_subdirectory(Shaders)
 
 # Link libraries
 target_link_libraries(
         ${PROJECT_NAME}
-        Vulkan::Vulkan
-        glm::glm
-        glog
-        SDL3::SDL3
-        GPUOpen::VulkanMemoryAllocator
-        tinyobjloader
-        imgui)
+        Vulkan::Vulkan)
 
