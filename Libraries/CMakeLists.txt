@@ -1,4 +1,3 @@
-# TODO: Move these into Libraries CMake
 # Find Vulkan
 find_package(Vulkan REQUIRED)
 include_directories("$ENV{VULKAN_SDK}/Include")

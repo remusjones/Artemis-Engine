@@ -21,9 +21,9 @@ void SandboxScene::Construct(const char *aSceneName) {
     GraphicsPipeline *texturedMeshPipeline = new GraphicsPipeline("Textured Mesh Pipeline");
 
     vertexLitPipeline->AddShader("/Shaders/3DVertexLit_v.spv",
-                               VK_SHADER_STAGE_VERTEX_BIT);
+                                 VK_SHADER_STAGE_VERTEX_BIT);
     vertexLitPipeline->AddShader("/Shaders/Lit_f.spv",
-                               VK_SHADER_STAGE_FRAGMENT_BIT);
+                                 VK_SHADER_STAGE_FRAGMENT_BIT);
 
 
     unlitMeshPipeline->AddShader("/Shaders/3DUnlit_v.spv",
@@ -57,24 +57,38 @@ void SandboxScene::Construct(const char *aSceneName) {
         (FileManagement::GetWorkingDirectory() +
          std::string("/../Models/sphere.obj")).c_str());
 
+    mSphere = new MeshObject();
+    mSphere->CreateObject(*texturedMeshPipeline, "Sphere");
+    mSphere->LoadMesh((FileManagement::GetWorkingDirectory() +
+                       std::string("/../Models/sphere.obj")).c_str());
 
     mMonkey->mTransform.SetPosition({-2, 0, 0});
     mTeapot->mTransform.SetPosition({2, 0, 0});
     mTeapot->mTransform.SetScale({0.1f, 0.1f, 0.1f});
+    mSphere->mTransform.SetPosition({0, 0, -15});
     mLight->mTransform.SetScale({0.1f, 0.1f, 0.1f});
+    mLight->mTransform.SetScale({0.2f, 0.2f, 0.2f});
 
     mObjects.push_back(mMonkey);
     mObjects.push_back(mTeapot);
     mObjects.push_back(mLight);
+    mObjects.push_back(mSphere);
 
 
     // TODO: Condense into texture create function
-    auto *texture = new Texture();
-    mLoadedTextures["textureTest"] = texture;
+    auto *teapotTexture = new Texture();
+    mLoadedTextures["textureTest"] = teapotTexture;
 
-    texture->LoadImageFromDisk("../Textures/textureTest.png");
-    texture->Create();
-    mTeapot->mMaterial->BindTexture(*texture, 3);
+    teapotTexture->LoadImageFromDisk("../Textures/textureTest.png");
+    teapotTexture->Create();
+    mTeapot->mMaterial->BindTexture(*teapotTexture, 3);
+
+    auto *sphereAlbedo = new Texture();
+    mLoadedTextures["sphereAlbedo"] = sphereAlbedo;
+    sphereAlbedo->LoadImageFromDisk("../Textures/Stone/Stone Wall.png");
+    sphereAlbedo->Create();
+    mSphere->mMaterial->BindTexture(*sphereAlbedo, 3);
+
 
     mActiveCamera = new Camera();
     mActiveCamera->mTransform.SetPosition({0, 0, -5.0f});

@@ -24,4 +24,5 @@ private:
     MeshObject *mMonkey;
     MeshObject *mTeapot;
     MeshObject *mLight;
+    MeshObject *mSphere;
 };
