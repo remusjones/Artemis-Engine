@@ -100,7 +100,7 @@ void SandboxScene::Construct(const char *aSceneName) {
 
     mActiveCamera = new Camera();
     mActiveCamera->mTransform.SetPosition({0, 0, -5.0f});
-
+    mActiveCamera->Create();
 
     AddGraphicsPipeline(vertexLitPipeline);
     AddGraphicsPipeline(unlitMeshPipeline);
@@ -123,9 +123,10 @@ void SandboxScene::Tick(float aDeltaTime) {
 
     mMonkey->mTransform.RotateAround(aDeltaTime / 5, glm::vec3(0.0f, 1, 0));
     mTeapot->mTransform.RotateAround(aDeltaTime / 10, glm::vec3(0.0f, 1.0f, 1.0f));
-
-
     Scene::Tick(aDeltaTime);
+
+    // Late Tick ..
+    mActiveCamera->Tick(aDeltaTime);
 }
 
 void SandboxScene::Cleanup() {

@@ -8,6 +8,7 @@
 #include <SDL_video.h>
 
 #include "IApplication.h"
+#include "InputManager.h"
 #include "Vulkan/VulkanEngine.h"
 #include "Vulkan/VulkanSystemStructs.h"
 
@@ -40,6 +41,7 @@ private:
     void InitializeVulkan();
 
     void InitializeImgui();
+
     void ShutdownImgui() const;
 
     // void ImmediateSubmit(std::function<void(VkCommandBuffer cmd)>&& function);
@@ -49,6 +51,7 @@ private:
     void InitializeWindow();
 
     void ShutdownWindow() const;
+
 
     // Main Engine Loop
     void Update();
@@ -112,6 +115,7 @@ public:
     VkPhysicalDevice mPhysicalDevice = VK_NULL_HANDLE;
     VkSurfaceKHR mSurface;
     VmaAllocator mAllocator;
+    InputManager mInputManager;
     Scene *mActiveScene;
 
 private:

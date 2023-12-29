@@ -60,13 +60,16 @@ add_executable(${PROJECT_NAME} main.cpp
         Engine/IO/LoadUtilities.cpp
         Engine/IO/LoadUtilities.h
         Engine/Graphics/API/Base/Common/Buffers/Texture.h
-        Engine/Graphics/API/Base/Common/Buffers/Texture.cpp)
+        Engine/Graphics/API/Base/Common/Buffers/Texture.cpp
+        Engine/System/InputManager.cpp
+        Engine/System/InputManager.h)
 
 # Shorten some common include directories
 include_directories(Engine/Graphics/API)
 include_directories(Engine/Applications)
 include_directories(Engine/IO)
 include_directories(Engine/Common)
+include_directories(Engine/System)
 
 
 # Link Dependencies

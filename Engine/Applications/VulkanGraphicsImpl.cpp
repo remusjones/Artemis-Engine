@@ -9,7 +9,6 @@
 #include <cstring>
 #include <iostream>
 #include <SDL.h>
-#include <SDL3/SDL.h>
 #include <SDL_vulkan.h>
 #include <set>
 #include <stdexcept>
@@ -17,6 +16,7 @@
 #include <backends/imgui_impl_vulkan.h>
 
 #include "imgui.h"
+#include "InputManager.h"
 #include "glog/logging.h"
 #include "Scenes/SandboxScene.h"
 #include "Vulkan/Common/MeshObject.h"
@@ -126,11 +126,13 @@ void VulkanGraphicsImpl::Update() {
     int frameCount = 0;
     SDL_Event e;
     bool bQuitting = false;
-    bool bWindowOpen = true;
+
+
 
     //main loop
     while (!bQuitting) {
         while (SDL_PollEvent(&e) != 0) {
+            gInputManager->ProcessInput(&e);
             if (e.type == SDL_EVENT_QUIT) bQuitting = true;
 
             ImGui_ImplSDL3_ProcessEvent(&e);
