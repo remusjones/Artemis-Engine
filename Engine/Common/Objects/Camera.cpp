@@ -95,7 +95,7 @@ void Camera::Tick(float aDeltaTime) {
     Super::Tick(aDeltaTime);
     if (mMoveVector.length() > 0){
         // TODO: Use relative direction
-        mTransform.SetPosition((mMoveVector * mSpeed * aDeltaTime + mTransform.Position());
+        mTransform.SetPosition(mMoveVector * mSpeed * aDeltaTime + mTransform.Position());
     }
 }
 
