@@ -18,6 +18,7 @@ public:
 
     void SetPosition(glm::vec3 aNewPosition);
     void SetRotation(glm::vec3 aNewRotation);
+    void SetRotation(glm::mat4 aNewRotation);
     void RotateAround(float aAngle, glm::vec3 aRotation);
     void SetScale(glm::vec3 aNewScale);
 

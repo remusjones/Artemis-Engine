@@ -7,6 +7,7 @@
 #include <SDL_events.h>
 #include <unordered_map>
 
+
 struct KeyboardEvent {
     KeyboardEvent();
 
@@ -17,14 +18,36 @@ struct KeyboardEvent {
     SDL_Keymod mModState;
 };
 
-struct InputBinding {
-    InputBinding(const char *aBindingName,
-                 std::function<void(KeyboardEvent aKeyboardEvent)> &&aCallback) : mBindingName(aBindingName),
+struct KeyCodeInputBinding {
+    KeyCodeInputBinding(const char *aBindingName,
+                        std::function<void(KeyboardEvent aKeyboardEvent)> &&aCallback) : mBindingName(aBindingName),
         mCallback(aCallback) {
     };
 
     const char *mBindingName;
     std::function<void(KeyboardEvent aKeyboardEvent)> mCallback;
+};
+
+struct MouseMotionBinding {
+    MouseMotionBinding(const char *aBindingName,
+                       std::function<void(SDL_MouseMotionEvent aMouseMotionEvent)> &&aCallback) : mBindingName(
+            aBindingName),
+        mCallback(aCallback) {
+    };
+
+    const char *mBindingName;
+    std::function<void(SDL_MouseMotionEvent)> mCallback;
+};
+
+struct MouseInputBinding {
+    MouseInputBinding(const char *aBindingName,
+                       std::function<void(SDL_MouseButtonEvent aMouseButtonEvent)> &&aCallback) : mBindingName(
+            aBindingName),
+        mCallback(aCallback) {
+    };
+
+    const char *mBindingName;
+    std::function<void(SDL_MouseButtonEvent)> mCallback;
 };
 
 // TODO: Add Input event map bindings
@@ -40,9 +63,19 @@ public:
         const char *aBindingName = "Default"
     );
 
-    std::unordered_map<int32_t, std::vector<InputBinding> > mKeyboardBindings;
-};
+    void RegisterMouseInput(
+        std::function<void(SDL_MouseMotionEvent)> &&aCallback,
+        const char *aBindingName = "Default");
+    void RegisterMouseInput(
+        std::function<void(SDL_MouseButtonEvent)> &&aCallback,
+        const char *aBindingName = "Default");
 
+    // TODO: make descriptor map
+    std::unordered_map<int32_t, std::vector<KeyCodeInputBinding> > mKeyboardBindings;
+    // TODO: make map
+    std::vector<MouseMotionBinding> mMouseMotionBindings;
+    std::vector<MouseInputBinding> mMouseInputBindings;
+};
 
 
 extern InputManager *gInputManager;

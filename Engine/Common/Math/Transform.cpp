@@ -45,6 +45,10 @@ void Transform::SetRotation(glm::vec3 aNewRotation) {
         aNewRotation.z/ 180 * glm::pi<float>());
 }
 
+void Transform::SetRotation(glm::mat4 aNewRotation) {
+    mRotationMatrix = aNewRotation;
+}
+
 void Transform::RotateAround(float aAngle, glm::vec3 aRotation) {
     mRotationMatrix = glm::rotate(mRotationMatrix, aAngle, aRotation);
 }
@@ -54,5 +58,5 @@ void Transform::SetScale(glm::vec3 aNewScale) {
 }
 
 glm::mat4 Transform::GetCombinedMatrix() const {
-    return mTranslationMatrix * mRotationMatrix * mScaleMatrix;
+    return mRotationMatrix * mTranslationMatrix * mScaleMatrix;
 }
