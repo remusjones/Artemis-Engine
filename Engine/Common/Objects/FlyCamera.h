@@ -32,6 +32,7 @@ public:
 
 private:
     glm::vec3 mMoveVector = {};
+
     float_t mSpeed = 10;
     bool mMouseRPressed = false;
 };

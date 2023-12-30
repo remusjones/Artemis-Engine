@@ -28,6 +28,10 @@ glm::vec3 Transform::Scale() const {
     return mScale;
 }
 
+void Transform::Translate(glm::vec3 aDirection) {
+    mPosition += aDirection;
+}
+
 void Transform::SetPosition(const glm::vec3 aNewPosition) {
     mPosition = aNewPosition;
 }

@@ -29,8 +29,8 @@ void FlyCamera::Construct() {
                                             Left(kb);
                                         }, "Camera Left");
 
-    gInputManager->RegisterMouseInput([&](SDL_MouseMotionEvent motion) { MouseMovement(motion); });
-    gInputManager->RegisterMouseInput([&](SDL_MouseButtonEvent input) { MouseInput(input); });
+    gInputManager->RegisterMouseInput([&](SDL_MouseMotionEvent motion) { MouseMovement(motion); }, "Camera Mouse");
+    gInputManager->RegisterMouseInput([&](SDL_MouseButtonEvent input) { MouseInput(input); }, "Camera Click");
     Super::Construct();
 }
 
@@ -52,36 +52,48 @@ void FlyCamera::OnImGuiRender() {
         mTransform.SetScale(scale);
     }
 
+    ImGui::SeparatorText("Settings");
+    if (ImGui::DragFloat(GetUniqueLabel("FOV"), &mFOV, 0.1f)) {
+    }
+    if (ImGui::DragFloat(GetUniqueLabel("Z Near"), &mZNear, 0.01f)) {
+    }
+    if (ImGui::DragFloat(GetUniqueLabel("Z Far"), &mZFar, 0.1f)) {
+    }
+
+    ImGui::SeparatorText("DEBUG");
+    if (ImGui::DragFloat3(GetUniqueLabel("Transform Forward"), &mTransform.Forward()[0], 0.1f)) {
+    }
+    if (ImGui::DragFloat3(GetUniqueLabel("Transform Right"), &mTransform.Right()[0], 0.1f)) {
+    }
+    if (ImGui::DragFloat3(GetUniqueLabel("Transform Up"), &mTransform.Up()[0], 0.1f)) {
+    }
+
     ImGui::Unindent();
 }
 
 void FlyCamera::Forward(const KeyboardEvent &keyboardEvent) {
     if (keyboardEvent.mPressedState == SDL_PRESSED)
-        mMoveVector[2] = 1;
-    else mMoveVector[2] = 0;
+        mMoveVector.z = mSpeed;
+    else mMoveVector.z = 0;
 }
 
 void FlyCamera::Backward(const KeyboardEvent &keyboardEvent) {
     if (keyboardEvent.mPressedState == SDL_PRESSED)
-        mMoveVector[2] = -1;
-    else mMoveVector[2] = 0;
+        mMoveVector.z = -mSpeed;
+    else mMoveVector.z = 0;
 }
 
 void FlyCamera::Left(const KeyboardEvent &keyboardEvent) {
     if (keyboardEvent.mPressedState == SDL_PRESSED)
-        mMoveVector[0] = 1;
-    else mMoveVector[0] = 0;
+        mMoveVector.x = mSpeed;
+    else mMoveVector.x = 0;
 }
 
 void FlyCamera::Right(const KeyboardEvent &keyboardEvent) {
     if (keyboardEvent.mPressedState == SDL_PRESSED)
-        mMoveVector[0] = -1;
-    else mMoveVector[0] = 0;
+        mMoveVector.x = -mSpeed;
+    else mMoveVector.x = 0;
 }
-
-float oldX;
-float oldY;
-float lastDt;
 
 void FlyCamera::MouseMovement(const SDL_MouseMotionEvent &aMouseMotion) {
     if (!mMouseRPressed)
@@ -95,8 +107,6 @@ void FlyCamera::MouseMovement(const SDL_MouseMotionEvent &aMouseMotion) {
     //TODO: Consider Forward direction here
     const glm::vec2 axisRotation = glm::vec2(-yDelta * sensitivity, xDelta * sensitivity);
     mTransform.RotateAxis(axisRotation);
-
-
 }
 
 void FlyCamera::MouseInput(const SDL_MouseButtonEvent &aMouseInput) {
@@ -109,11 +119,12 @@ void FlyCamera::MouseInput(const SDL_MouseButtonEvent &aMouseInput) {
 void FlyCamera::Tick(float aDeltaTime) {
     // TODO: investigate global mouse state for off window input
     //float x, y;
-    //SDL_GetGlobalMouseState(&x, &y);
     //LOG(INFO) << x << " " << y;
+
     Super::Tick(aDeltaTime);
-    if (mMoveVector.length() > 0) {
-        // TODO: Use relative direction
-        mTransform.SetPosition(mMoveVector * mSpeed * aDeltaTime + mTransform.Position());
-    }
+    const glm::vec3 rightMoveVec = glm::vec3(mMoveVector.x * mTransform.Forward());
+    const glm::vec3 fwdMoveVec = glm::vec3(mMoveVector.z * mTransform.Right());
+    const glm::vec3 final = glm::vec3(fwdMoveVec.z + rightMoveVec.z, 0, fwdMoveVec.x + rightMoveVec.x) * 0.5f;
+
+    mTransform.Translate(final * aDeltaTime);
 }
