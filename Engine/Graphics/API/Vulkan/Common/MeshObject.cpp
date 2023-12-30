@@ -79,7 +79,7 @@ void MeshObject::DestroyRenderer() {
 }
 
 void MeshObject::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
-    mPushConstants.model = mTransform.GetCombinedMatrix();
+    mPushConstants.model = mTransform.GetWorldMatrix();
     Renderer::Render(aCommandBuffer, aScene);
 }
 

@@ -92,13 +92,10 @@ void FlyCamera::MouseMovement(const SDL_MouseMotionEvent &aMouseMotion) {
 
     float sensitivity = 0.1f;
 
+    //TODO: Consider Forward direction here
+    const glm::vec2 axisRotation = glm::vec2(-yDelta * sensitivity, xDelta * sensitivity);
+    mTransform.RotateAxis(axisRotation);
 
-    // TODO: make it only apply to the facing direction, and not the world direction
-    glm::quat rotationQuatX = glm::angleAxis(glm::radians(xDelta * sensitivity), glm::vec3(0.0f, 1.0f, 0.0f));
-    glm::quat rotationQuatY = glm::angleAxis(glm::radians(-yDelta * sensitivity), glm::vec3(1.0f, 0.0f, 0.0f));
-    glm::quat combinedRotation = rotationQuatX * rotationQuatY;
-
-    mTransform.Rotate(combinedRotation);
 
 }
 

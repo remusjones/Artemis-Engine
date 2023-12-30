@@ -122,7 +122,7 @@ void SandboxScene::Tick(float aDeltaTime) {
 
     mSceneData.position = mLight->mTransform.Position();
 
-    mMonkey->mTransform.RotateAround(aDeltaTime / 5, glm::vec3(0.0f, 1, 0));
+    mMonkey->mTransform.RotateAxis(aDeltaTime / 5, glm::vec3(0.0f, 1, 0));
    // mTeapot->mTransform.RotateAround(aDeltaTime / 10, glm::vec3(0.0f, 1.0f, 1.0f));
     Scene::Tick(aDeltaTime);
 
