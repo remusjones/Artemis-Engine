@@ -131,17 +131,16 @@ void VulkanGraphicsImpl::Update() {
     //main loop
     while (!bQuitting) {
         while (SDL_PollEvent(&e) != 0) {
-            gInputManager->ProcessInput(&e);
+            gInputManager->ConsumeInput(&e);
             if (e.type == SDL_EVENT_QUIT) bQuitting = true;
 
-            ImGui_ImplSDL3_ProcessEvent(&e);
         }
         if (!(SDL_GetWindowFlags(mWindow) & SDL_WINDOW_MINIMIZED)) {
             ImGui_ImplVulkan_NewFrame();
             ImGui_ImplSDL3_NewFrame();
             ImGui::NewFrame();
             ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
-
+            gInputManager->Update();
             this->mActiveScene->Tick(mDeltaTime);
             this->mVulkanEngine.DrawFrame(*mActiveScene);
 

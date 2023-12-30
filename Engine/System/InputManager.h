@@ -4,6 +4,7 @@
 
 #pragma once
 #include <functional>
+#include <queue>
 #include <SDL_events.h>
 #include <unordered_map>
 
@@ -55,8 +56,9 @@ class InputManager {
 public:
     InputManager();
 
+    void ConsumeInput(const SDL_Event *aInputEvent);
     void ProcessInput(const SDL_Event *aInputEvent);
-
+    void Update();
     void RegisterKeyCodeInput(
         SDL_KeyCode aKeyCode,
         std::function<void(KeyboardEvent aKeyboardEvent)> &&aCallback,
@@ -71,10 +73,14 @@ public:
         const char *aBindingName = "Default");
 
     // TODO: make descriptor map
-    std::unordered_map<int32_t, std::vector<KeyCodeInputBinding> > mKeyboardBindings;
+    std::unordered_map<int32_t, std::vector<KeyCodeInputBinding>> mKeyboardBindings;
     // TODO: make map
     std::vector<MouseMotionBinding> mMouseMotionBindings;
     std::vector<MouseInputBinding> mMouseInputBindings;
+
+    std::queue<SDL_Event> mQueuedEvents;
+
+
 };
 
 

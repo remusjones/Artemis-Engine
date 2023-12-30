@@ -7,7 +7,6 @@
 #include "imgui.h"
 #include "VulkanGraphicsImpl.h"
 #include "glog/logging.h"
-#include "Objects/Camera.h"
 #include "Vulkan/GraphicsPipeline.h"
 #include "Vulkan/Common/MeshObject.h"
 
@@ -57,14 +56,17 @@ void Scene::OnImGuiRender() {
 
     ImGui::SeparatorText("Statistics");
     ImGui::BeginChild(GetUniqueLabel("Statistics"),
-                      ImVec2(0.0f, 80),
-                      ImGuiChildFlags_Border);
+                      ImVec2(0.0f, 0.0f),
+                      ImGuiChildFlags_Border | ImGuiChildFlags_AutoResizeY);
 
     ImGui::Text("FPS: ");
     ImGui::SameLine();
     ImGui::Text(std::to_string(static_cast<int32_t>(gGraphics->GetFps())).c_str());
     ImGui::SameLine();
     ImGui::PlotLines("##fpsHistory", &gGraphics->GetFpsHistory().mBuffer.front(), gGraphics->GetFpsHistory().mBuffer.size());
+    ImGui::Text("Delta Time: ");
+    ImGui::SameLine(); ImGui::Text(std::to_string(gGraphics->DeltaTimeUnscaled()).c_str());
+
     ImGui::Text("Objects: ");
     ImGui::SameLine();
     ImGui::Text(std::to_string(static_cast<int32_t>(mObjects.size())).c_str());

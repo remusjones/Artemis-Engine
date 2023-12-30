@@ -23,7 +23,8 @@ public:
     glm::vec3 Euler() const;
     glm::vec3 Scale() const;
 
-    void Translate(glm::vec3 aDirection);
+    void Translate(glm::vec3 aTranslation);
+    void TranslateLocal(glm::vec3 aTranslation);
     void SetPosition(glm::vec3 aNewPosition);
 
     void SetRotation(glm::vec3 aEulerRotation);

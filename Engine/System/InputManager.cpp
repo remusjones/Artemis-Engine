@@ -3,17 +3,24 @@
 //
 
 #include "InputManager.h"
+
+#include <imgui_impl_sdl3.h>
+
 #include "glog/logging.h"
 
 InputManager *gInputManager = nullptr;
 
 InputManager::InputManager() {
     gInputManager = this;
+}
 
+void InputManager::ConsumeInput(const SDL_Event *aInputEvent) {
+    ImGui_ImplSDL3_ProcessEvent(aInputEvent);
+    if (aInputEvent->key.repeat == 0)
+        mQueuedEvents.push(*aInputEvent);
 }
 
 void InputManager::ProcessInput(const SDL_Event *aInputEvent) {
-    if (aInputEvent->key.repeat == 0) {
         switch (aInputEvent->type) {
             case SDL_EVENT_KEY_DOWN:
                 for (const auto &binding: mKeyboardBindings[aInputEvent->key.keysym.sym]) {
@@ -41,11 +48,17 @@ void InputManager::ProcessInput(const SDL_Event *aInputEvent) {
                 break;
             default: break;
         }
+}
+// TODO: Propery filter out duplicate events, and queue only uniques so we can consume during Update
+void InputManager::Update() {
+    while (!mQueuedEvents.empty()) {
+        ProcessInput(&mQueuedEvents.front()) ;
+        mQueuedEvents.pop();
     }
 }
 
 void InputManager::RegisterMouseInput(std::function<void(SDL_MouseMotionEvent)> &&aCallback,
-                                            const char *aBindingName) {
+                                      const char *aBindingName) {
     const MouseMotionBinding newBinding(aBindingName, std::move(aCallback));
     mMouseMotionBindings.push_back(newBinding);
 }

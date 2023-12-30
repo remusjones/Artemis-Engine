@@ -15,7 +15,9 @@ struct KeyboardEvent;
 class FlyCamera : public Camera, ImGuiLayer, Super {
 public:
     void Construct() override;
+
     void OnImGuiRender() override;
+
     void Tick(float aDeltaTime) override;
 
     void Forward(const KeyboardEvent &keyboardEvent);
@@ -26,12 +28,18 @@ public:
 
     void Right(const KeyboardEvent &keyboardEvent);
 
+    void Up(const KeyboardEvent &keyboardEvent);
+
+    void Down(const KeyboardEvent &keyboardEvent);
+
     void MouseMovement(const SDL_MouseMotionEvent &aMouseMotion);
 
     void MouseInput(const SDL_MouseButtonEvent &aMouseInput);
 
 private:
     glm::vec3 mMoveVector = {};
+    bool mInput[6] = {};
+
 
     float_t mSpeed = 10;
     bool mMouseRPressed = false;

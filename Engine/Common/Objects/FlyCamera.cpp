@@ -10,6 +10,7 @@
 
 #include "imgui.h"
 #include "InputManager.h"
+#include "VulkanGraphicsImpl.h"
 
 void FlyCamera::Construct() {
     gInputManager->RegisterKeyCodeInput(SDLK_w,
@@ -28,6 +29,14 @@ void FlyCamera::Construct() {
                                         [&](KeyboardEvent kb) {
                                             Left(kb);
                                         }, "Camera Left");
+    gInputManager->RegisterKeyCodeInput(SDLK_SPACE,
+                                        [&](KeyboardEvent kb) {
+                                            Up(kb);
+                                        }, "Camera Up");
+    gInputManager->RegisterKeyCodeInput(SDLK_LCTRL,
+                                        [&](KeyboardEvent kb) {
+                                            Down(kb);
+                                        }, "Camera Down");
 
     gInputManager->RegisterMouseInput([&](SDL_MouseMotionEvent motion) { MouseMovement(motion); }, "Camera Mouse");
     gInputManager->RegisterMouseInput([&](SDL_MouseButtonEvent input) { MouseInput(input); }, "Camera Click");
@@ -72,27 +81,27 @@ void FlyCamera::OnImGuiRender() {
 }
 
 void FlyCamera::Forward(const KeyboardEvent &keyboardEvent) {
-    if (keyboardEvent.mPressedState == SDL_PRESSED)
-        mMoveVector.z = mSpeed;
-    else mMoveVector.z = 0;
+    mInput[0] = keyboardEvent.mPressedState == SDL_PRESSED;
 }
 
 void FlyCamera::Backward(const KeyboardEvent &keyboardEvent) {
-    if (keyboardEvent.mPressedState == SDL_PRESSED)
-        mMoveVector.z = -mSpeed;
-    else mMoveVector.z = 0;
+    mInput[1] = keyboardEvent.mPressedState == SDL_PRESSED;
 }
 
 void FlyCamera::Left(const KeyboardEvent &keyboardEvent) {
-    if (keyboardEvent.mPressedState == SDL_PRESSED)
-        mMoveVector.x = mSpeed;
-    else mMoveVector.x = 0;
+    mInput[2] = keyboardEvent.mPressedState == SDL_PRESSED;
 }
 
 void FlyCamera::Right(const KeyboardEvent &keyboardEvent) {
-    if (keyboardEvent.mPressedState == SDL_PRESSED)
-        mMoveVector.x = -mSpeed;
-    else mMoveVector.x = 0;
+    mInput[3] = keyboardEvent.mPressedState == SDL_PRESSED;
+}
+
+void FlyCamera::Up(const KeyboardEvent &keyboardEvent) {
+    mInput[4] = keyboardEvent.mPressedState == SDL_PRESSED;
+}
+
+void FlyCamera::Down(const KeyboardEvent &keyboardEvent) {
+    mInput[5] = keyboardEvent.mPressedState == SDL_PRESSED;
 }
 
 void FlyCamera::MouseMovement(const SDL_MouseMotionEvent &aMouseMotion) {
@@ -104,8 +113,8 @@ void FlyCamera::MouseMovement(const SDL_MouseMotionEvent &aMouseMotion) {
 
     float sensitivity = 0.1f;
     // Yaw rotation around the y-axis
-    glm::quat up = glm::angleAxis(glm::radians(yDelta * sensitivity), glm::vec3(1,0,0));
-    glm::quat right = glm::angleAxis(glm::radians(xDelta * sensitivity), glm::vec3(0,1,0));
+    glm::quat up = glm::angleAxis(glm::radians(yDelta * sensitivity), glm::vec3(1, 0, 0));
+    glm::quat right = glm::angleAxis(glm::radians(xDelta * sensitivity), glm::vec3(0, 1, 0));
 
     glm::quat combined = mTransform.Rotation() * right;
     combined = up * combined;
@@ -120,14 +129,19 @@ void FlyCamera::MouseInput(const SDL_MouseButtonEvent &aMouseInput) {
 
 
 void FlyCamera::Tick(float aDeltaTime) {
+
     // TODO: investigate global mouse state for off window input
     //float x, y;
     //LOG(INFO) << x << " " << y;
 
-    Super::Tick(aDeltaTime);
-    const glm::vec3 rightMoveVec = glm::vec3(mMoveVector.x * mTransform.Forward());
-    const glm::vec3 fwdMoveVec = glm::vec3(mMoveVector.z * mTransform.Right());
-    const glm::vec3 final = glm::vec3(fwdMoveVec.z + rightMoveVec.z, 0, fwdMoveVec.x + rightMoveVec.x) * 0.5f;
+    mMoveVector.z += mInput[0] ? mSpeed : 0;
+    mMoveVector.z += mInput[1] ? -mSpeed : 0;
+    mMoveVector.x += mInput[2] ? mSpeed : 0;
+    mMoveVector.x += mInput[3] ? -mSpeed : 0;
+    mMoveVector.y += mInput[4] ? -mSpeed : 0;
+    mMoveVector.y += mInput[5] ? mSpeed : 0;
 
-    mTransform.Translate(final * aDeltaTime);
+    Super::Tick(aDeltaTime);
+    mTransform.TranslateLocal(mMoveVector * aDeltaTime);
+    mMoveVector = glm::vec3();
 }
