@@ -64,7 +64,7 @@ void Scene::OnImGuiRender() {
     ImGui::SameLine();
     ImGui::Text(std::to_string(static_cast<int32_t>(gGraphics->GetFps())).c_str());
     ImGui::SameLine();
-    ImGui::PlotLines("##fpsHistory", &gGraphics->GetFpsHistory().mBuffer[0], gGraphics->GetFpsHistory().mSize);
+    ImGui::PlotLines("##fpsHistory", &gGraphics->GetFpsHistory().mBuffer.front(), gGraphics->GetFpsHistory().mBuffer.size());
     ImGui::Text("Objects: ");
     ImGui::SameLine();
     ImGui::Text(std::to_string(static_cast<int32_t>(mObjects.size())).c_str());

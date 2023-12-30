@@ -11,10 +11,9 @@
 
 class SandboxScene final : public Scene {
 public:
+
     void Construct(const char *aSceneName) override;
-
     void Tick(float aDeltaTime) override;
-
     void Cleanup() override;
 
 private:
