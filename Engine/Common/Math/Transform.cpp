@@ -8,55 +8,60 @@
 
 #include "Objects/Camera.h"
 #include "Objects/Camera.h"
-#include "Objects/Camera.h"
-#include "Objects/Camera.h"
 
-Transform::Transform(): mTranslationMatrix(1.0f), mRotationMatrix(1.0f), mScaleMatrix(1.0f) {
+Transform::Transform(): mRotation(glm::identity<glm::quat>()), mPosition(0), mScale(1){
 }
 
 glm::vec3 Transform::Position() const {
-    return glm::vec3(mTranslationMatrix[3]);
+    return mPosition;
 }
 
 glm::quat Transform::Rotation() const {
-    return glm::quat_cast(mRotationMatrix);
+    return mRotation;
 }
 
 glm::vec3 Transform::Euler() const {
-    return glm::degrees(glm::eulerAngles(glm::quat_cast(mRotationMatrix)));
+    return glm::degrees(glm::eulerAngles(mRotation));
 }
 
 glm::vec3 Transform::Scale() const {
-    glm::vec3 scale;
-    scale.x = glm::length(mScaleMatrix[0]);
-    scale.y = glm::length(mScaleMatrix[1]);
-    scale.z = glm::length(mScaleMatrix[2]);
-    return scale;
+
+    return mScale;
 }
 
 void Transform::SetPosition(const glm::vec3 aNewPosition) {
-   mTranslationMatrix = translate(glm::mat4(1.0f), aNewPosition);
+    mPosition = aNewPosition;
 }
 
-void Transform::SetRotation(glm::vec3 aNewRotation) {
-    mRotationMatrix = glm::eulerAngleYXZ(
-        aNewRotation.y / 180 * glm::pi<float>(),
-        aNewRotation.x/ 180 * glm::pi<float>(),
-        aNewRotation.z/ 180 * glm::pi<float>());
+void Transform::SetRotation(glm::vec3 aEulerRotation) {
+    const glm::vec3 axisRotation = glm::radians(aEulerRotation);
+    mRotation = axisRotation;
 }
 
-void Transform::SetRotation(glm::mat4 aNewRotation) {
-    mRotationMatrix = aNewRotation;
+void Transform::SetRotation(glm::quat aNewRotation) {
+    mRotation = aNewRotation;
+}
+
+void Transform::Rotate(glm::quat aRotation) {
+    mRotation *= aRotation;
 }
 
 void Transform::RotateAround(float aAngle, glm::vec3 aRotation) {
-    mRotationMatrix = glm::rotate(mRotationMatrix, aAngle, aRotation);
+    mRotation = mRotation * glm::angleAxis(aAngle, aRotation);
+    //mRotationMatrix = glm::rotate(mRotationMatrix, aAngle, aRotation);
 }
 
 void Transform::SetScale(glm::vec3 aNewScale) {
-    mScaleMatrix = glm::scale(glm::mat4(1.0f), aNewScale);
+    mScale = aNewScale;
 }
 
 glm::mat4 Transform::GetCombinedMatrix() const {
-    return mRotationMatrix * mTranslationMatrix * mScaleMatrix;
+
+    glm::mat4 worldMatrix = glm::identity<glm::mat4>();
+
+    worldMatrix = glm::translate(glm::identity<glm::mat4>(), mPosition);
+    worldMatrix *= glm::mat4_cast(mRotation);
+    worldMatrix = glm::scale(worldMatrix, mScale);
+
+    return worldMatrix;
 }

@@ -17,7 +17,7 @@ void Scene::Construct(const char *aSceneName) {
     for (const auto obj: mObjects) {
         obj->Construct();
     }
-    assert(mActiveCamera != nullptr);
+    assert(mActiveSceneCamera != nullptr);
 }
 
 void Scene::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
@@ -33,9 +33,16 @@ void Scene::OnImGuiRender() {
     ImGui::Begin(mSceneName);
 
     if (ImGui::CollapsingHeader("Scene Information")) {
-        ImGui::ColorEdit3(GetUniqueLabel("Point Light Color"), &mSceneData.color[0]);
-        ImGui::DragFloat(GetUniqueLabel("Point Light Intensity"), &mSceneData.lightIntensity, 0.0125f);
-        ImGui::DragFloat(GetUniqueLabel("Ambient Lighting"), &mSceneData.ambientStrength, 0.1f);
+        ImGui::Indent();
+        if (ImGui::CollapsingHeader("Lighting")) {
+            ImGui::ColorEdit3(GetUniqueLabel("Point Light Color"), &mSceneData.color[0]);
+            ImGui::DragFloat(GetUniqueLabel("Point Light Intensity"), &mSceneData.lightIntensity, 0.0125f);
+            ImGui::DragFloat(GetUniqueLabel("Ambient Lighting"), &mSceneData.ambientStrength, 0.1f);
+        }
+        if (ImGui::CollapsingHeader("Camera")) {
+            mActiveSceneCamera->OnImGuiRender();
+        }
+        ImGui::Unindent();
     }
 
     if (ImGui::CollapsingHeader("Objects")) {
@@ -64,7 +71,7 @@ void Scene::Cleanup() {
         delete obj;
     }
 
-    delete mActiveCamera;
+    delete mActiveSceneCamera;
     for (const auto pipeline: mGraphicsPipelines) {
         pipeline->Destroy();
         delete pipeline;

@@ -117,9 +117,9 @@ void MeshObject::OnImGuiRender() {
 void Renderer::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
     FrameData currentFrame = gGraphics->mVulkanEngine.GetCurrentFrame();
     GPUCameraData camData;
-    camData.mPerspectiveMatrix = aScene.mActiveCamera->GetPerspectiveMatrix();
-    camData.mViewMatrix = aScene.mActiveCamera->GetViewMatrix();
-    camData.mViewProjectionMatrix = aScene.mActiveCamera->GetViewProjectionMatrix();
+    camData.mPerspectiveMatrix = aScene.mActiveSceneCamera->GetPerspectiveMatrix();
+    camData.mViewMatrix = aScene.mActiveSceneCamera->GetViewMatrix();
+    camData.mViewProjectionMatrix = aScene.mActiveSceneCamera->GetViewProjectionMatrix();
 
 
     void *data;

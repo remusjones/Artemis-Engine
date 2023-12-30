@@ -62,7 +62,9 @@ add_executable(${PROJECT_NAME} main.cpp
         Engine/Graphics/API/Base/Common/Buffers/Texture.h
         Engine/Graphics/API/Base/Common/Buffers/Texture.cpp
         Engine/System/InputManager.cpp
-        Engine/System/InputManager.h)
+        Engine/System/InputManager.h
+        Engine/Common/Objects/FlyCamera.cpp
+        Engine/Common/Objects/FlyCamera.h)
 
 # Shorten some common include directories
 include_directories(Engine/Graphics/API)

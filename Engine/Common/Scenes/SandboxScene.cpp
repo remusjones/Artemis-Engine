@@ -10,6 +10,7 @@
 #include "File Management/FileManagement.h"
 #include "glog/logging.h"
 #include "Objects/Camera.h"
+#include "Objects/FlyCamera.h"
 #include "Vulkan/GraphicsPipeline.h"
 #include "Vulkan/Common/MeshObject.h"
 #include "Vulkan/Helpers/VulkanInitialization.h"
@@ -98,9 +99,9 @@ void SandboxScene::Construct(const char *aSceneName) {
     // Supress vulkan validation until I have a default descriptor setter
     mTeapot->mMaterial->BindTexture(*sphereNormal, 4);
 
-    mActiveCamera = new Camera();
-    mActiveCamera->mTransform.SetPosition({0, 0, -5.0f});
-    mActiveCamera->Create();
+    mActiveSceneCamera = new FlyCamera();
+    mActiveSceneCamera->Construct();
+    mActiveSceneCamera->mTransform.SetPosition({0, 0, -5.0f});
 
     AddGraphicsPipeline(vertexLitPipeline);
     AddGraphicsPipeline(unlitMeshPipeline);
@@ -122,11 +123,11 @@ void SandboxScene::Tick(float aDeltaTime) {
     mSceneData.position = mLight->mTransform.Position();
 
     mMonkey->mTransform.RotateAround(aDeltaTime / 5, glm::vec3(0.0f, 1, 0));
-    mTeapot->mTransform.RotateAround(aDeltaTime / 10, glm::vec3(0.0f, 1.0f, 1.0f));
+   // mTeapot->mTransform.RotateAround(aDeltaTime / 10, glm::vec3(0.0f, 1.0f, 1.0f));
     Scene::Tick(aDeltaTime);
 
     // Late Tick ..
-    mActiveCamera->Tick(aDeltaTime);
+    mActiveSceneCamera->Tick(aDeltaTime);
 }
 
 void SandboxScene::Cleanup() {

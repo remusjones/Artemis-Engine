@@ -7,6 +7,7 @@
 
 #include "Base/Common/Buffers/AllocatedBuffer.h"
 #include "Base/Common/Data/GPUSceneData.h"
+#include "Objects/FlyCamera.h"
 #include "Objects/ImGuiLayer.h"
 
 class GraphicsPipeline;
@@ -29,7 +30,7 @@ public:
 
     void AddGraphicsPipeline(GraphicsPipeline *aGraphicsPipeline);
 
-    Camera *mActiveCamera;
+    FlyCamera *mActiveSceneCamera;
     // TODO: cleanup these in scene, instead of engine
     std::vector<GraphicsPipeline *> mGraphicsPipelines;
     GPUSceneData mSceneData;
