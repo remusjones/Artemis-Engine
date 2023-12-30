@@ -17,5 +17,4 @@ function(compile_shaders DIR)
         add_dependencies(${PROJECT_NAME} ${SHADER_NAME})
     endforeach()
 endfunction()
-
 compile_shaders("${SHADER_SOURCE_DIRECTORY}")

@@ -78,9 +78,9 @@ void Transform::SetScale(glm::vec3 aNewScale) {
 glm::mat4 Transform::GetWorldMatrix() const {
     glm::mat4 worldMatrix = glm::identity<glm::mat4>();
 
-    worldMatrix = glm::translate(glm::identity<glm::mat4>(), mPosition);
+    worldMatrix = glm::translate(glm::mat4(1.0f), mPosition);
     worldMatrix *= glm::mat4_cast(mRotation);
-    worldMatrix = glm::scale(worldMatrix, mScale);
+    worldMatrix *= glm::scale(glm::mat4(1.0f), mScale);
 
     return worldMatrix;
 }

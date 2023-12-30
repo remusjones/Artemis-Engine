@@ -116,7 +116,6 @@ void VulkanGraphicsImpl::Update() {
     // Start Clock for FPS Monitoring
     auto startTime = std::chrono::high_resolution_clock::now();
     auto fpsStartTime = std::chrono::high_resolution_clock::now();
-
     ImGuiIO &io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     // Create FPS Window Header
@@ -159,9 +158,8 @@ void VulkanGraphicsImpl::Update() {
         if (const auto elapsedTime = std::chrono::duration_cast<
                 std::chrono::seconds>(currentTime - fpsStartTime).count();
             elapsedTime > 0) {
-            const double fps = frameCount / elapsedTime;
-            SDL_SetWindowTitle(mWindow,
-                               (fpsHeader + std::to_string((int) fps)).c_str());
+            mFps = frameCount / elapsedTime;
+            mFPSCircularBuffer.AddElement(mFps);
             frameCount = -1;
             fpsStartTime = currentTime;
         }
@@ -186,7 +184,8 @@ void VulkanGraphicsImpl::Cleanup() {
 
 VulkanGraphicsImpl::VulkanGraphicsImpl(const char *aWindowName,
                                        const int aWindowWidth,
-                                       const int aWindowHeight) {
+                                       const int aWindowHeight):
+    mFPSCircularBuffer(100) {
     mWindowName = aWindowName;
     mWindowWidth = aWindowWidth;
     mWindowHeight = aWindowHeight;

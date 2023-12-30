@@ -20,6 +20,7 @@ void SandboxScene::Construct(const char *aSceneName) {
     GraphicsPipeline *vertexLitPipeline = new GraphicsPipeline("Lit Mesh Pipeline");
     GraphicsPipeline *unlitMeshPipeline = new GraphicsPipeline("Unlit Mesh Pipeline");
     GraphicsPipeline *texturedMeshPipeline = new GraphicsPipeline("Textured Mesh Pipeline");
+    GraphicsPipeline *halfLambertMeshPipeline = new GraphicsPipeline("Half Lambert Mesh Pipeline");
 
     vertexLitPipeline->AddShader("/Shaders/3DVertexLit_v.spv",
                                  VK_SHADER_STAGE_VERTEX_BIT);
@@ -37,6 +38,10 @@ void SandboxScene::Construct(const char *aSceneName) {
     texturedMeshPipeline->AddShader("/Shaders/TexturedLit_f.spv",
                                     VK_SHADER_STAGE_FRAGMENT_BIT);
 
+    halfLambertMeshPipeline->AddShader("/Shaders/3DObject_v.spv",
+                                    VK_SHADER_STAGE_VERTEX_BIT);
+    halfLambertMeshPipeline->AddShader("/Shaders/HalfLambert_f.spv",
+                                    VK_SHADER_STAGE_FRAGMENT_BIT);
 
     mMonkey = new MeshObject();
     mMonkey->CreateObject(*vertexLitPipeline, "Monkey");
@@ -63,10 +68,17 @@ void SandboxScene::Construct(const char *aSceneName) {
     mSphere->LoadMesh((FileManagement::GetWorkingDirectory() +
                        std::string("/../Models/sphere.obj")).c_str());
 
-    mMonkey->mTransform.SetPosition({-2, 0, 0});
-    mTeapot->mTransform.SetPosition({2, 0, 0});
+    mHalfLambertSphere = new MeshObject();
+    mHalfLambertSphere->CreateObject(*halfLambertMeshPipeline, "Sphere Lambert");
+    mHalfLambertSphere->LoadMesh((FileManagement::GetWorkingDirectory() +
+                                  std::string("/../Models/sphere.obj")).c_str());
+
+
+    mMonkey->mTransform.SetPosition({-2, 0, -20.0f});
+    mTeapot->mTransform.SetPosition({2, 0, -20.0f});
     mTeapot->mTransform.SetScale({0.1f, 0.1f, 0.1f});
-    mSphere->mTransform.SetPosition({0, 0, -15});
+    mSphere->mTransform.SetPosition({2, 0, -5});
+    mHalfLambertSphere->mTransform.SetPosition({-2, 0, -5});
     mLight->mTransform.SetScale({0.1f, 0.1f, 0.1f});
     mLight->mTransform.SetScale({0.2f, 0.2f, 0.2f});
 
@@ -74,6 +86,7 @@ void SandboxScene::Construct(const char *aSceneName) {
     mObjects.push_back(mTeapot);
     mObjects.push_back(mLight);
     mObjects.push_back(mSphere);
+    mObjects.push_back(mHalfLambertSphere);
 
 
     // TODO: Condense into texture create function
@@ -98,6 +111,8 @@ void SandboxScene::Construct(const char *aSceneName) {
 
     // Supress vulkan validation until I have a default descriptor setter
     mTeapot->mMaterial->BindTexture(*sphereNormal, 4);
+    mHalfLambertSphere->mMaterial->BindTexture(*sphereAlbedo, 3);
+    mHalfLambertSphere->mMaterial->BindTexture(*sphereNormal, 4);
 
     mActiveSceneCamera = new FlyCamera();
     mActiveSceneCamera->Construct();
@@ -106,6 +121,7 @@ void SandboxScene::Construct(const char *aSceneName) {
     AddGraphicsPipeline(vertexLitPipeline);
     AddGraphicsPipeline(unlitMeshPipeline);
     AddGraphicsPipeline(texturedMeshPipeline);
+    AddGraphicsPipeline(halfLambertMeshPipeline);
 
     Scene::Construct(aSceneName);
 }
@@ -123,7 +139,7 @@ void SandboxScene::Tick(float aDeltaTime) {
     mSceneData.position = mLight->mTransform.Position();
 
     mMonkey->mTransform.RotateAxis(aDeltaTime / 5, glm::vec3(0.0f, 1, 0));
-   // mTeapot->mTransform.RotateAround(aDeltaTime / 10, glm::vec3(0.0f, 1.0f, 1.0f));
+    // mTeapot->mTransform.RotateAround(aDeltaTime / 10, glm::vec3(0.0f, 1.0f, 1.0f));
     Scene::Tick(aDeltaTime);
 
     // Late Tick ..

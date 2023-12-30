@@ -7,6 +7,7 @@
 #include <vector>
 #include <SDL_video.h>
 
+#include "DequeBuffer.h"
 #include "IApplication.h"
 #include "InputManager.h"
 #include "Vulkan/VulkanEngine.h"
@@ -34,7 +35,11 @@ public:
 
     QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice aDevice) const;
 
-    QueueFamilyIndices GetQueueFamilyIndices() const { return mFamilyIndices; };
+    QueueFamilyIndices GetQueueFamilyIndices() const { return mFamilyIndices; }
+    float DeltaTimeUnscaled() const { return mDeltaTime; }
+    float GetFps() const { return mFps; }
+
+    DequeBuffer &GetFpsHistory() {return mFPSCircularBuffer;}
 
 private:
     // Init Vulkan & Supporting Vulkan
@@ -125,8 +130,10 @@ private:
     int mWindowHeight;
     const char *mWindowName;
     float mDeltaTime;
+    float mFps;
     VkDescriptorPool mImguiPool;
 
+    DequeBuffer mFPSCircularBuffer;
     // Vulkan Impls
     std::vector<VkExtensionProperties> mExtensions;
     VkQueue mGraphicsQueue;

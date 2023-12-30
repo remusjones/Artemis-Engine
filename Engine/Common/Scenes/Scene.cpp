@@ -55,6 +55,24 @@ void Scene::OnImGuiRender() {
         }
     }
 
+    ImGui::SeparatorText("Statistics");
+    ImGui::BeginChild(GetUniqueLabel("Statistics"),
+                      ImVec2(0.0f, 80),
+                      ImGuiChildFlags_Border);
+
+    ImGui::Text("FPS: ");
+    ImGui::SameLine();
+    ImGui::Text(std::to_string(static_cast<int32_t>(gGraphics->GetFps())).c_str());
+    ImGui::SameLine();
+    ImGui::PlotLines("##fpsHistory", &gGraphics->GetFpsHistory().mBuffer[0], gGraphics->GetFpsHistory().mSize);
+    ImGui::Text("Objects: ");
+    ImGui::SameLine();
+    ImGui::Text(std::to_string(static_cast<int32_t>(mObjects.size())).c_str());
+    ImGui::Text("Graphic Pipelines: ");
+    ImGui::SameLine();
+    ImGui::Text(std::to_string(static_cast<int32_t>(mGraphicsPipelines.size())).c_str());
+    ImGui::EndChild();
+
     ImGui::End();
 }
 

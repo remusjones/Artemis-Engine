@@ -61,11 +61,11 @@ void FlyCamera::OnImGuiRender() {
     }
 
     ImGui::SeparatorText("DEBUG");
-    if (ImGui::DragFloat3(GetUniqueLabel("Transform Forward"), &mTransform.Forward()[0], 0.1f)) {
+    if (ImGui::DragFloat3(GetUniqueLabel("Forward"), &mTransform.Forward()[0], 0.1f)) {
     }
-    if (ImGui::DragFloat3(GetUniqueLabel("Transform Right"), &mTransform.Right()[0], 0.1f)) {
+    if (ImGui::DragFloat3(GetUniqueLabel("Right"), &mTransform.Right()[0], 0.1f)) {
     }
-    if (ImGui::DragFloat3(GetUniqueLabel("Transform Up"), &mTransform.Up()[0], 0.1f)) {
+    if (ImGui::DragFloat3(GetUniqueLabel("Up"), &mTransform.Up()[0], 0.1f)) {
     }
 
     ImGui::Unindent();

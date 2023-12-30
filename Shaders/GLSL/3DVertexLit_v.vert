@@ -34,11 +34,9 @@ layout(location = 0) out vec3 fragColor;
 layout(location = 1) out vec2 texCoord;
 
 void main() {
-
     gl_Position = cameraData.viewproj * inPushConstants.model * vec4(inPosition, 1.0);
 
     mat3 normalMatrix = transpose(inverse(mat3(inPushConstants.model)));
-
     vec3 worldNormal = normalize(normalMatrix * inNormal);
 
     vec3 lightDir = normalize(lightingData.position - vec3(inPushConstants.model * vec4(inPosition, 1.0)));
@@ -46,18 +44,22 @@ void main() {
 
     vec3 ambient = lightingData.ambientStrength * lightingData.color;
     float diff = max(dot(worldNormal, lightDir), 0.0);
-    vec3 diffuse = diff * lightingData.color * lightingData.lightIntensity / (1.0 + 0.1 * distance + 0.01 * (distance
-    * distance));
+
+    // Half Lambert shading
+    float lambertTerm = 0.5 * (dot(worldNormal, lightDir) + 1.0);
+    vec3 diffuse = lambertTerm * diff * lightingData.color * lightingData.lightIntensity /
+    (1.0 + 0.1 * distance + 0.01 * (distance * distance));
+
     vec3 viewDir = normalize(-vec3(inPushConstants.model * vec4(inPosition, 1.0)));
     vec3 reflectDir = reflect(-lightDir, worldNormal);
 
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), materialProperties.shininess);
     vec3 specular = materialProperties.specularStrength * spec *
-    (lightingData.color * lightingData.lightIntensity) /(1 + 0.1 * distance + 0.01 * (distance * distance));
+    (lightingData.color * lightingData.lightIntensity) /
+    (1 + 0.1 * distance + 0.01 * (distance * distance));
 
     // Uses vertex color as influence
     vec3 result = (ambient + diffuse + (specular)) * (inColor * vec3(materialProperties.color));
-
 
     fragColor = result;
     texCoord = inTexCoord;
