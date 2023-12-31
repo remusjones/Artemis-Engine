@@ -13,7 +13,7 @@ add_subdirectory(glm glm)
 
 # https://github.com/libsdl-org/SDL.git
 message("Adding sdl")
-set(SDL_DIRECTX OFF) # Disable due to not supporting directx at the moment
+set(SDL_STATIC TRUE CACHE BOOL "Build SDL static library")
 add_subdirectory(SDL)
 
 # https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
@@ -39,7 +39,7 @@ target_sources(imgui PUBLIC
         "${IMGUI_PATH}/backends/imgui_impl_vulkan.cpp"
         "${IMGUI_PATH}/backends/imgui_impl_sdl3.cpp"
 )
-target_link_libraries(imgui SDL3::SDL3)
+target_link_libraries(imgui SDL3::SDL3-static)
 
 # https://github.com/nothings/stb.git
 message("Adding stb")
@@ -52,7 +52,7 @@ target_link_libraries(
         Vulkan::Vulkan
         glm::glm
         glog
-        SDL3::SDL3
+        SDL3::SDL3-static
         GPUOpen::VulkanMemoryAllocator
         tinyobjloader
         imgui)
