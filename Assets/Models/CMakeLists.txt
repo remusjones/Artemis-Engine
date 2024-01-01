@@ -1,4 +1,4 @@
-set(SHADER_SOURCE_DIRECTORY "${PROJECT_SOURCE_DIR}/Shaders")
+set(Models_SOURCE_DIRECTORY "${PROJECT_SOURCE_DIR}/Models")
 
 function(compile_shaders DIR)
     file(GLOB_RECURSE SHADERS ${DIR}/*.vert ${DIR}/*.frag ${DIR}/*.glsl)

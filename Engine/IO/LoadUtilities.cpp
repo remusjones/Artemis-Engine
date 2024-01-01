@@ -20,7 +20,7 @@ bool LoadUtilities::LoadImageFromDisk(VulkanGraphics* aEngine, const char* aFile
 
     if (!pixels)
     {
-        Logger::Log(spdlog::level::info, (std::string("Could not load file ") + aFilePath).c_str());
+        Logger::Log(spdlog::level::err, (std::string("Could not load file ") + aFilePath).c_str());
         return false;
     }
 

@@ -21,56 +21,56 @@ void SandboxScene::Construct(const char *aSceneName) {
     GraphicsPipeline *texturedMeshPipeline = new GraphicsPipeline("Textured Mesh Pipeline");
     GraphicsPipeline *halfLambertMeshPipeline = new GraphicsPipeline("Half Lambert Mesh Pipeline");
 
-    vertexLitPipeline->AddShader("/Shaders/3DVertexLit_v.spv",
+    vertexLitPipeline->AddShader("/Assets/Shaders/3DVertexLit_v.spv",
                                  VK_SHADER_STAGE_VERTEX_BIT);
-    vertexLitPipeline->AddShader("/Shaders/Lit_f.spv",
+    vertexLitPipeline->AddShader("/Assets/Shaders/Lit_f.spv",
                                  VK_SHADER_STAGE_FRAGMENT_BIT);
 
 
-    unlitMeshPipeline->AddShader("/Shaders/3DUnlit_v.spv",
+    unlitMeshPipeline->AddShader("/Assets/Shaders/3DUnlit_v.spv",
                                  VK_SHADER_STAGE_VERTEX_BIT);
-    unlitMeshPipeline->AddShader("/Shaders/Lit_f.spv",
+    unlitMeshPipeline->AddShader("/Assets/Shaders/Lit_f.spv",
                                  VK_SHADER_STAGE_FRAGMENT_BIT);
 
-    texturedMeshPipeline->AddShader("/Shaders/3DObject_v.spv",
+    texturedMeshPipeline->AddShader("/Assets/Shaders/3DObject_v.spv",
                                     VK_SHADER_STAGE_VERTEX_BIT);
-    texturedMeshPipeline->AddShader("/Shaders/TexturedLit_f.spv",
+    texturedMeshPipeline->AddShader("/Assets/Shaders/TexturedLit_f.spv",
                                     VK_SHADER_STAGE_FRAGMENT_BIT);
 
-    halfLambertMeshPipeline->AddShader("/Shaders/3DObject_v.spv",
+    halfLambertMeshPipeline->AddShader("/Assets/Shaders/3DObject_v.spv",
                                     VK_SHADER_STAGE_VERTEX_BIT);
-    halfLambertMeshPipeline->AddShader("/Shaders/HalfLambert_f.spv",
+    halfLambertMeshPipeline->AddShader("/Assets/Shaders/HalfLambert_f.spv",
                                     VK_SHADER_STAGE_FRAGMENT_BIT);
 
     mMonkey = new MeshObject();
     mMonkey->CreateObject(*vertexLitPipeline, "Monkey");
     mMonkey->LoadMesh(
         (FileManagement::GetWorkingDirectory() +
-         std::string("/../Models/monkey_smooth.obj")).c_str());
+         std::string("/Assets/Models/monkey_smooth.obj")).c_str());
 
 
     mTeapot = new MeshObject();
     mTeapot->CreateObject(*texturedMeshPipeline, "Teapot");
     mTeapot->LoadMesh(
         (FileManagement::GetWorkingDirectory() +
-         std::string("/../Models/teapot.obj")).c_str());
+         std::string("/Assets/Models/teapot.obj")).c_str());
 
 
     mLight = new MeshObject();
     mLight->CreateObject(*unlitMeshPipeline, "Light");
     mLight->LoadMesh(
         (FileManagement::GetWorkingDirectory() +
-         std::string("/../Models/sphere.obj")).c_str());
+         std::string("/Assets/Models/sphere.obj")).c_str());
 
     mSphere = new MeshObject();
     mSphere->CreateObject(*texturedMeshPipeline, "Sphere");
     mSphere->LoadMesh((FileManagement::GetWorkingDirectory() +
-                       std::string("/../Models/sphere.obj")).c_str());
+                       std::string("/Assets/Models/sphere.obj")).c_str());
 
     mHalfLambertSphere = new MeshObject();
     mHalfLambertSphere->CreateObject(*halfLambertMeshPipeline, "Sphere Lambert");
     mHalfLambertSphere->LoadMesh((FileManagement::GetWorkingDirectory() +
-                                  std::string("/../Models/sphere.obj")).c_str());
+                                  std::string("/Assets/Models/sphere.obj")).c_str());
 
 
     mMonkey->mTransform.SetPosition({-2, 0, -20.0f});
@@ -92,19 +92,23 @@ void SandboxScene::Construct(const char *aSceneName) {
     auto *teapotTexture = new Texture();
     mLoadedTextures["textureTest"] = teapotTexture;
 
-    teapotTexture->LoadImageFromDisk("../Textures/textureTest.png");
+    teapotTexture->LoadImageFromDisk( std::string(FileManagement::GetWorkingDirectory() +
+        "/Assets/Textures/textureTest.png").c_str());
     teapotTexture->Create();
     mTeapot->mMaterial->BindTexture(*teapotTexture, 3);
 
     auto *sphereAlbedo = new Texture();
     mLoadedTextures["sphereAlbedo"] = sphereAlbedo;
-    sphereAlbedo->LoadImageFromDisk("../Textures/Stone/Stone Wall.png");
+    sphereAlbedo->LoadImageFromDisk(std::string(FileManagement::GetWorkingDirectory() +
+        "/Assets/Textures/Stone Wall.png").c_str());
     sphereAlbedo->Create();
     mSphere->mMaterial->BindTexture(*sphereAlbedo, 3);
 
     auto *sphereNormal = new Texture();
     mLoadedTextures["sphereNormal"] = sphereNormal;
-    sphereNormal->LoadImageFromDisk("../Textures/Stone/Stone Wall_NRM.png");
+    sphereNormal->LoadImageFromDisk(std::string(FileManagement::GetWorkingDirectory() +
+        "/Assets/Textures/Stone Wall_NRM.png").c_str());
+
     sphereNormal->Create();
     mSphere->mMaterial->BindTexture(*sphereNormal, 4);
 

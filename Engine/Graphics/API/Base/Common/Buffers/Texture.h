@@ -10,8 +10,8 @@
 class Texture {
 public:
     Texture() = default;
-    void LoadImageFromDisk(const char* aFilePath) {  LoadUtilities::LoadImageFromDisk(gGraphics, aFilePath,
-    mAllocatedImage);}
+    void LoadImageFromDisk(const char* aFilePath) {
+        LoadUtilities::LoadImageFromDisk(gGraphics, aFilePath,mAllocatedImage); }
     void Create(VkFilter aSamplerFilter = VK_FILTER_LINEAR,
                 VkSamplerAddressMode aSamplerAddressMode = VK_SAMPLER_ADDRESS_MODE_REPEAT);
 
