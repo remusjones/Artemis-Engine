@@ -111,7 +111,7 @@ void VulkanEngine::CreateUploadContext()
 
 void VulkanEngine::CreateCommandPool()
 {
-    Logger::Log(spdlog::level::info, "Creating Command Pool");
+    Logger::Log(spdlog::level::debug, "Creating Command Pool");
 
 
     for (int i = 0; i < mFrameData.size(); i++)
@@ -403,7 +403,7 @@ void VulkanEngine::CreateSyncObjects()
         mImageAvailableSemaphoresToDestroy.push_back(frameData.mRenderSemaphore);
         mRenderFinishedSemaphoresToDestroy.push_back(frameData.mPresentSemaphore);
     }
-    Logger::Log(spdlog::level::info, "Creating Semaphores and Fences");
+    Logger::Log(spdlog::level::debug, "Creating Semaphores and Fences");
     mImagesInFlight.resize(mSwapChain->mSwapChainImages.size(), VK_NULL_HANDLE);
 
     VkSemaphoreCreateInfo semaphoreInfo{};

@@ -1,7 +1,7 @@
 set(SHADER_SOURCE_DIRECTORY ".")
 
 function(compile_shaders DIR)
-    file(GLOB_RECURSE SHADERS ${DIR}/*.vert ${DIR}/*.frag ${DIR}/*.glsl)
+    file(GLOB_RECURSE SHADERS CONFIGURE_DEPENDS ${DIR}/*.vert ${DIR}/*.frag ${DIR}/*.glsl)
     foreach(SHADER ${SHADERS})
         get_filename_component(SHADER_NAME ${SHADER} NAME_WE)
         set(OUTPUT_FILE "${CMAKE_CURRENT_BINARY_DIR}/${SHADER_NAME}.spv")

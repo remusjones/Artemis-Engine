@@ -210,7 +210,7 @@ static void WindowResizedCallback(void* userdata, SDL_Event* event)
 
 void VulkanGraphicsImpl::InitializeWindow()
 {
-    Logger::Log(spdlog::level::info, "Creating Window");
+    Logger::Log(spdlog::level::debug, "Creating Window");
     // We initialize SDL and create a window with it.
     SDL_Init(SDL_INIT_VIDEO);
 
@@ -235,7 +235,7 @@ void VulkanGraphicsImpl::ShutdownWindow() const
 
 void VulkanGraphicsImpl::CreateInstance()
 {
-    Logger::Log(spdlog::level::info, "Creating Vulkan Instance");
+    Logger::Log(spdlog::level::debug, "Creating Vulkan Instance");
 
     if (enableValidationLayers && !CheckValidationLayerSupport())
     {
@@ -504,7 +504,7 @@ void VulkanGraphicsImpl::InitializePhysicalDevice()
         vkGetPhysicalDeviceProperties(mPhysicalDevice, &deviceProperties);
         vkGetPhysicalDeviceFeatures(mPhysicalDevice, &deviceFeatures);
 
-        Logger::Log(spdlog::level::err, (std::string("Selecting GPU: ") + deviceProperties.deviceName).c_str());
+        Logger::Log(spdlog::level::debug, (std::string("Selecting GPU: ") + deviceProperties.deviceName).c_str());
     }
 }
 
@@ -675,7 +675,7 @@ SwapChainSupportDetails VulkanGraphicsImpl::QuerySwapChainSupport(
 
 void VulkanGraphicsImpl::CreateLogicalDevice()
 {
-    Logger::Log(spdlog::level::err, "Creating Logical Device");
+    Logger::Log(spdlog::level::debug, "Creating Logical Device");
     mFamilyIndices = FindQueueFamilies(mPhysicalDevice);
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;

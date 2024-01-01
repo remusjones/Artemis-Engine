@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.4...3.20 FATAL_ERROR)
 project(3DEngine)
-
+set(CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 23)
 
 file(GLOB_RECURSE PROJECT_SOURCE_FILES "Engine/*.cpp")

@@ -43,7 +43,7 @@ void SandboxScene::Construct(const char *aSceneName) {
                                     VK_SHADER_STAGE_FRAGMENT_BIT);
 
     mMonkey = new MeshObject();
-    mMonkey->CreateObject(*vertexLitPipeline, "Monkey");
+    mMonkey->CreateObject(*vertexLitPipeline, "Mxonkey");
     mMonkey->LoadMesh(
         (FileManagement::GetWorkingDirectory() +
          std::string("/Assets/Models/monkey_smooth.obj")).c_str());

@@ -307,10 +307,10 @@ void VulkanSwapChain::Initialize(VkDevice& aLogicalDevice,
     mRenderPass = aRenderPass;
     mApplication = aWindow;
 
-    Logger::Log(spdlog::level::info, "Constructing Swap Chain");
+    Logger::Log(spdlog::level::debug, "Constructing Swap Chain");
     CreateSwapChain();
-    Logger::Log(spdlog::level::info, "Constructing Image Views");
+    Logger::Log(spdlog::level::debug, "Constructing Image Views");
     CreateImageViews();
-    Logger::Log(spdlog::level::info, "Creating Render Pass");
+    Logger::Log(spdlog::level::debug, "Creating Render Pass");
     CreateRenderPass();
 }
