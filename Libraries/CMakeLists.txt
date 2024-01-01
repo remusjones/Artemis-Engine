@@ -2,14 +2,9 @@
 find_package(Vulkan REQUIRED)
 include_directories("$ENV{VULKAN_SDK}/Include")
 
-# https://github.com/google/glog.git
-Include(FetchContent)
-FetchContent_Declare(
-        spdlog
-        GIT_REPOSITORY https://github.com/gabime/spdlog.git
-        GIT_TAG v1.12.0
-)
-FetchContent_MakeAvailable(spdlog)
+# https://github.com/gabime/spdlog.git
+message("Adding spdlog")
+add_subdirectory(spdlog)
 include_directories(spdlog/include)
 
 # https://github.com/g-truc/glm.git
