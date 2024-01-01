@@ -4,9 +4,9 @@
 
 #include "ImGuiLayer.h"
 
+#include <ios>
 #include <random>
-
-#include "glog/logging.h"
+#include <sstream>
 
 
 ImGuiLayer::ImGuiLayer() = default;

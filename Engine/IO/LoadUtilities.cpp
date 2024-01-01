@@ -6,23 +6,25 @@
 
 #include "tiny_obj_loader.h"
 #include "Base/Common/Data/Mesh.h"
-#include "glog/logging.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+#include "Logger.h"
 #include "Vulkan/Helpers/VulkanInitialization.h"
 
-bool LoadUtilities::LoadImageFromDisk(VulkanGraphics *aEngine, const char *aFilePath, AllocatedImage &aResult) {
+bool LoadUtilities::LoadImageFromDisk(VulkanGraphics* aEngine, const char* aFilePath, AllocatedImage& aResult)
+{
     int texWidth, texHeight, texChannels;
 
-    stbi_uc *pixels = stbi_load(aFilePath, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+    stbi_uc* pixels = stbi_load(aFilePath, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 
-    if (!pixels) {
-        LOG(ERROR) << "Could not load file: " << aFilePath;
+    if (!pixels)
+    {
+        Logger::Log(spdlog::level::info, (std::string("Could not load file ") + aFilePath).c_str());
         return false;
     }
 
-    void *pixel_ptr = pixels;
+    void* pixel_ptr = pixels;
     VkDeviceSize imageSize = texWidth * texHeight * 4;
 
     VkFormat image_format = VK_FORMAT_R8G8B8A8_SRGB;
@@ -39,7 +41,7 @@ bool LoadUtilities::LoadImageFromDisk(VulkanGraphics *aEngine, const char *aFile
     imageExtent.depth = 1;
 
     VkImageCreateInfo dimg_info = VulkanInitialization::CreateImageInfo(image_format, VK_IMAGE_USAGE_SAMPLED_BIT |
-                                                                            VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+                                                                        VK_IMAGE_USAGE_TRANSFER_DST_BIT,
                                                                         imageExtent);
 
     AllocatedImage newImage;
@@ -49,7 +51,8 @@ bool LoadUtilities::LoadImageFromDisk(VulkanGraphics *aEngine, const char *aFile
     //allocate and create the image
     vmaCreateImage(aEngine->mAllocator, &dimg_info, &dimg_allocinfo, &newImage.mImage, &newImage.mAllocation, nullptr);
 
-    aEngine->mVulkanEngine.SubmitBufferCommand([&](VkCommandBuffer cmd) {
+    aEngine->mVulkanEngine.SubmitBufferCommand([&](VkCommandBuffer cmd)
+    {
         VkImageSubresourceRange range;
         range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         range.baseMipLevel = 0;
@@ -102,8 +105,9 @@ bool LoadUtilities::LoadImageFromDisk(VulkanGraphics *aEngine, const char *aFile
     return true;
 }
 
-bool LoadUtilities::LoadMeshFromDisk(const char *aFilePath, AllocatedVertexBuffer &aResult,
-                                     std::vector<Vertex> &aResultVertices, std::vector<int16_t> &aResultIndices) {
+bool LoadUtilities::LoadMeshFromDisk(const char* aFilePath, AllocatedVertexBuffer& aResult,
+                                     std::vector<Vertex>& aResultVertices, std::vector<int16_t>& aResultIndices)
+{
     //attrib will contain the vertex arrays of the file
     tinyobj::attrib_t attrib;
     //shapes contains the info for each separate object in the file
@@ -118,26 +122,31 @@ bool LoadUtilities::LoadMeshFromDisk(const char *aFilePath, AllocatedVertexBuffe
     //load the OBJ file
     LoadObj(&attrib, &shapes, &materials, &warn, &err, aFilePath, nullptr);
 
-    if (!warn.empty()) {
-        LOG(WARNING) << warn;
+    if (!warn.empty())
+    {
+        Logger::Log(spdlog::level::warn, warn.c_str());
     }
     //if we have any error, print it to the console, and break the mesh loading.
     //This happens if the file can't be found or is malformed
-    if (!err.empty()) {
-        LOG(ERROR) << err;
+    if (!err.empty())
+    {
+        Logger::Log(spdlog::level::err, err.c_str());
         return false;
     }
 
 
-    for (size_t s = 0; s < shapes.size(); s++) {
+    for (size_t s = 0; s < shapes.size(); s++)
+    {
         // Loop over faces(polygon)
         size_t index_offset = 0;
-        for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++) {
+        for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++)
+        {
             //hardcode loading to triangles
             int fv = 3;
 
             // Loop over vertices in the face.
-            for (size_t v = 0; v < fv; v++) {
+            for (size_t v = 0; v < fv; v++)
+            {
                 // access to vertex
                 tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
 

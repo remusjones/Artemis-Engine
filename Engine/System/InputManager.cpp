@@ -6,7 +6,6 @@
 
 #include <imgui_impl_sdl3.h>
 
-#include "glog/logging.h"
 
 InputManager *gInputManager = nullptr;
 

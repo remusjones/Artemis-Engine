@@ -65,7 +65,9 @@ add_executable(${PROJECT_NAME} main.cpp
         Engine/System/InputManager.h
         Engine/Common/Objects/FlyCamera.cpp
         Engine/Common/Objects/FlyCamera.h
-        Engine/System/DequeBuffer.h)
+        Engine/System/DequeBuffer.h
+        Engine/IO/Logger.cpp
+        Engine/IO/Logger.h)
 
 # Shorten some common include directories
 include_directories(Engine/Graphics/API)

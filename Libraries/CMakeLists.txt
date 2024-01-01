@@ -3,9 +3,14 @@ find_package(Vulkan REQUIRED)
 include_directories("$ENV{VULKAN_SDK}/Include")
 
 # https://github.com/google/glog.git
-message("Adding glog")
-set(WITH_GFLAGS OFF) # We aren't using gflags, so disable it
-add_subdirectory(glog glog)
+Include(FetchContent)
+FetchContent_Declare(
+        spdlog
+        GIT_REPOSITORY https://github.com/gabime/spdlog.git
+        GIT_TAG v1.12.0
+)
+FetchContent_MakeAvailable(spdlog)
+include_directories(spdlog/include)
 
 # https://github.com/g-truc/glm.git
 message("Adding glm")
@@ -13,7 +18,7 @@ add_subdirectory(glm glm)
 
 # https://github.com/libsdl-org/SDL.git
 message("Adding sdl")
-set(SDL_STATIC TRUE CACHE BOOL "Build SDL static library")
+set(SDL_STATIC TRUE)
 add_subdirectory(SDL)
 
 # https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
@@ -51,7 +56,7 @@ target_link_libraries(
         ${PROJECT_NAME}
         Vulkan::Vulkan
         glm::glm
-        glog
+        spdlog::spdlog
         SDL3::SDL3-static
         GPUOpen::VulkanMemoryAllocator
         tinyobjloader

@@ -5,18 +5,21 @@
 #include "Mesh.h"
 #include <tiny_obj_loader.h>
 
+#include "Logger.h"
 #include "Base/Common/Buffers/AllocatedBuffer.h"
 #include "Base/Common/Buffers/AllocatedVertexBuffer.h"
-#include "glog/logging.h"
 
-Mesh::Mesh() {
+Mesh::Mesh()
+{
 }
 
-Mesh::~Mesh() {
+Mesh::~Mesh()
+{
     delete mVertexBuffer;
 }
 
-void Mesh::Bind(VkCommandBuffer aCommandBuffer) const {
+void Mesh::Bind(VkCommandBuffer aCommandBuffer) const
+{
     const VkBuffer vertexBuffers[] = {mVertexBuffer->mVerticesBuffer->mBuffer};
     const VkDeviceSize offsets[] = {0};
 
@@ -25,7 +28,8 @@ void Mesh::Bind(VkCommandBuffer aCommandBuffer) const {
                          0, VK_INDEX_TYPE_UINT16);
 }
 
-bool Mesh::LoadFromObject(const char *aFileName, const char *aMtlDirectory = "") {
+bool Mesh::LoadFromObject(const char* aFileName, const char* aMtlDirectory = "")
+{
     //attrib will contain the vertex arrays of the file
     tinyobj::attrib_t attrib;
     //shapes contains the info for each separate object in the file
@@ -40,26 +44,31 @@ bool Mesh::LoadFromObject(const char *aFileName, const char *aMtlDirectory = "")
     //load the OBJ file
     LoadObj(&attrib, &shapes, &materials, &warn, &err, aFileName, aMtlDirectory);
 
-    if (!warn.empty()) {
-        LOG(WARNING) << warn;
+    if (!warn.empty())
+    {
+        Logger::Log(spdlog::level::warn, warn.c_str());
     }
     //if we have any error, print it to the console, and break the mesh loading.
     //This happens if the file can't be found or is malformed
-    if (!err.empty()) {
-        LOG(ERROR) << err;
+    if (!err.empty())
+    {
+        Logger::Log(spdlog::level::err, err.c_str());
         return false;
     }
 
 
-    for (size_t s = 0; s < shapes.size(); s++) {
+    for (size_t s = 0; s < shapes.size(); s++)
+    {
         // Loop over faces(polygon)
         size_t index_offset = 0;
-        for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++) {
+        for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++)
+        {
             //hardcode loading to triangles
             int fv = 3;
 
             // Loop over vertices in the face.
-            for (size_t v = 0; v < fv; v++) {
+            for (size_t v = 0; v < fv; v++)
+            {
                 // access to vertex
                 tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
 
@@ -85,8 +94,8 @@ bool Mesh::LoadFromObject(const char *aFileName, const char *aMtlDirectory = "")
                 //we are setting the vertex color as the vertex normal. This is just for display purposes
                 newVertex.mColor = newVertex.mNormal;
 
-                newVertex.mUV.x  = attrib.texcoords[2 * idx.texcoord_index + 0];
-                newVertex.mUV.y =  1 - attrib.texcoords[2 * idx.texcoord_index + 1];
+                newVertex.mUV.x = attrib.texcoords[2 * idx.texcoord_index + 0];
+                newVertex.mUV.y = 1 - attrib.texcoords[2 * idx.texcoord_index + 1];
 
 
                 mIndices.push_back(idx.vertex_index);

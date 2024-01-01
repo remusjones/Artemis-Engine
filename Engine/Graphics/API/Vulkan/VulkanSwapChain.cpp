@@ -8,20 +8,22 @@
 
 #include <SDL_events.h>
 
+#include "Logger.h"
 #include "VulkanSystemStructs.h"
 #include "VulkanGraphicsImpl.h"
-#include "glog/logging.h"
 #include "Helpers/VulkanInitialization.h"
 
-void VulkanSwapChain::RecreateSwapChain() {
+void VulkanSwapChain::RecreateSwapChain()
+{
     int width = 0;
     int height = 0;
     SDL_GetWindowSize(mApplication->mWindow, &width, &height);
-    while (width == 0 || height == 0) {
+    while (width == 0 || height == 0)
+    {
         SDL_GetWindowSize(mApplication->mWindow, &width, &height);
         //SDL_Event event;
         //SDL_WaitEvent(&event);
-        LOG(INFO) << "VulkanGraphicsImpl Minimized";
+        Logger::Log(spdlog::level::info, "Window Minimized");
     }
 
     vkDeviceWaitIdle(mLogicalDevice);
@@ -31,9 +33,10 @@ void VulkanSwapChain::RecreateSwapChain() {
     CreateFrameBuffers();
 }
 
-void VulkanSwapChain::CreateSwapChain() {
+void VulkanSwapChain::CreateSwapChain()
+{
     SwapChainSupportDetails swapChainSupport = mApplication->
-            QuerySwapChainSupport(mPhysicalDevice);
+        QuerySwapChainSupport(mPhysicalDevice);
 
     VkSurfaceFormatKHR surfaceFormat = mApplication->ChooseSwapSurfaceFormat(
         swapChainSupport.mFormats);
@@ -45,7 +48,8 @@ void VulkanSwapChain::CreateSwapChain() {
     uint32_t imageCount = swapChainSupport.mCapabilities.minImageCount + 1;
 
     if (swapChainSupport.mCapabilities.maxImageCount > 0 && imageCount >
-        swapChainSupport.mCapabilities.maxImageCount) {
+        swapChainSupport.mCapabilities.maxImageCount)
+    {
         imageCount = swapChainSupport.mCapabilities.maxImageCount;
     }
     VkSwapchainCreateInfoKHR createInfo{};
@@ -64,11 +68,14 @@ void VulkanSwapChain::CreateSwapChain() {
         indices.mGraphicsFamily.value(), indices.mPresentFamily.value()
     };
 
-    if (indices.mGraphicsFamily != indices.mPresentFamily) {
+    if (indices.mGraphicsFamily != indices.mPresentFamily)
+    {
         createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
         createInfo.queueFamilyIndexCount = 2;
         createInfo.pQueueFamilyIndices = queueFamilyIndices;
-    } else {
+    }
+    else
+    {
         createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
         createInfo.queueFamilyIndexCount = 0;
         createInfo.pQueueFamilyIndices = nullptr;
@@ -81,7 +88,8 @@ void VulkanSwapChain::CreateSwapChain() {
     createInfo.oldSwapchain = VK_NULL_HANDLE;
 
     if (vkCreateSwapchainKHR(mLogicalDevice, &createInfo, nullptr, &mSwapChain)
-        != VK_SUCCESS) {
+        != VK_SUCCESS)
+    {
         throw std::runtime_error("failed to create swap chain!");
     }
     mSwapChainImageFormat = surfaceFormat.format;
@@ -91,10 +99,12 @@ void VulkanSwapChain::CreateSwapChain() {
                             mSwapChainImages.data());
 }
 
-void VulkanSwapChain::CreateFrameBuffers() {
-    LOG(INFO) << "Creating Frame Buffers";
+void VulkanSwapChain::CreateFrameBuffers()
+{
+    Logger::Log(spdlog::level::info, "Creating Frame Buffers");
     mSwapChainFrameBuffers.resize(mSwapChainImageViews.size());
-    for (size_t i = 0; i < mSwapChainImageViews.size(); i++) {
+    for (size_t i = 0; i < mSwapChainImageViews.size(); i++)
+    {
         VkImageView attachments[2];
         attachments[0] = mSwapChainImageViews[i];
         attachments[1] = mDepthImageView;
@@ -110,15 +120,18 @@ void VulkanSwapChain::CreateFrameBuffers() {
         framebufferInfo.layers = 1;
 
         if (vkCreateFramebuffer(mLogicalDevice, &framebufferInfo, nullptr,
-                                &mSwapChainFrameBuffers[i]) != VK_SUCCESS) {
+                                &mSwapChainFrameBuffers[i]) != VK_SUCCESS)
+        {
             throw std::runtime_error("failed to create framebuffer!");
         }
     }
 }
 
-void VulkanSwapChain::CreateImageViews() {
+void VulkanSwapChain::CreateImageViews()
+{
     mSwapChainImageViews.resize(mSwapChainImages.size());
-    for (size_t i = 0; i < mSwapChainImages.size(); i++) {
+    for (size_t i = 0; i < mSwapChainImages.size(); i++)
+    {
         VkImageViewCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         createInfo.image = mSwapChainImages[i];
@@ -136,15 +149,17 @@ void VulkanSwapChain::CreateImageViews() {
 
 
         if (vkCreateImageView(mLogicalDevice, &createInfo, nullptr,
-                              &mSwapChainImageViews[i]) != VK_SUCCESS) {
+                              &mSwapChainImageViews[i]) != VK_SUCCESS)
+        {
             throw std::runtime_error("failed to create image views");
         }
     }
     CreateDepthBufferView();
 }
 
-void VulkanSwapChain::CreateDepthBufferView() {
-    LOG(INFO) << "Creating Depth Buffer View";
+void VulkanSwapChain::CreateDepthBufferView()
+{
+    Logger::Log(spdlog::level::info, "Creating Depth Buffer View");
     const VkExtent3D depthImageExtent = {
         mSwapChainExtent.width,
         mSwapChainExtent.height,
@@ -166,18 +181,21 @@ void VulkanSwapChain::CreateDepthBufferView() {
                    &mAllocatedDepthImage.mAllocation, nullptr);
 
     const VkImageViewCreateInfo createInfo =
-            VulkanInitialization::ImageViewCreateInfo(_depthFormat,
-                mAllocatedDepthImage.mImage, VK_IMAGE_ASPECT_DEPTH_BIT);
+        VulkanInitialization::ImageViewCreateInfo(_depthFormat,
+                                                  mAllocatedDepthImage.mImage, VK_IMAGE_ASPECT_DEPTH_BIT);
 
     if (vkCreateImageView(mLogicalDevice, &createInfo, nullptr,
-                          &mDepthImageView) != VK_SUCCESS) {
+                          &mDepthImageView) != VK_SUCCESS)
+    {
         throw std::runtime_error("failed to create depth image view");
     }
 }
 
-void VulkanSwapChain::Cleanup() {
-    LOG(INFO) << "Destroying Frame Buffer";
-    for (const auto &swapChainFrameBuffer: mSwapChainFrameBuffers) {
+void VulkanSwapChain::Cleanup()
+{
+    Logger::Log(spdlog::level::info, "Destroying Frame Buffer");
+    for (const auto& swapChainFrameBuffer : mSwapChainFrameBuffers)
+    {
         vkDestroyFramebuffer(mLogicalDevice, swapChainFrameBuffer, nullptr);
     }
 
@@ -185,7 +203,8 @@ void VulkanSwapChain::Cleanup() {
                     mAllocatedDepthImage.mAllocation);
     vkDestroyImageView(mLogicalDevice, mDepthImageView, nullptr);
 
-    for (const auto &swapChainImageView: mSwapChainImageViews) {
+    for (const auto& swapChainImageView : mSwapChainImageViews)
+    {
         vkDestroyImageView(mLogicalDevice, swapChainImageView, nullptr);
     }
 
@@ -193,7 +212,8 @@ void VulkanSwapChain::Cleanup() {
 }
 
 
-void VulkanSwapChain::CreateRenderPass() {
+void VulkanSwapChain::CreateRenderPass()
+{
     VkAttachmentDescription depthAttachment = {};
 
     // Depth attachment
@@ -206,12 +226,12 @@ void VulkanSwapChain::CreateRenderPass() {
     depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     depthAttachment.finalLayout =
-            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
     VkAttachmentReference depthAttachmentRef = {};
     depthAttachmentRef.attachment = 1;
     depthAttachmentRef.layout =
-            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
     VkSubpassDependency dependency = {};
     dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -225,14 +245,14 @@ void VulkanSwapChain::CreateRenderPass() {
     depthDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
     depthDependency.dstSubpass = 0;
     depthDependency.srcStageMask =
-            VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
-            VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+        VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
+        VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
     depthDependency.srcAccessMask = 0;
     depthDependency.dstStageMask =
-            VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
-            VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+        VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
+        VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
     depthDependency.dstAccessMask =
-            VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
 
     VkAttachmentDescription colorAttachment{};
@@ -269,26 +289,28 @@ void VulkanSwapChain::CreateRenderPass() {
 
 
     if (vkCreateRenderPass(mLogicalDevice, &renderPassInfo, nullptr,
-                           &mRenderPass) != VK_SUCCESS) {
+                           &mRenderPass) != VK_SUCCESS)
+    {
         throw std::runtime_error("failed to create render pass!");
     }
 }
 
-void VulkanSwapChain::Initialize(VkDevice &aLogicalDevice,
-                                 VkPhysicalDevice &aPhysicalDevice,
-                                 VkSurfaceKHR &aSurface,
-                                 VkRenderPass &aRenderPass,
-                                 VulkanGraphicsImpl *aWindow) {
+void VulkanSwapChain::Initialize(VkDevice& aLogicalDevice,
+                                 VkPhysicalDevice& aPhysicalDevice,
+                                 VkSurfaceKHR& aSurface,
+                                 VkRenderPass& aRenderPass,
+                                 VulkanGraphicsImpl* aWindow)
+{
     mLogicalDevice = aLogicalDevice;
     mPhysicalDevice = aPhysicalDevice;
     mSurface = aSurface;
     mRenderPass = aRenderPass;
     mApplication = aWindow;
 
-    LOG(INFO) << "Constructing Swap Chain";
+    Logger::Log(spdlog::level::info, "Constructing Swap Chain");
     CreateSwapChain();
-    LOG(INFO) << "Constructing Image Views";
+    Logger::Log(spdlog::level::info, "Constructing Image Views");
     CreateImageViews();
-    LOG(INFO) << "Creating Render Pass";
+    Logger::Log(spdlog::level::info, "Creating Render Pass");
     CreateRenderPass();
 }

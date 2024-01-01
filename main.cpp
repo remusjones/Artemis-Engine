@@ -4,21 +4,24 @@
 #include <glm/mat4x4.hpp>
 
 #include <iostream>
+
+#include "Logger.h"
 #include "VulkanGraphicsImpl.h"
-#include "glog/logging.h"
 
-int main() {
-
-    LOG(INFO) << "Initializing Application";
+int main()
+{
+    Logger::Log(spdlog::level::info, "Initializing Application");
     IApplication* app = new VulkanGraphicsImpl("Engine", 1200, 800);
-    try {
+    try
+    {
         app->Run();
-    } catch (const std::exception& e) {
-        LOG(ERROR) << e.what();
+    }
+    catch (const std::exception& e)
+    {
+        Logger::Log(spdlog::level::critical, e.what());
         return EXIT_FAILURE;
     }
 
     delete app;
     return EXIT_SUCCESS;
 }
-

@@ -11,19 +11,20 @@
 #include <iostream>
 
 #include "imgui.h"
+#include "Logger.h"
 #include "Base/Common/Material.h"
 #include "Base/Common/Data/GPUCameraData.h"
 #include "Base/Common/Data/GPUSceneData.h"
-#include "glog/logging.h"
 #include "Helpers/VulkanInitialization.h"
 #include "Scenes/Scene.h"
 
-void VulkanEngine::Initialize(VkDevice &aLogicalDevice,
-                              VulkanSwapChain *aSwapChain,
-                              VkPhysicalDevice &aPhysicalDevice,
-                              VkQueue &aGraphicsQueue,
-                              VkQueue &aPresentQueue
-) {
+void VulkanEngine::Initialize(VkDevice& aLogicalDevice,
+                              VulkanSwapChain* aSwapChain,
+                              VkPhysicalDevice& aPhysicalDevice,
+                              VkQueue& aGraphicsQueue,
+                              VkQueue& aPresentQueue
+)
+{
     // Register the shader module
     mLogicalDevice = aLogicalDevice;
     mSwapChain = aSwapChain;
@@ -38,13 +39,15 @@ void VulkanEngine::Initialize(VkDevice &aLogicalDevice,
     CreateCommandPool();
 }
 
-void VulkanEngine::Cleanup() {
+void VulkanEngine::Cleanup()
+{
     CleanupOldSyncObjects();
 
     vkDestroyCommandPool(mLogicalDevice, mUploadContext.mCommandPool, nullptr);
 
     // Destroy Frame data
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
         vkDestroySemaphore(mLogicalDevice, mFrameData[i].mPresentSemaphore,
                            nullptr);
         vkDestroySemaphore(mLogicalDevice, mFrameData[i].mRenderSemaphore,
@@ -60,7 +63,8 @@ void VulkanEngine::Cleanup() {
     vkDestroyRenderPass(mLogicalDevice, mSwapChain->mRenderPass, nullptr);
 }
 
-void VulkanEngine::SubmitBufferCommand(std::function<void(VkCommandBuffer cmd)> &&function) const {
+void VulkanEngine::SubmitBufferCommand(std::function<void(VkCommandBuffer cmd)>&& function) const
+{
     VkCommandBuffer cmd = mUploadContext.mCommandBuffer;
     VkCommandBufferBeginInfo cmdBeginInfo = VulkanInitialization::CommandBufferBeginInfo(
         VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
@@ -79,14 +83,16 @@ void VulkanEngine::SubmitBufferCommand(std::function<void(VkCommandBuffer cmd)> 
     vkResetCommandPool(mLogicalDevice, mUploadContext.mCommandPool, 0);
 }
 
-void VulkanEngine::CreateUploadContext() {
+void VulkanEngine::CreateUploadContext()
+{
     auto queueFamilies = gGraphics->GetQueueFamilyIndices();
     VkCommandPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     poolInfo.queueFamilyIndex = queueFamilies.mGraphicsFamily.value();
 
-    if (vkCreateCommandPool(mLogicalDevice, &poolInfo, nullptr, &mUploadContext.mCommandPool) != VK_SUCCESS) {
+    if (vkCreateCommandPool(mLogicalDevice, &poolInfo, nullptr, &mUploadContext.mCommandPool) != VK_SUCCESS)
+    {
         throw std::runtime_error("failed to create command pool");
     }
 
@@ -103,17 +109,20 @@ void VulkanEngine::CreateUploadContext() {
     mInFlightFencesToDestroy.push_back(mUploadContext.mUploadFence);
 }
 
-void VulkanEngine::CreateCommandPool() {
-    LOG(INFO) << "Creating Command Pool";
+void VulkanEngine::CreateCommandPool()
+{
+    Logger::Log(spdlog::level::info, "Creating Command Pool");
 
 
-    for (int i = 0; i < mFrameData.size(); i++) {
+    for (int i = 0; i < mFrameData.size(); i++)
+    {
         auto queueFamilies = gGraphics->GetQueueFamilyIndices();
         VkCommandPoolCreateInfo poolInfo{};
         poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
         poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
         poolInfo.queueFamilyIndex = queueFamilies.mGraphicsFamily.value();
-        if (vkCreateCommandPool(mLogicalDevice, &poolInfo, nullptr, &mFrameData[i].mCommandPool) != VK_SUCCESS) {
+        if (vkCreateCommandPool(mLogicalDevice, &poolInfo, nullptr, &mFrameData[i].mCommandPool) != VK_SUCCESS)
+        {
             throw std::runtime_error("failed to create command pool");
         }
     }
@@ -123,30 +132,35 @@ void VulkanEngine::CreateCommandPool() {
     CreateCommandBuffers();
 }
 
-void VulkanEngine::CreateCommandBuffers() {
-    for (int i = 0; i < mFrameData.size(); i++) {
+void VulkanEngine::CreateCommandBuffers()
+{
+    for (int i = 0; i < mFrameData.size(); i++)
+    {
         VkCommandBufferAllocateInfo allocInfo;
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.commandPool = mFrameData[i].mCommandPool;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         allocInfo.commandBufferCount = 1;
 
-        if (vkAllocateCommandBuffers(mLogicalDevice, &allocInfo, &mFrameData[i].mCommandBuffer) != VK_SUCCESS) {
+        if (vkAllocateCommandBuffers(mLogicalDevice, &allocInfo, &mFrameData[i].mCommandBuffer) != VK_SUCCESS)
+        {
             throw std::runtime_error("failed to allocate command buffers");
         }
     }
 }
 
-void VulkanEngine::DestroyCommandPool() {
-
+void VulkanEngine::DestroyCommandPool()
+{
     vkDestroyCommandPool(mLogicalDevice, mUploadContext.mCommandPool, nullptr);
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
         vkDestroyCommandPool(mLogicalDevice, mFrameData[i].mCommandPool, nullptr);
     }
 }
 
 AllocatedBuffer VulkanEngine::CreateBuffer(size_t aAllocSize, VkBufferUsageFlags aUsage,
-                                           VmaMemoryUsage vmaMemoryUsage) {
+                                           VmaMemoryUsage vmaMemoryUsage)
+{
     VkBufferCreateInfo bufferInfo = {};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     bufferInfo.pNext = nullptr;
@@ -166,7 +180,8 @@ AllocatedBuffer VulkanEngine::CreateBuffer(size_t aAllocSize, VkBufferUsageFlags
 }
 
 
-void VulkanEngine::CreateDescriptorPool() {
+void VulkanEngine::CreateDescriptorPool()
+{
     std::vector<VkDescriptorPoolSize> sizes =
     {
         {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 10},
@@ -184,7 +199,8 @@ void VulkanEngine::CreateDescriptorPool() {
 
     vkCreateDescriptorPool(mLogicalDevice, &createInfo, nullptr, &mDescriptorPool);
 
-    for (int i = 0; i < mFrameData.size(); i++) {
+    for (int i = 0; i < mFrameData.size(); i++)
+    {
         mFrameData[i].mCameraBuffer = CreateBuffer(sizeof(GPUCameraData),
                                                    VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                                                    VMA_MEMORY_USAGE_CPU_TO_GPU);
@@ -197,7 +213,8 @@ void VulkanEngine::CreateDescriptorPool() {
 
 bool semaphoresNeedToBeRecreated = false;
 
-void VulkanEngine::DrawFrame(Scene &aActiveScene) {
+void VulkanEngine::DrawFrame(Scene& aActiveScene)
+{
     FrameData currentFrameData = mFrameData[mCurrentFrame];
     vkWaitForFences(mLogicalDevice, 1, &currentFrameData.mRenderFence, VK_TRUE,
                     UINT64_MAX);
@@ -212,11 +229,14 @@ void VulkanEngine::DrawFrame(Scene &aActiveScene) {
                                             &imageIndex);
 
 
-    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+    {
         mSwapChain->RecreateSwapChain();
         // Sync objects aren't atomic, so we have to regenerate them at the end of the current frame
         semaphoresNeedToBeRecreated = true;
-    } else if (result != VK_SUCCESS) {
+    }
+    else if (result != VK_SUCCESS)
+    {
         throw std::runtime_error("failed to acquire swap chain image");
     }
 
@@ -245,15 +265,16 @@ void VulkanEngine::DrawFrame(Scene &aActiveScene) {
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-    if (vkBeginCommandBuffer(currentCommandBuffer, &beginInfo) != VK_SUCCESS) {
+    if (vkBeginCommandBuffer(currentCommandBuffer, &beginInfo) != VK_SUCCESS)
+    {
         throw std::runtime_error("failed to begin recording command buffer!");
     }
 
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = gGraphics->mSwapChain->mSwapChainExtent.height;;
-    viewport.width = (float) gGraphics->mSwapChain->mSwapChainExtent.width;
-    viewport.height = -(float) gGraphics->mSwapChain->mSwapChainExtent.height;
+    viewport.width = (float)gGraphics->mSwapChain->mSwapChainExtent.width;
+    viewport.height = -(float)gGraphics->mSwapChain->mSwapChainExtent.height;
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
     vkCmdSetViewport(currentCommandBuffer, 0, 1, &viewport);
@@ -272,13 +293,15 @@ void VulkanEngine::DrawFrame(Scene &aActiveScene) {
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), currentCommandBuffer);
     vkCmdEndRenderPass(currentCommandBuffer);
 
-    if (vkEndCommandBuffer(currentCommandBuffer) != VK_SUCCESS) {
+    if (vkEndCommandBuffer(currentCommandBuffer) != VK_SUCCESS)
+    {
         throw std::runtime_error("failed to record command buffer!");
     }
     // ----END FRAME----
 
     // Check if a previous frame is using this image (i.e. there is its fence to wait on)
-    if (mImagesInFlight[imageIndex] != VK_NULL_HANDLE) {
+    if (mImagesInFlight[imageIndex] != VK_NULL_HANDLE)
+    {
         vkWaitForFences(mLogicalDevice, 1, &mImagesInFlight[imageIndex],
                         VK_TRUE, UINT64_MAX);
     }
@@ -305,7 +328,8 @@ void VulkanEngine::DrawFrame(Scene &aActiveScene) {
     submitInfo.pSignalSemaphores = signalSemaphores;
 
     if (vkQueueSubmit(mGraphicsQueue, 1, &submitInfo,
-                      currentFrameData.mRenderFence) != VK_SUCCESS) {
+                      currentFrameData.mRenderFence) != VK_SUCCESS)
+    {
         throw std::runtime_error("failed to submit draw command buffer!");
     }
 
@@ -322,7 +346,8 @@ void VulkanEngine::DrawFrame(Scene &aActiveScene) {
 
     result = vkQueuePresentKHR(mPresentQueue, &presentInfo);
 
-    if (mRebuildFrameBuffer) {
+    if (mRebuildFrameBuffer)
+    {
         mSwapChain->RecreateSwapChain();
 
         DestroyCommandPool();
@@ -331,13 +356,17 @@ void VulkanEngine::DrawFrame(Scene &aActiveScene) {
         semaphoresNeedToBeRecreated = true;
         mRebuildFrameBuffer = false;
     }
-    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+    {
         mSwapChain->RecreateSwapChain();
-    } else if (result != VK_SUCCESS) {
+    }
+    else if (result != VK_SUCCESS)
+    {
         throw std::runtime_error("failed to present swap chain image!");
     }
 
-    if (semaphoresNeedToBeRecreated) {
+    if (semaphoresNeedToBeRecreated)
+    {
         CreateSyncObjects();
         semaphoresNeedToBeRecreated = false;
     }
@@ -345,30 +374,36 @@ void VulkanEngine::DrawFrame(Scene &aActiveScene) {
     mCurrentFrame = (mCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
-void VulkanEngine::CleanupOldSyncObjects() {
-    for (auto &i: mRenderFinishedSemaphoresToDestroy) {
+void VulkanEngine::CleanupOldSyncObjects()
+{
+    for (auto& i : mRenderFinishedSemaphoresToDestroy)
+    {
         vkDestroySemaphore(mLogicalDevice, i, nullptr);
     }
     mRenderFinishedSemaphoresToDestroy.clear();
 
-    for (auto &i: mInFlightFencesToDestroy) {
+    for (auto& i : mInFlightFencesToDestroy)
+    {
         vkDestroyFence(mLogicalDevice, i, nullptr);
     }
     mInFlightFencesToDestroy.clear();
 
-    for (auto &i: mImageAvailableSemaphoresToDestroy) {
+    for (auto& i : mImageAvailableSemaphoresToDestroy)
+    {
         vkDestroySemaphore(mLogicalDevice, i, nullptr);
     }
     mImageAvailableSemaphoresToDestroy.clear();
 }
 
-void VulkanEngine::CreateSyncObjects() {
-    for (auto &frameData: mFrameData) {
+void VulkanEngine::CreateSyncObjects()
+{
+    for (auto& frameData : mFrameData)
+    {
         mInFlightFencesToDestroy.push_back(frameData.mRenderFence);
         mImageAvailableSemaphoresToDestroy.push_back(frameData.mRenderSemaphore);
         mRenderFinishedSemaphoresToDestroy.push_back(frameData.mPresentSemaphore);
     }
-    LOG(INFO) << "Creating Semaphores and Fences";
+    Logger::Log(spdlog::level::info, "Creating Semaphores and Fences");
     mImagesInFlight.resize(mSwapChain->mSwapChainImages.size(), VK_NULL_HANDLE);
 
     VkSemaphoreCreateInfo semaphoreInfo{};
@@ -378,13 +413,15 @@ void VulkanEngine::CreateSyncObjects() {
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
         if (vkCreateSemaphore(mLogicalDevice, &semaphoreInfo, nullptr,
                               &mFrameData[i].mPresentSemaphore) != VK_SUCCESS ||
             vkCreateSemaphore(mLogicalDevice, &semaphoreInfo, nullptr,
                               &mFrameData[i].mRenderSemaphore) != VK_SUCCESS ||
             vkCreateFence(mLogicalDevice, &fenceInfo, nullptr,
-                          &mFrameData[i].mRenderFence) != VK_SUCCESS) {
+                          &mFrameData[i].mRenderFence) != VK_SUCCESS)
+        {
             throw std::runtime_error(
                 "failed to create synchronization objects for a frame!");
         }

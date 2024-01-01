@@ -8,7 +8,6 @@
 #include "VulkanGraphicsImpl.h"
 #include "Base/Common/Material.h"
 #include "File Management/FileManagement.h"
-#include "glog/logging.h"
 #include "Objects/Camera.h"
 #include "Objects/FlyCamera.h"
 #include "Vulkan/GraphicsPipeline.h"

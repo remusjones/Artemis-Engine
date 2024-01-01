@@ -5,10 +5,10 @@
 #include <chrono>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "glog/logging.h"
 #include "MeshObject.h"
 
 #include "imgui.h"
+#include "Logger.h"
 #include "Base/Common/Material.h"
 #include "Base/Common/Buffers/PushConstants.h"
 #include "VulkanGraphicsImpl.h"
@@ -16,29 +16,34 @@
 #include "Scenes/Scene.h"
 #include "Vulkan/GraphicsPipeline.h"
 
-void MeshObject::Construct() {
+void MeshObject::Construct()
+{
     Super::Construct();
 }
 
-void MeshObject::Tick(float aDeltaTime) {
+void MeshObject::Tick(float aDeltaTime)
+{
     Super::Tick(aDeltaTime);
 }
 
-void MeshObject::Cleanup() {
+void MeshObject::Cleanup()
+{
     DestroyRenderer();
     Super::Cleanup();
 }
 
-void MeshObject::CreateObject(GraphicsPipeline &aBoundGraphicsPipeline,
-                              const char *aName) {
+void MeshObject::CreateObject(GraphicsPipeline& aBoundGraphicsPipeline,
+                              const char* aName)
+{
     mName = aName;
-    LOG(INFO) << "Creating Object: " << mName;
+    Logger::Log(spdlog::level::info, (std::string("Creating object ") + mName).c_str());
 
     CreateRenderer(aBoundGraphicsPipeline);
 }
 
 void MeshObject::CreateRenderer(
-    GraphicsPipeline &aBoundGraphicsPipeline) {
+    GraphicsPipeline& aBoundGraphicsPipeline)
+{
     // Load Shaders
     mGraphicsPipeline = &aBoundGraphicsPipeline;
 
@@ -72,19 +77,23 @@ void MeshObject::CreateRenderer(
     mMaterial->CreateProperties(2, MaterialProperties());
 }
 
-void MeshObject::DestroyRenderer() {
+void MeshObject::DestroyRenderer()
+{
     delete mMesh;
     mMaterial->Destroy();
     delete mMaterial;
 }
 
-void MeshObject::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
+void MeshObject::Render(VkCommandBuffer aCommandBuffer, const Scene& aScene)
+{
     mPushConstants.model = mTransform.GetWorldMatrix();
     Renderer::Render(aCommandBuffer, aScene);
 }
 
-void MeshObject::OnImGuiRender() {
-    if (ImGui::CollapsingHeader(mName)) {
+void MeshObject::OnImGuiRender()
+{
+    if (ImGui::CollapsingHeader(mName))
+    {
         ImGui::Indent();
 
         ImGui::SeparatorText("Transform");
@@ -92,29 +101,35 @@ void MeshObject::OnImGuiRender() {
         glm::vec3 rot = mTransform.Euler();
         glm::vec3 scale = mTransform.Scale();
 
-        if (ImGui::DragFloat3(GetUniqueLabel("Position"), &pos[0], 0.1f)) {
+        if (ImGui::DragFloat3(GetUniqueLabel("Position"), &pos[0], 0.1f))
+        {
             mTransform.SetPosition(pos);
         }
-        if (ImGui::DragFloat3(GetUniqueLabel("Rotation"), &rot[0], 0.1f)) {
+        if (ImGui::DragFloat3(GetUniqueLabel("Rotation"), &rot[0], 0.1f))
+        {
             mTransform.SetRotation(rot);
         }
-        if (ImGui::DragFloat3(GetUniqueLabel("Scale"), &scale[0], 0.1f)) {
+        if (ImGui::DragFloat3(GetUniqueLabel("Scale"), &scale[0], 0.1f))
+        {
             mTransform.SetScale(scale);
         }
 
         ImGui::SeparatorText("Material");
         ImGui::ColorEdit4(GetUniqueLabel("Color"), &mMaterial->mMaterialProperties.mColor[0]);
         if (ImGui::DragFloat(GetUniqueLabel("Shininess"),
-                             &mMaterial->mMaterialProperties.mShininess, 0.1f)) {
+                             &mMaterial->mMaterialProperties.mShininess, 0.1f))
+        {
         }
         if (ImGui::DragFloat(GetUniqueLabel("Specular"),
-                             &mMaterial->mMaterialProperties.mSpecularStrength, 0.1f)) {
+                             &mMaterial->mMaterialProperties.mSpecularStrength, 0.1f))
+        {
         }
         ImGui::Unindent();
     }
 }
 
-void Renderer::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
+void Renderer::Render(VkCommandBuffer aCommandBuffer, const Scene& aScene)
+{
     FrameData currentFrame = gGraphics->mVulkanEngine.GetCurrentFrame();
     GPUCameraData camData;
     camData.mPerspectiveMatrix = aScene.mActiveSceneCamera->GetPerspectiveMatrix();
@@ -122,7 +137,7 @@ void Renderer::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
     camData.mViewProjectionMatrix = aScene.mActiveSceneCamera->GetViewProjectionMatrix();
 
 
-    void *data;
+    void* data;
 
     vmaMapMemory(gGraphics->mAllocator, currentFrame.mCameraBuffer.mAllocation, &data);
     if (data == nullptr)
