@@ -4,15 +4,14 @@
 
 #include "SandboxScene.h"
 
-#include "LoadUtilities.h"
 #include "VulkanGraphicsImpl.h"
+#include "Base/Common/DefaultMaterial.h"
 #include "Base/Common/Material.h"
 #include "File Management/FileManagement.h"
 #include "Objects/Camera.h"
 #include "Objects/FlyCamera.h"
 #include "Vulkan/GraphicsPipeline.h"
 #include "Vulkan/Common/MeshObject.h"
-#include "Vulkan/Helpers/VulkanInitialization.h"
 
 void SandboxScene::Construct(const char *aSceneName) {
     // Create basic mesh pipeline
@@ -26,7 +25,6 @@ void SandboxScene::Construct(const char *aSceneName) {
     vertexLitPipeline->AddShader("/Assets/Shaders/Lit_f.spv",
                                  VK_SHADER_STAGE_FRAGMENT_BIT);
 
-
     unlitMeshPipeline->AddShader("/Assets/Shaders/3DUnlit_v.spv",
                                  VK_SHADER_STAGE_VERTEX_BIT);
     unlitMeshPipeline->AddShader("/Assets/Shaders/Lit_f.spv",
@@ -38,37 +36,55 @@ void SandboxScene::Construct(const char *aSceneName) {
                                     VK_SHADER_STAGE_FRAGMENT_BIT);
 
     halfLambertMeshPipeline->AddShader("/Assets/Shaders/3DObject_v.spv",
-                                    VK_SHADER_STAGE_VERTEX_BIT);
+                                       VK_SHADER_STAGE_VERTEX_BIT);
     halfLambertMeshPipeline->AddShader("/Assets/Shaders/HalfLambert_f.spv",
-                                    VK_SHADER_STAGE_FRAGMENT_BIT);
+                                       VK_SHADER_STAGE_FRAGMENT_BIT);
+
+
+    Material *monkeyMaterial = vertexLitPipeline->CreateMaterialInstance<DefaultMaterial>().get();
+    Material *teapotMaterial = texturedMeshPipeline->CreateMaterialInstance<DefaultMaterial>().get();
+    Material *lightMaterial = unlitMeshPipeline->CreateMaterialInstance<DefaultMaterial>().get();
+    Material *sphereMaterial = texturedMeshPipeline->CreateMaterialInstance<DefaultMaterial>().get();
+    Material *halfLambertMaterial = halfLambertMeshPipeline->CreateMaterialInstance<DefaultMaterial>().get();
+
+
+    vertexLitPipeline->MakeMaterials(0);
+    unlitMeshPipeline->MakeMaterials(0);
+    texturedMeshPipeline->MakeMaterials(0);
+    halfLambertMeshPipeline->MakeMaterials(0);
+
 
     mMonkey = new MeshObject();
-    mMonkey->CreateObject(*vertexLitPipeline, "Mxonkey");
+    mMonkey->CreateObject(*vertexLitPipeline, *monkeyMaterial, "Monkey");
     mMonkey->LoadMesh(
         (FileManagement::GetWorkingDirectory() +
          std::string("/Assets/Models/monkey_smooth.obj")).c_str());
 
 
     mTeapot = new MeshObject();
-    mTeapot->CreateObject(*texturedMeshPipeline, "Teapot");
+    mTeapot->CreateObject(*texturedMeshPipeline, *teapotMaterial,
+                          "Teapot");
     mTeapot->LoadMesh(
         (FileManagement::GetWorkingDirectory() +
          std::string("/Assets/Models/teapot.obj")).c_str());
 
 
     mLight = new MeshObject();
-    mLight->CreateObject(*unlitMeshPipeline, "Light");
+    mLight->CreateObject(*unlitMeshPipeline, *lightMaterial, "Light");
     mLight->LoadMesh(
         (FileManagement::GetWorkingDirectory() +
          std::string("/Assets/Models/sphere.obj")).c_str());
 
     mSphere = new MeshObject();
-    mSphere->CreateObject(*texturedMeshPipeline, "Sphere");
+    mSphere->CreateObject(*texturedMeshPipeline, *sphereMaterial,
+                          "Sphere");
     mSphere->LoadMesh((FileManagement::GetWorkingDirectory() +
                        std::string("/Assets/Models/sphere.obj")).c_str());
 
     mHalfLambertSphere = new MeshObject();
-    mHalfLambertSphere->CreateObject(*halfLambertMeshPipeline, "Sphere Lambert");
+    mHalfLambertSphere->CreateObject(*halfLambertMeshPipeline,
+                                     *halfLambertMaterial,
+                                     "Sphere Lambert");
     mHalfLambertSphere->LoadMesh((FileManagement::GetWorkingDirectory() +
                                   std::string("/Assets/Models/sphere.obj")).c_str());
 
@@ -89,37 +105,38 @@ void SandboxScene::Construct(const char *aSceneName) {
 
 
     // TODO: Condense into texture create function
-    auto *teapotTexture = new Texture();
-    mLoadedTextures["textureTest"] = teapotTexture;
+    // auto *teapotTexture = new Texture();
+    // mLoadedTextures["textureTest"] = teapotTexture;
+    //
+    // teapotTexture->LoadImageFromDisk( std::string(FileManagement::GetWorkingDirectory() +
+    //     "/Assets/Textures/textureTest.png").c_str());
+    // teapotTexture->Create();
+    // mTeapot->mMaterial->BindTexture(*teapotTexture, 3);
+    //
+     auto *sphereAlbedo = new Texture();
+     mLoadedTextures["sphereAlbedo"] = sphereAlbedo;
+     sphereAlbedo->LoadImageFromDisk(std::string(FileManagement::GetWorkingDirectory() +
+         "/Assets/Textures/Stone Wall.png").c_str());
+     sphereAlbedo->Create();
+     sphereMaterial->BindTexture(*sphereAlbedo, 3);
 
-    teapotTexture->LoadImageFromDisk( std::string(FileManagement::GetWorkingDirectory() +
-        "/Assets/Textures/textureTest.png").c_str());
-    teapotTexture->Create();
-    mTeapot->mMaterial->BindTexture(*teapotTexture, 3);
+     auto *sphereNormal = new Texture();
+     mLoadedTextures["sphereNormal"] = sphereNormal;
+     sphereNormal->LoadImageFromDisk(std::string(FileManagement::GetWorkingDirectory() +
+         "/Assets/Textures/Stone Wall_NRM.png").c_str());
 
-    auto *sphereAlbedo = new Texture();
-    mLoadedTextures["sphereAlbedo"] = sphereAlbedo;
-    sphereAlbedo->LoadImageFromDisk(std::string(FileManagement::GetWorkingDirectory() +
-        "/Assets/Textures/Stone Wall.png").c_str());
-    sphereAlbedo->Create();
-    mSphere->mMaterial->BindTexture(*sphereAlbedo, 3);
-
-    auto *sphereNormal = new Texture();
-    mLoadedTextures["sphereNormal"] = sphereNormal;
-    sphereNormal->LoadImageFromDisk(std::string(FileManagement::GetWorkingDirectory() +
-        "/Assets/Textures/Stone Wall_NRM.png").c_str());
-
-    sphereNormal->Create();
-    mSphere->mMaterial->BindTexture(*sphereNormal, 4);
-
-    // Supress vulkan validation until I have a default descriptor setter
-    mTeapot->mMaterial->BindTexture(*sphereNormal, 4);
-    mHalfLambertSphere->mMaterial->BindTexture(*sphereAlbedo, 3);
-    mHalfLambertSphere->mMaterial->BindTexture(*sphereNormal, 4);
+     sphereNormal->Create();
+     sphereMaterial->BindTexture(*sphereNormal, 4);
+    //
+    // // Supress vulkan validation until I have a default descriptor setter
+    // mTeapot->mMaterial->BindTexture(*sphereNormal, 4);
+    // mHalfLambertSphere->mMaterial->BindTexture(*sphereAlbedo, 3);
+    // mHalfLambertSphere->mMaterial->BindTexture(*sphereNormal, 4);
 
     mActiveSceneCamera = new FlyCamera();
     mActiveSceneCamera->Construct();
     mActiveSceneCamera->mTransform.SetPosition({0, 0, -5.0f});
+
 
     AddGraphicsPipeline(vertexLitPipeline);
     AddGraphicsPipeline(unlitMeshPipeline);

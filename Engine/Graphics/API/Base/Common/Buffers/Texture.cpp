@@ -1,8 +1,17 @@
 #include "Texture.h"
 
+#include "LoadUtilities.h"
 #include "VulkanGraphicsImpl.h"
 #include "Vulkan/Helpers/VulkanInitialization.h"
 
+
+void Texture::LoadImageFromDisk(const char *aFilePath) {
+    LoadUtilities::LoadImageFromDisk(gGraphics, aFilePath,mAllocatedImage); }
+
+void Texture::CreateDefault(Color_RGBA aColor) {
+    LoadUtilities::CreateImage(1, 1, gGraphics, mAllocatedImage, aColor);
+    Create();
+}
 
 void Texture::Create(VkFilter aSamplerFilter,
                      VkSamplerAddressMode aSamplerAddressMode) {

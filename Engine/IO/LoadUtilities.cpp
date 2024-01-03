@@ -105,6 +105,99 @@ bool LoadUtilities::LoadImageFromDisk(VulkanGraphics* aEngine, const char* aFile
     return true;
 }
 
+bool LoadUtilities::CreateImage(const int aWidth, const int aHeight,
+    VulkanGraphics *aEngine,
+    AllocatedImage &aResult,
+    Color_RGBA aColor = Color_RGBA(1,1,1,1)) {
+
+    int texWidth = aWidth, texHeight = aHeight;  // Assuming RGB texture
+    stbi_uc* pixels = new stbi_uc[4 * texWidth * texHeight];
+    for (int i = 0; i < 4 * texWidth * texHeight; i += 4) {
+        pixels[i] = aColor.R;     // red
+        pixels[i + 1] = aColor.G; // green
+        pixels[i + 2] = aColor.B; // blue
+        pixels[i + 3] = aColor.A; // alpha
+    }
+
+    void* pixel_ptr = pixels;
+    VkDeviceSize imageSize = texWidth * texHeight * 4;
+
+    VkFormat image_format = VK_FORMAT_R8G8B8A8_SRGB;
+
+
+    AllocatedBuffer stagingBuffer = AllocatedBuffer(pixel_ptr, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+    delete[] pixels;
+
+    VkExtent3D imageExtent;
+    imageExtent.width = static_cast<uint32_t>(texWidth);
+    imageExtent.height = static_cast<uint32_t>(texHeight);
+    imageExtent.depth = 1;
+
+    VkImageCreateInfo dimg_info = VulkanInitialization::CreateImageInfo(image_format, VK_IMAGE_USAGE_SAMPLED_BIT |
+                                                                        VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+                                                                        imageExtent);
+
+    AllocatedImage newImage;
+    VmaAllocationCreateInfo dimg_allocinfo = {};
+    dimg_allocinfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+
+    //allocate and create the image
+    vmaCreateImage(aEngine->mAllocator, &dimg_info, &dimg_allocinfo, &newImage.mImage, &newImage.mAllocation, nullptr);
+
+    aEngine->mVulkanEngine.SubmitBufferCommand([&](VkCommandBuffer cmd)
+    {
+        VkImageSubresourceRange range;
+        range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        range.baseMipLevel = 0;
+        range.levelCount = 1;
+        range.baseArrayLayer = 0;
+        range.layerCount = 1;
+
+        VkImageMemoryBarrier imageBarrier_toTransfer = {};
+        imageBarrier_toTransfer.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+
+        imageBarrier_toTransfer.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        imageBarrier_toTransfer.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        imageBarrier_toTransfer.image = newImage.mImage;
+        imageBarrier_toTransfer.subresourceRange = range;
+
+        imageBarrier_toTransfer.srcAccessMask = 0;
+        imageBarrier_toTransfer.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0,
+                             nullptr, 1, &imageBarrier_toTransfer);
+
+        VkBufferImageCopy copyRegion = {};
+        copyRegion.bufferOffset = 0;
+        copyRegion.bufferRowLength = 0;
+        copyRegion.bufferImageHeight = 0;
+
+        copyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        copyRegion.imageSubresource.mipLevel = 0;
+        copyRegion.imageSubresource.baseArrayLayer = 0;
+        copyRegion.imageSubresource.layerCount = 1;
+        copyRegion.imageExtent = imageExtent;
+
+        //copy the buffer into the image
+        vkCmdCopyBufferToImage(cmd, stagingBuffer.mBuffer, newImage.mImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
+                               &copyRegion);
+
+        VkImageMemoryBarrier imageBarrier_toReadable = imageBarrier_toTransfer;
+
+        imageBarrier_toReadable.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        imageBarrier_toReadable.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        imageBarrier_toReadable.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        imageBarrier_toReadable.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr,
+                             0, nullptr, 1, &imageBarrier_toReadable);
+    });
+    vmaDestroyBuffer(aEngine->mAllocator, stagingBuffer.mBuffer, stagingBuffer.mAllocation);
+    aResult = newImage;
+    return true;
+}
+
 bool LoadUtilities::LoadMeshFromDisk(const char* aFilePath, AllocatedVertexBuffer& aResult,
                                      std::vector<Vertex>& aResultVertices, std::vector<int16_t>& aResultIndices)
 {

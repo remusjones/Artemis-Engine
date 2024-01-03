@@ -1,11 +1,6 @@
-//
-// Created by Remus on 29/12/2023.
-//
-
 #include "InputManager.h"
-
 #include <imgui_impl_sdl3.h>
-
+#include <iostream>
 
 InputManager *gInputManager = nullptr;
 
@@ -20,38 +15,39 @@ void InputManager::ConsumeInput(const SDL_Event *aInputEvent) {
 }
 
 void InputManager::ProcessInput(const SDL_Event *aInputEvent) {
-        switch (aInputEvent->type) {
-            case SDL_EVENT_KEY_DOWN:
-                for (const auto &binding: mKeyboardBindings[aInputEvent->key.keysym.sym]) {
-                    const KeyboardEvent kbEvent(aInputEvent->key.state, SDL_GetModState());
-                    binding.mCallback(kbEvent);
-                }
-            case SDL_EVENT_KEY_UP:
-                for (const auto &binding: mKeyboardBindings[aInputEvent->key.keysym.sym]) {
-                    const KeyboardEvent kbEvent(aInputEvent->key.state, SDL_GetModState());
-                    binding.mCallback(kbEvent);
-                }
-            case SDL_EVENT_MOUSE_MOTION:
-                for (const auto &binding: mMouseMotionBindings) {
-                    binding.mCallback(aInputEvent->motion);
-                }
-            case SDL_EVENT_MOUSE_BUTTON_UP:
-                for (const auto &binding: mMouseInputBindings) {
-                    binding.mCallback(aInputEvent->button);
-                }
-                break;
-            case SDL_EVENT_MOUSE_BUTTON_DOWN:
-                for (const auto &binding: mMouseInputBindings) {
-                    binding.mCallback(aInputEvent->button);
-                }
-                break;
-            default: break;
-        }
+    switch (aInputEvent->type) {
+        case SDL_EVENT_KEY_DOWN:
+            for (const auto &binding: mKeyboardBindings[aInputEvent->key.keysym.sym]) {
+                const KeyboardEvent kbEvent(aInputEvent->key.state, SDL_GetModState());
+                binding.mCallback(kbEvent);
+            }
+        case SDL_EVENT_KEY_UP:
+            for (const auto &binding: mKeyboardBindings[aInputEvent->key.keysym.sym]) {
+                const KeyboardEvent kbEvent(aInputEvent->key.state, SDL_GetModState());
+                binding.mCallback(kbEvent);
+            }
+        case SDL_EVENT_MOUSE_MOTION:
+            for (const auto &binding: mMouseMotionBindings) {
+                binding.mCallback(aInputEvent->motion);
+            }
+        case SDL_EVENT_MOUSE_BUTTON_UP:
+            for (const auto &binding: mMouseInputBindings) {
+                binding.mCallback(aInputEvent->button);
+            }
+            break;
+        case SDL_EVENT_MOUSE_BUTTON_DOWN:
+            for (const auto &binding: mMouseInputBindings) {
+                binding.mCallback(aInputEvent->button);
+            }
+            break;
+        default: break;
+    }
 }
+
 // TODO: Propery filter out duplicate events, and queue only uniques so we can consume during Update
 void InputManager::Update() {
     while (!mQueuedEvents.empty()) {
-        ProcessInput(&mQueuedEvents.front()) ;
+        ProcessInput(&mQueuedEvents.front());
         mQueuedEvents.pop();
     }
 }

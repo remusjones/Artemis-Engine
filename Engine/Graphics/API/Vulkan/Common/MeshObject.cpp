@@ -32,12 +32,14 @@ void MeshObject::Cleanup()
     Super::Cleanup();
 }
 
-void MeshObject::CreateObject(GraphicsPipeline& aBoundGraphicsPipeline,
-                              const char* aName)
+void MeshObject::CreateObject(
+    GraphicsPipeline& aBoundGraphicsPipeline,
+    Material& aMaterial,
+    const char* aName)
 {
     mName = aName;
     Logger::Log(spdlog::level::info, (std::string("Creating object ") + mName).c_str());
-
+    mMaterial = &aMaterial;
     CreateRenderer(aBoundGraphicsPipeline);
 }
 
@@ -46,42 +48,15 @@ void MeshObject::CreateRenderer(
 {
     // Load Shaders
     mGraphicsPipeline = &aBoundGraphicsPipeline;
-
     mGraphicsPipeline->AddRenderer(this);
+
     mMesh = new Mesh();
-    mMaterial = new Material();
-
-    // TODO: move to some Material Type instead of MeshObject ..
-
-    // Binds Camera Uniform Buffer
-    mMaterial->AddBinding(0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL);
-
-    // Binds Scene Lighting Uniform Buffer
-    mMaterial->AddBinding(1, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL);
-
-
-    // Material Properties
-    mMaterial->AddBinding(2, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL);
-
-    // Texture Binding
-    mMaterial->AddBinding(3, 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-    mMaterial->AddBinding(4, 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
-    mMaterial->Create(mMaterial, mName);
-
-    for (int i = 0; i < VulkanEngine::MAX_FRAMES_IN_FLIGHT; i++)
-        mMaterial->SetBuffers(gGraphics->mVulkanEngine.GetFrame(i).mCameraBuffer, 0, 0);
-
-    for (int i = 0; i < VulkanEngine::MAX_FRAMES_IN_FLIGHT; i++)
-        mMaterial->SetBuffers(gGraphics->mVulkanEngine.GetFrame(i).mSceneBuffer, 1, 0);
-
-    mMaterial->CreateProperties(2, MaterialProperties());
 }
 
 void MeshObject::DestroyRenderer()
 {
     delete mMesh;
     mMaterial->Destroy();
-    delete mMaterial;
 }
 
 void MeshObject::Render(VkCommandBuffer aCommandBuffer, const Scene& aScene)

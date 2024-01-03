@@ -23,8 +23,8 @@ struct MaterialProperties {
 
 class Material : public MaterialBase {
 public:
-    void Create(const MaterialBase *aBaseMaterial,
-                const char *aMaterialName);
+    virtual void Create(MaterialBase *aBaseMaterial,
+                        const char *aMaterialName = "");
 
     void CreateProperties(const uint32_t aBinding, const MaterialProperties &aMaterialProperties);
 
@@ -38,12 +38,12 @@ public:
     VkDescriptorSet GetDescriptorSet() const { return mDescriptorSet; }
     VkDescriptorSetLayout GetDescriptorLayout() const { return mLayout; }
 
-    void Destroy();
+    virtual void Destroy();
 
     MaterialProperties mMaterialProperties;
     AllocatedBuffer mPropertiesBuffer;
 
-private:
+protected:
     const MaterialBase *mMaterialBase;
     VkDescriptorSetLayout mLayout = VK_NULL_HANDLE;
     VkDescriptorSet mDescriptorSet;

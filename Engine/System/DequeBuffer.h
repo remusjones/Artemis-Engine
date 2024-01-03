@@ -1,13 +1,9 @@
-//
-// Created by Remus on 30/12/2023.
-//
-
 #pragma once
 #include <queue>
 
 class DequeBuffer {
 public:
-    DequeBuffer(size_t size)
+    DequeBuffer(const size_t size)
         : mSize(size), mCurrentIndex(0) {
     }
 

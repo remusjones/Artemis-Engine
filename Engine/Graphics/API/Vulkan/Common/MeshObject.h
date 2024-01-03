@@ -55,7 +55,7 @@ public:
     void OnImGuiRender() override;
 
     void CreateObject(GraphicsPipeline &aBoundGraphicsPipeline,
-                      const char *aName = "Default");
+                      Material &aMaterial, const char *aName = "Default");
 
 
     void CreateRenderer(GraphicsPipeline &aBoundGraphicsPipeline) override;

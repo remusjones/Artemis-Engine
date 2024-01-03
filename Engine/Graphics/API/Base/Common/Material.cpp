@@ -10,17 +10,15 @@
 #include "Buffers/Texture.h"
 #include "Vulkan/Helpers/VulkanInitialization.h"
 
-void Material::Create(const MaterialBase *aBaseMaterial, const char *aMaterialName) {
+void Material::Create(MaterialBase *aBaseMaterial, const char *aMaterialName) {
+
     mMaterialBase = aBaseMaterial;
-
-    VkDescriptorSetLayoutCreateInfo createInfo = {};
-    createInfo.bindingCount = mBindings.size();
-    createInfo.pBindings = mBindings.data();
-    createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-
-    vkCreateDescriptorSetLayout(gGraphics->mLogicalDevice, &createInfo,
-                                nullptr, &mLayout);
-
+    const VkDescriptorSetLayoutCreateInfo createInfo = {
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+        .bindingCount = static_cast<uint32_t>(mBindings.size()),
+        .pBindings = mBindings.data(),
+    };
+    vkCreateDescriptorSetLayout(gGraphics->mLogicalDevice, &createInfo, nullptr, &mLayout);
 
     VkDescriptorSetAllocateInfo alloc_info = {};
     alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;

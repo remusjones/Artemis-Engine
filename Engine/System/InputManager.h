@@ -1,12 +1,10 @@
-//
-// Created by Remus on 29/12/2023.
-//
-
 #pragma once
 #include <functional>
 #include <queue>
 #include <SDL_events.h>
 #include <unordered_map>
+
+#include "Base/Common/Buffers/Texture.h"
 
 
 struct KeyboardEvent {
@@ -17,6 +15,8 @@ struct KeyboardEvent {
 
     bool mPressedState;
     SDL_Keymod mModState;
+
+
 };
 
 struct KeyCodeInputBinding {

@@ -225,9 +225,13 @@ void GraphicsPipeline::Destroy() const
     vkDestroyPipeline(gGraphics->mLogicalDevice, mGraphicsPipeline, nullptr);
 }
 
-std::vector<const MaterialBase*> GraphicsPipeline::MakeMaterials(
-    uint8_t aBinding) const
+std::vector<std::shared_ptr<Material>> GraphicsPipeline::MakeMaterials(
+    uint8_t aBinding)
 {
+    // TODO: Use aBinding
+    for (auto material: mMaterials) {
+        material->Create(material.get(), "default");
+    }
     return mMaterials;
 }
 

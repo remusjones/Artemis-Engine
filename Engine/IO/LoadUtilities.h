@@ -9,12 +9,27 @@
 class Mesh;
 class AllocatedImage;
 
+struct Color_RGBA {
+    Color_RGBA(
+        const unsigned char r,
+        const unsigned char g,
+        const unsigned char b,
+        const unsigned char a):
+    R(r), G(g), B(b), A(a){}
+
+    unsigned char R;
+    unsigned char G;
+    unsigned char B;
+    unsigned char A;
+};
+
 class LoadUtilities {
 public:
     static bool LoadImageFromDisk(VulkanGraphics *aEngine, const char *aFilePath, AllocatedImage &aResult);
 
+    static bool CreateImage(const int aWidth, const int aHeight, VulkanGraphics *aEngine, AllocatedImage &aResult, Color_RGBA aColor);
+
     static bool LoadMeshFromDisk(const char *aFilePath, AllocatedVertexBuffer &aResult,
                                  std::vector<Vertex> &aResultVertices,
                                  std::vector<int16_t> &aResultIndices);
-
 };

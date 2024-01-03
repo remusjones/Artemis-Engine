@@ -7,7 +7,6 @@
 #include <chrono>
 #include <cstdint>
 #include <cstring>
-#include <iostream>
 #include <SDL.h>
 #include <SDL_vulkan.h>
 #include <set>

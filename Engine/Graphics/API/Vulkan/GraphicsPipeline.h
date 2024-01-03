@@ -5,7 +5,10 @@
 #pragma once
 
 
+#include <memory>
 #include <vector>
+
+#include "Base/Common/Material.h"
 #include "Objects/Camera.h"
 class Scene;
 class Material;
@@ -16,10 +19,9 @@ public:
     GraphicsPipeline(const char* aPipelineName = "Unknown") : mPipelineName(aPipelineName){};
 
     void AddShader(const char* aPath, VkShaderStageFlagBits aStage);
-    void AddMaterialBase(const MaterialBase* aBase) {
+    void AddMaterialBase(const std::shared_ptr<Material> aBase) {
         mMaterials.push_back(aBase);
     };
-    std::vector<const MaterialBase *> MakeMaterials(uint8_t aBinding) const;
     void UpdateDescriptorSets(uint32_t aDescriptorIndex, VkBuffer aBuffer);
 
     void AddRenderer(Renderer* aRenderer);
@@ -27,6 +29,17 @@ public:
 
     void Create();
     void Destroy() const;
+
+    template<typename T>
+    std::shared_ptr<Material> CreateMaterialInstance() {
+        static_assert(std::is_base_of_v<Material, T>, "T must derive from Material");
+        std::shared_ptr<Material> material = std::make_shared<T>();
+        mMaterials.push_back(material);
+        return material;
+    }
+
+    std::vector<std::shared_ptr<Material>> MakeMaterials(uint8_t aBinding);
+
     void BindDescriptor();
     void BindPushConstant(VkPushConstantRange aPushConstant);
 
@@ -38,7 +51,7 @@ public:
     VkPipelineLayout mPipelineLayout;
     VkPipeline mGraphicsPipeline;
     std::vector<VkPipelineShaderStageCreateInfo> mShadersInPipeline;
-    std::vector<const MaterialBase*> mMaterials = {};
+    std::vector<std::shared_ptr<Material>> mMaterials = {};
     std::vector<Renderer*> mRenderers = {};
     VkPipelineDepthStencilStateCreateInfo mDepthStencil;
 };
