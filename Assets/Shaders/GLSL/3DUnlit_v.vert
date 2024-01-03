@@ -5,20 +5,19 @@ layout(push_constant)  uniform PushConstants {
     mat4 model;
 } inPushConstants;
 
-layout(set = 0, binding = 0) uniform CameraBuffer{
-    mat4 view;
-    mat4 proj;
-    mat4 viewproj;
-} cameraData;
-
-layout(set = 0, binding = 1) uniform LightingBuffer{
+layout(set = 0, binding = 0) uniform SceneBuffer {
     vec3 position;
-    float Strength;
+    float lightIntensity;
     vec3 color;
     float ambientStrength;
-} lightingData;
 
-layout(set = 0, binding = 2) uniform MaterialProperties{
+    mat4 view;
+    mat4 viewproj;
+} sceneData;
+
+
+
+layout(set = 0, binding = 1) uniform MaterialProperties{
     vec4 color;
     float specularStrength;
     float shininess;
@@ -35,7 +34,7 @@ layout(location = 1) out vec2 uv;
 
 void main() {
 
-    gl_Position = cameraData.viewproj * inPushConstants.model * vec4(inPosition, 1.0);
+    gl_Position = sceneData.viewproj * inPushConstants.model * vec4(inPosition, 1.0);
 
     vec3 result = vec3(materialProperties.color);
     fragColor = result;

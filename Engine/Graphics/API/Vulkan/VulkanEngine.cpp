@@ -56,7 +56,7 @@ void VulkanEngine::Cleanup()
 
         vkDestroyCommandPool(mLogicalDevice, mFrameData[i].mCommandPool, nullptr);
 
-        mFrameData[i].mCameraBuffer.Destroy();
+        //mFrameData[i].mCameraBuffer.Destroy();
         mFrameData[i].mSceneBuffer.Destroy();
     }
     vkDestroyDescriptorPool(mLogicalDevice, mDescriptorPool, nullptr);
@@ -201,9 +201,9 @@ void VulkanEngine::CreateDescriptorPool()
 
     for (int i = 0; i < mFrameData.size(); i++)
     {
-        mFrameData[i].mCameraBuffer = CreateBuffer(sizeof(GPUCameraData),
-                                                   VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                                                   VMA_MEMORY_USAGE_CPU_TO_GPU);
+        //mFrameData[i].mCameraBuffer = CreateBuffer(sizeof(GPUCameraData),
+        //                                           VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+        //                                           VMA_MEMORY_USAGE_CPU_TO_GPU);
 
         mFrameData[i].mSceneBuffer = CreateBuffer(sizeof(GPUSceneData),
                                                   VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,

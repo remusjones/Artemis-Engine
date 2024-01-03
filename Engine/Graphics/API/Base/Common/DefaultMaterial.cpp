@@ -21,13 +21,13 @@ void DefaultMaterial::Create(MaterialBase *aBaseMaterial, const char *aMaterialN
 
     Material::Create(this, "Default Material");
 
-    for (int i = 0; i < VulkanEngine::MAX_FRAMES_IN_FLIGHT; i++)
-        SetBuffers(gGraphics->mVulkanEngine.GetFrame(i).mCameraBuffer, 0, 0);
+    //for (int i = 0; i < VulkanEngine::MAX_FRAMES_IN_FLIGHT; i++)
+    //    SetBuffers(gGraphics->mVulkanEngine.GetFrame(i).mCameraBuffer, 0, 0);
 
     for (int i = 0; i < VulkanEngine::MAX_FRAMES_IN_FLIGHT; i++)
-        SetBuffers(gGraphics->mVulkanEngine.GetFrame(i).mSceneBuffer, 1, 0);
+        SetBuffers(gGraphics->mVulkanEngine.GetFrame(i).mSceneBuffer, 0, 0);
 
-    CreateProperties(2, MaterialProperties());
+    CreateProperties(1, MaterialProperties());
 
     MakeDefaults();
 }

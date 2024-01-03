@@ -3,19 +3,18 @@
 layout(push_constant) uniform PushConstants {
     mat4 model;
 } inPushConstants;
-layout(set = 0, binding = 0) uniform CameraBuffer{
-    mat4 view;
-    mat4 proj;
-    mat4 viewproj;
-} cameraData;
-layout(set = 0, binding = 1) uniform LightingBuffer {
+
+layout(set = 0, binding = 0) uniform SceneBuffer {
     vec3 position;
     float lightIntensity;
     vec3 color;
     float ambientStrength;
-} lightingData;
 
-layout(set = 0, binding = 2) uniform MaterialProperties {
+    mat4 view;
+    mat4 viewproj;
+} sceneData;
+
+layout(set = 0, binding = 1) uniform MaterialProperties {
     vec4 color;
     float specularStrength;
     float shininess;
@@ -37,10 +36,10 @@ void main() {
     vec3 normal = texture(textureNormal, inUV).xyz * 2.0 - 1.0;
 
     // Transform the normal from tangent space to view space
-    mat3 normalMatrix = mat3(transpose(inverse(cameraData.view)));
+    mat3 normalMatrix = mat3(transpose(inverse(sceneData.view)));
     vec3 viewSpaceNormal = normalize(normalMatrix * normal);
 
-    vec3 lightDirection = normalize(lightingData.position - inFragPos);
+    vec3 lightDirection = normalize(sceneData.position - inFragPos);
 
     float diffuse = max(dot(viewSpaceNormal, lightDirection), 0.0);
 
@@ -48,9 +47,9 @@ void main() {
     vec3 reflectionDirection = reflect(-lightDirection, viewSpaceNormal);
     float specular = pow(max(dot(viewDirection, reflectionDirection), 0.0), materialProperties.shininess);
 
-    vec3 ambientColor = lightingData.ambientStrength * materialProperties.color.rgb;
-    vec3 diffuseColor = materialProperties.color.rgb * lightingData.color * diffuse;
-    vec3 specularColor = materialProperties.specularStrength * specular * lightingData.color;
+    vec3 ambientColor = sceneData.ambientStrength * materialProperties.color.rgb;
+    vec3 diffuseColor = materialProperties.color.rgb * sceneData.color * diffuse;
+    vec3 specularColor = materialProperties.specularStrength * specular * sceneData.color;
 
     vec3 finalColor = ambientColor + diffuseColor + specularColor;
 

@@ -5,20 +5,17 @@ layout(push_constant)  uniform PushConstants {
     mat4 model;
 } inPushConstants;
 
-layout(set = 0, binding = 0) uniform CameraBuffer{
-    mat4 view;
-    mat4 proj;
-    mat4 viewproj;
-} cameraData;
-
-layout(set = 0, binding = 1) uniform LightingBuffer{
+layout(set = 0, binding = 0) uniform SceneBuffer {
     vec3 position;
-    float lightIntensity ;
+    float lightIntensity;
     vec3 color;
     float ambientStrength;
-} lightingData;
 
-layout(set = 0, binding = 2) uniform MaterialProperties{
+    mat4 view;
+    mat4 viewproj;
+} sceneData;
+
+layout(set = 0, binding = 1) uniform MaterialProperties{
     vec4 color;
     float specularStrength;
     float shininess;
@@ -34,20 +31,20 @@ layout(location = 0) out vec3 fragColor;
 layout(location = 1) out vec2 texCoord;
 
 void main() {
-    gl_Position = cameraData.viewproj * inPushConstants.model * vec4(inPosition, 1.0);
+    gl_Position = sceneData.viewproj * inPushConstants.model * vec4(inPosition, 1.0);
 
     mat3 normalMatrix = transpose(inverse(mat3(inPushConstants.model)));
     vec3 worldNormal = normalize(normalMatrix * inNormal);
 
-    vec3 lightDir = normalize(lightingData.position - vec3(inPushConstants.model * vec4(inPosition, 1.0)));
-    float distance = length(lightingData.position - vec3(inPushConstants.model * vec4(inPosition, 1.0)));
+    vec3 lightDir = normalize(sceneData.position - vec3(inPushConstants.model * vec4(inPosition, 1.0)));
+    float distance = length(sceneData.position - vec3(inPushConstants.model * vec4(inPosition, 1.0)));
 
-    vec3 ambient = lightingData.ambientStrength * lightingData.color;
+    vec3 ambient = sceneData.ambientStrength * sceneData.color;
     float diff = max(dot(worldNormal, lightDir), 0.0);
 
     // Half Lambert shading
     float lambertTerm = 0.5 * (dot(worldNormal, lightDir) + 1.0);
-    vec3 diffuse = lambertTerm * diff * lightingData.color * lightingData.lightIntensity /
+    vec3 diffuse = lambertTerm * diff * sceneData.color * sceneData.lightIntensity /
     (1.0 + 0.1 * distance + 0.01 * (distance * distance));
 
     vec3 viewDir = normalize(-vec3(inPushConstants.model * vec4(inPosition, 1.0)));
@@ -55,7 +52,7 @@ void main() {
 
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), materialProperties.shininess);
     vec3 specular = materialProperties.specularStrength * spec *
-    (lightingData.color * lightingData.lightIntensity) /
+    (sceneData.color * sceneData.lightIntensity) /
     (1 + 0.1 * distance + 0.01 * (distance * distance));
 
     // Uses vertex color as influence

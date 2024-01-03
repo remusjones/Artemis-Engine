@@ -14,14 +14,15 @@
 #include "File Management/FileManagement.h"
 #include "Base/Common/Buffers/PushConstants.h"
 #include "Base/Common/Material.h"
+#include "Base/Common/Data/GPUSceneData.h"
 #include "Helpers/VulkanInitialization.h"
+#include "Scenes/Scene.h"
 
-void GraphicsPipeline::Create()
-{
+void GraphicsPipeline::Create() {
     // Vertex Buffer
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType =
-        VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+            VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
     auto bindingDescription = Vertex::GetBindingDescription();
     auto attributeDescriptions = Vertex::GetAttributeDescriptions();
@@ -36,7 +37,7 @@ void GraphicsPipeline::Create()
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
     inputAssembly.sType =
-        VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+            VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
     inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     inputAssembly.primitiveRestartEnable = VK_FALSE;
 
@@ -62,7 +63,7 @@ void GraphicsPipeline::Create()
 
     VkPipelineRasterizationStateCreateInfo rasterizer{};
     rasterizer.sType =
-        VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+            VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     rasterizer.depthClampEnable = VK_FALSE;
     rasterizer.rasterizerDiscardEnable = VK_FALSE;
     rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
@@ -76,7 +77,7 @@ void GraphicsPipeline::Create()
 
     VkPipelineMultisampleStateCreateInfo multisampling{};
     multisampling.sType =
-        VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+            VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     multisampling.sampleShadingEnable = VK_FALSE;
     multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
     multisampling.minSampleShading = 1.0f; // Optional
@@ -86,8 +87,8 @@ void GraphicsPipeline::Create()
 
     VkPipelineColorBlendAttachmentState colorBlendAttachment{};
     colorBlendAttachment.colorWriteMask =
-        VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-        VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+            VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+            VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     colorBlendAttachment.blendEnable = VK_FALSE;
     colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
     colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
@@ -99,7 +100,7 @@ void GraphicsPipeline::Create()
     colorBlendAttachment.blendEnable = VK_TRUE;
     colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
     colorBlendAttachment.dstColorBlendFactor =
-        VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+            VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
     colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
     colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
     colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
@@ -107,7 +108,7 @@ void GraphicsPipeline::Create()
 
     VkPipelineColorBlendStateCreateInfo colorBlending{};
     colorBlending.sType =
-        VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+            VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
     colorBlending.logicOpEnable = VK_FALSE;
     colorBlending.logicOp = VK_LOGIC_OP_COPY; // Optional
     colorBlending.attachmentCount = 1;
@@ -131,7 +132,8 @@ void GraphicsPipeline::Create()
     VkPushConstantRange pushConstant;
     pushConstant.offset = 0;
     pushConstant.size = sizeof(PushConstants);
-    pushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    pushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -140,8 +142,7 @@ void GraphicsPipeline::Create()
 
 
     std::vector<VkDescriptorSetLayout> layouts;
-    for (int i = 0; i < mRenderers.size(); i++)
-    {
+    for (int i = 0; i < mRenderers.size(); i++) {
         layouts.push_back(mRenderers[i]->mMaterial->GetDescriptorLayout());
     }
     //hook the global set layout
@@ -150,8 +151,7 @@ void GraphicsPipeline::Create()
 
 
     if (vkCreatePipelineLayout(gGraphics->mLogicalDevice, &pipelineLayoutInfo,
-                               nullptr, &mPipelineLayout) != VK_SUCCESS)
-    {
+                               nullptr, &mPipelineLayout) != VK_SUCCESS) {
         throw std::runtime_error("failed to create pipeline layout");
     }
 
@@ -178,28 +178,25 @@ void GraphicsPipeline::Create()
 
     if (vkCreateGraphicsPipelines(gGraphics->mLogicalDevice, VK_NULL_HANDLE, 1,
                                   &pipelineInfo, nullptr,
-                                  &mGraphicsPipeline) != VK_SUCCESS)
-    {
+                                  &mGraphicsPipeline) != VK_SUCCESS) {
         throw std::runtime_error("failed to create graphics pipeline");
     }
 }
 
-void GraphicsPipeline::AddShader(const char* aPath,
-                                 VkShaderStageFlagBits aStage)
-{
-    const char* entryName = "main";
+void GraphicsPipeline::AddShader(const char *aPath,
+                                 VkShaderStageFlagBits aStage) {
+    const char *entryName = "main";
 
     std::vector<char> file = FileManagement::GetShaderFileDataPath(aPath);
 
     VkShaderModuleCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     createInfo.codeSize = file.size();
-    createInfo.pCode = reinterpret_cast<const uint32_t*>(file.data());
+    createInfo.pCode = reinterpret_cast<const uint32_t *>(file.data());
 
     VkShaderModule shaderModule;
     if (vkCreateShaderModule(gGraphics->mLogicalDevice, &createInfo, nullptr,
-                             &shaderModule) != VK_SUCCESS)
-    {
+                             &shaderModule) != VK_SUCCESS) {
         throw std::runtime_error("failed to create shader module");
     }
 
@@ -212,11 +209,9 @@ void GraphicsPipeline::AddShader(const char* aPath,
     mShadersInPipeline.push_back(shaderStageInfo);
 }
 
-void GraphicsPipeline::Destroy() const
-{
+void GraphicsPipeline::Destroy() const {
     Logger::Log(spdlog::level::info, (std::string("Destroying Pipeline ") + mPipelineName).c_str());
-    for (const auto& i : mShadersInPipeline)
-    {
+    for (const auto &i: mShadersInPipeline) {
         vkDestroyShaderModule(gGraphics->mLogicalDevice, i.module, nullptr);
     }
 
@@ -225,9 +220,8 @@ void GraphicsPipeline::Destroy() const
     vkDestroyPipeline(gGraphics->mLogicalDevice, mGraphicsPipeline, nullptr);
 }
 
-std::vector<std::shared_ptr<Material>> GraphicsPipeline::MakeMaterials(
-    uint8_t aBinding)
-{
+std::vector<std::shared_ptr<Material> > GraphicsPipeline::MakeMaterials(
+    uint8_t aBinding) {
     // TODO: Use aBinding
     for (auto material: mMaterials) {
         material->Create(material.get(), "default");
@@ -235,18 +229,22 @@ std::vector<std::shared_ptr<Material>> GraphicsPipeline::MakeMaterials(
     return mMaterials;
 }
 
-void GraphicsPipeline::AddRenderer(Renderer* aRenderer)
-{
+void GraphicsPipeline::AddRenderer(Renderer *aRenderer) {
     mRenderers.push_back(aRenderer);
 }
 
-void GraphicsPipeline::Draw(VkCommandBuffer aCommandBuffer, Scene& aScene) const
-{
+void GraphicsPipeline::Draw(VkCommandBuffer aCommandBuffer, Scene &aScene) const {
     vkCmdBindPipeline(aCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                       mGraphicsPipeline);
 
-    for (auto& mRenderer : mRenderers)
-    {
+
+    const FrameData currentFrame = gGraphics->mVulkanEngine.GetCurrentFrame();
+    void *data;
+    vmaMapMemory(gGraphics->mAllocator, currentFrame.mSceneBuffer.mAllocation, &data);
+    memcpy(data, &aScene.mSceneData, sizeof(GPUSceneData));
+    vmaUnmapMemory(gGraphics->mAllocator, currentFrame.mSceneBuffer.mAllocation);
+
+    for (auto &mRenderer: mRenderers) {
         auto materialDescriptorSet = mRenderer->mMaterial->GetDescriptorSet();
         vkCmdBindDescriptorSets(aCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout, 0,
                                 1, &materialDescriptorSet, 0, nullptr);

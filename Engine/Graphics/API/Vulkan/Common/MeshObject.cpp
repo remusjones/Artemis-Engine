@@ -105,34 +105,14 @@ void MeshObject::OnImGuiRender()
 
 void Renderer::Render(VkCommandBuffer aCommandBuffer, const Scene& aScene)
 {
-    FrameData currentFrame = gGraphics->mVulkanEngine.GetCurrentFrame();
-    GPUCameraData camData;
-    camData.mPerspectiveMatrix = aScene.mActiveSceneCamera->GetPerspectiveMatrix();
-    camData.mViewMatrix = aScene.mActiveSceneCamera->GetViewMatrix();
-    camData.mViewProjectionMatrix = aScene.mActiveSceneCamera->GetViewProjectionMatrix();
-
-
     void* data;
-
-    vmaMapMemory(gGraphics->mAllocator, currentFrame.mCameraBuffer.mAllocation, &data);
-    if (data == nullptr)
-        return;
-
-    memcpy(data, &camData, sizeof(GPUCameraData));
-    vmaUnmapMemory(gGraphics->mAllocator, currentFrame.mCameraBuffer.mAllocation);
-
-    vmaMapMemory(gGraphics->mAllocator, currentFrame.mSceneBuffer.mAllocation, &data);
-    memcpy(data, &aScene.mSceneData, sizeof(GPUSceneData));
-    vmaUnmapMemory(gGraphics->mAllocator, currentFrame.mSceneBuffer.mAllocation);
-
     vmaMapMemory(gGraphics->mAllocator, mMaterial->mPropertiesBuffer.mAllocation, &data);
     memcpy(data, &mMaterial->mMaterialProperties, sizeof(MaterialProperties));
     vmaUnmapMemory(gGraphics->mAllocator, mMaterial->mPropertiesBuffer.mAllocation);
 
     mMesh->Bind(aCommandBuffer);
     vkCmdPushConstants(aCommandBuffer, mGraphicsPipeline->mPipelineLayout,
-                       VK_SHADER_STAGE_VERTEX_BIT, 0,
+                       VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
                        sizeof(PushConstants), &mPushConstants);
-
     vkCmdDraw(aCommandBuffer, mMesh->GetVertices().size(), 1, 0, 0);
 }

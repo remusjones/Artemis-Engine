@@ -54,6 +54,8 @@ void SandboxScene::Construct(const char *aSceneName) {
     halfLambertMeshPipeline->MakeMaterials(0);
 
 
+    // Create Objects, and bind mesh and materials
+
     mMonkey = new MeshObject();
     mMonkey->CreateObject(*vertexLitPipeline, *monkeyMaterial, "Monkey");
     mMonkey->LoadMesh(
@@ -89,6 +91,7 @@ void SandboxScene::Construct(const char *aSceneName) {
                                   std::string("/Assets/Models/sphere.obj")).c_str());
 
 
+    // Init positions
     mMonkey->mTransform.SetPosition({-2, 0, -20.0f});
     mTeapot->mTransform.SetPosition({2, 0, -20.0f});
     mTeapot->mTransform.SetScale({0.1f, 0.1f, 0.1f});
@@ -97,6 +100,7 @@ void SandboxScene::Construct(const char *aSceneName) {
     mLight->mTransform.SetScale({0.1f, 0.1f, 0.1f});
     mLight->mTransform.SetScale({0.2f, 0.2f, 0.2f});
 
+    // Register to scene TODO: Review if we auto-register these
     mObjects.push_back(mMonkey);
     mObjects.push_back(mTeapot);
     mObjects.push_back(mLight);
@@ -113,20 +117,20 @@ void SandboxScene::Construct(const char *aSceneName) {
     // teapotTexture->Create();
     // mTeapot->mMaterial->BindTexture(*teapotTexture, 3);
     //
-     auto *sphereAlbedo = new Texture();
-     mLoadedTextures["sphereAlbedo"] = sphereAlbedo;
-     sphereAlbedo->LoadImageFromDisk(std::string(FileManagement::GetWorkingDirectory() +
-         "/Assets/Textures/Stone Wall.png").c_str());
-     sphereAlbedo->Create();
-     sphereMaterial->BindTexture(*sphereAlbedo, 3);
-
-     auto *sphereNormal = new Texture();
-     mLoadedTextures["sphereNormal"] = sphereNormal;
-     sphereNormal->LoadImageFromDisk(std::string(FileManagement::GetWorkingDirectory() +
-         "/Assets/Textures/Stone Wall_NRM.png").c_str());
-
-     sphereNormal->Create();
-     sphereMaterial->BindTexture(*sphereNormal, 4);
+    // auto *sphereAlbedo = new Texture();
+    // mLoadedTextures["sphereAlbedo"] = sphereAlbedo;
+    // sphereAlbedo->LoadImageFromDisk(std::string(FileManagement::GetWorkingDirectory() +
+    //     "/Assets/Textures/Stone Wall.png").c_str());
+    // sphereAlbedo->Create();
+    // sphereMaterial->BindTexture(*sphereAlbedo, 3);
+//
+    // auto *sphereNormal = new Texture();
+    // mLoadedTextures["sphereNormal"] = sphereNormal;
+    // sphereNormal->LoadImageFromDisk(std::string(FileManagement::GetWorkingDirectory() +
+    //     "/Assets/Textures/Stone Wall_NRM.png").c_str());
+//
+    // sphereNormal->Create();
+    // sphereMaterial->BindTexture(*sphereNormal, 4);
     //
     // // Supress vulkan validation until I have a default descriptor setter
     // mTeapot->mMaterial->BindTexture(*sphereNormal, 4);
@@ -152,11 +156,13 @@ void SandboxScene::Tick(float aDeltaTime) {
     deltaAccumulated += aDeltaTime / 5;
     float yPosition = 1.0f * sin(2 * M_PI * 1 * deltaAccumulated);
 
-    mLight->mTransform.SetPosition({0, yPosition, 0.0f});
+    //mLight->mTransform.SetPosition({0, yPosition, 0.0f});
     mLight->mMaterial->mMaterialProperties.mColor =
             glm::vec4(mSceneData.color.x, mSceneData.color.y, mSceneData.color.z, 1);
 
     mSceneData.position = mLight->mTransform.Position();
+    mSceneData.mViewMatrix = mActiveSceneCamera->GetViewMatrix();
+    mSceneData.mViewProjectionMatrix = mActiveSceneCamera->GetViewProjectionMatrix();
 
     mMonkey->mTransform.RotateAxis(aDeltaTime / 5, glm::vec3(0.0f, 1, 0));
     // mTeapot->mTransform.RotateAround(aDeltaTime / 10, glm::vec3(0.0f, 1.0f, 1.0f));

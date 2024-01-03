@@ -16,6 +16,6 @@ struct FrameData {
 
 
 
-    AllocatedBuffer mCameraBuffer;
+    //AllocatedBuffer mCameraBuffer;
     AllocatedBuffer mSceneBuffer;
 };
