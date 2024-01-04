@@ -44,7 +44,7 @@ public:
 
 /*Attempts to abstract the required components for rendering to
  * identify what can be seperated from render pipeline */
-class MeshObject : public Renderer, Super, ImGuiLayer {
+class MeshObject : public Renderer, public Super, public ImGuiLayer {
 public:
     void Construct() override;
 

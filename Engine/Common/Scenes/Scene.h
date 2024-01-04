@@ -14,7 +14,7 @@ class GraphicsPipeline;
 class Camera;
 class MeshObject;
 
-class Scene : ImGuiLayer{
+class Scene : ImGuiLayer {
 public:
     virtual ~Scene() = default;
 
@@ -24,6 +24,7 @@ public:
                         uint32_t aCurrentFrame);
 
     void OnImGuiRender() override;
+
     virtual void Tick(float aDeltaTime);
 
     virtual void Cleanup();
@@ -36,4 +37,6 @@ public:
     GPUSceneData mSceneData;
     const char *mSceneName; //
     std::vector<MeshObject *> mObjects;
+
+
 };

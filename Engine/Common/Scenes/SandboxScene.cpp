@@ -42,6 +42,7 @@ void SandboxScene::Construct(const char *aSceneName) {
 
 
     Material *monkeyMaterial = vertexLitPipeline->CreateMaterialInstance<DefaultMaterial>().get();
+    Material *monkeyTexturedMaterial = texturedMeshPipeline->CreateMaterialInstance<DefaultMaterial>().get();
     Material *teapotMaterial = texturedMeshPipeline->CreateMaterialInstance<DefaultMaterial>().get();
     Material *lightMaterial = unlitMeshPipeline->CreateMaterialInstance<DefaultMaterial>().get();
     Material *sphereMaterial = texturedMeshPipeline->CreateMaterialInstance<DefaultMaterial>().get();
@@ -57,11 +58,16 @@ void SandboxScene::Construct(const char *aSceneName) {
     // Create Objects, and bind mesh and materials
 
     mMonkey = new MeshObject();
-    mMonkey->CreateObject(*vertexLitPipeline, *monkeyMaterial, "Monkey");
+    mMonkey->CreateObject(*vertexLitPipeline, *monkeyMaterial, "Monkey Vert");
     mMonkey->LoadMesh(
         (FileManagement::GetWorkingDirectory() +
          std::string("/Assets/Models/monkey_smooth.obj")).c_str());
 
+    mMonkey2 = new MeshObject();
+    mMonkey2->CreateObject(*texturedMeshPipeline, *monkeyTexturedMaterial, "Monkey Lit");
+    mMonkey2->LoadMesh(
+        (FileManagement::GetWorkingDirectory() +
+         std::string("/Assets/Models/monkey_smooth.obj")).c_str());
 
     mTeapot = new MeshObject();
     mTeapot->CreateObject(*texturedMeshPipeline, *teapotMaterial,
@@ -93,15 +99,17 @@ void SandboxScene::Construct(const char *aSceneName) {
 
     // Init positions
     mMonkey->mTransform.SetPosition({-2, 0, -20.0f});
+    mMonkey2->mTransform.SetPosition({2, 0, -5.0f});
     mTeapot->mTransform.SetPosition({2, 0, -20.0f});
     mTeapot->mTransform.SetScale({0.1f, 0.1f, 0.1f});
-    mSphere->mTransform.SetPosition({2, 0, -5});
+    mSphere->mTransform.SetPosition({-5, 0, -5});
     mHalfLambertSphere->mTransform.SetPosition({-2, 0, -5});
     mLight->mTransform.SetScale({0.1f, 0.1f, 0.1f});
     mLight->mTransform.SetScale({0.2f, 0.2f, 0.2f});
 
     // Register to scene TODO: Review if we auto-register these
     mObjects.push_back(mMonkey);
+    mObjects.push_back(mMonkey2);
     mObjects.push_back(mTeapot);
     mObjects.push_back(mLight);
     mObjects.push_back(mSphere);
@@ -123,22 +131,23 @@ void SandboxScene::Construct(const char *aSceneName) {
     //     "/Assets/Textures/Stone Wall.png").c_str());
     // sphereAlbedo->Create();
     // sphereMaterial->BindTexture(*sphereAlbedo, 3);
-//
-     auto *stoneNormal = new Texture();
-     mLoadedTextures["sphereNormal"] = stoneNormal;
-     stoneNormal->LoadImageFromDisk(std::string(FileManagement::GetWorkingDirectory() +
-         "/Assets/Textures/Stone Wall_NRM.png").c_str());
+    //
+
+    auto *stoneNormal = new Texture();
+    mLoadedTextures["sphereNormal"] = stoneNormal;
+    stoneNormal->LoadImageFromDisk(std::string(FileManagement::GetWorkingDirectory() +
+                                               "/Assets/Textures/Stone Wall_NRM.png").c_str());
     stoneNormal->Create();
 
     auto *stoneAlbedo = new Texture();
     mLoadedTextures["stoneAlbedo"] = stoneAlbedo;
     stoneAlbedo->LoadImageFromDisk(std::string(FileManagement::GetWorkingDirectory() +
-        "/Assets/Textures/Stone Wall.png").c_str());
+                                               "/Assets/Textures/Stone Wall.png").c_str());
     stoneAlbedo->Create();
 
     teapotMaterial->BindTexture(*stoneAlbedo, DefaultMaterial::ALBEDO);
     teapotMaterial->BindTexture(*stoneNormal, DefaultMaterial::NORMAL);
-//
+    //
     // sphereNormal->Create();
     // sphereMaterial->BindTexture(*sphereNormal, 4);
     //
@@ -164,9 +173,6 @@ float deltaAccumulated;
 
 void SandboxScene::Tick(float aDeltaTime) {
     deltaAccumulated += aDeltaTime / 5;
-    float yPosition = 1.0f * sin(2 * M_PI * 1 * deltaAccumulated);
-
-    //mLight->mTransform.SetPosition({0, yPosition, 0.0f});
     mLight->mMaterial->mMaterialProperties.mColor =
             glm::vec4(mSceneData.color.x, mSceneData.color.y, mSceneData.color.z, 1);
 
@@ -176,7 +182,7 @@ void SandboxScene::Tick(float aDeltaTime) {
     mSceneData.mViewProjectionMatrix = mActiveSceneCamera->GetViewProjectionMatrix();
 
     mMonkey->mTransform.RotateAxis(aDeltaTime / 5, glm::vec3(0.0f, 1, 0));
-    // mTeapot->mTransform.RotateAround(aDeltaTime / 10, glm::vec3(0.0f, 1.0f, 1.0f));
+    mMonkey2->mTransform.RotateAxis(aDeltaTime / 5, glm::vec3(0.0f, 1, 0));
     Scene::Tick(aDeltaTime);
 
     // Late Tick ..

@@ -11,9 +11,10 @@
 
 class SandboxScene final : public Scene {
 public:
-
     void Construct(const char *aSceneName) override;
+
     void Tick(float aDeltaTime) override;
+
     void Cleanup() override;
 
 private:
@@ -21,6 +22,7 @@ private:
 
     VkSampler mBlockySampler;
     MeshObject *mMonkey;
+    MeshObject *mMonkey2;
     MeshObject *mTeapot;
     MeshObject *mLight;
     MeshObject *mSphere;

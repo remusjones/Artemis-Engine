@@ -2,7 +2,6 @@
 // Created by Remus on 17/12/2023.
 //
 
-#include <chrono>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "MeshObject.h"
@@ -15,6 +14,7 @@
 #include "Base/Common/Data/Mesh.h"
 #include "Scenes/Scene.h"
 #include "Vulkan/GraphicsPipeline.h"
+#include <glm/gtc/type_ptr.hpp>
 
 void MeshObject::Construct() {
     Super::Construct();
@@ -58,27 +58,24 @@ void MeshObject::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
     Renderer::Render(aCommandBuffer, aScene);
 }
 void MeshObject::OnImGuiRender() {
-    if (ImGui::CollapsingHeader(mName)) {
-        ImGui::Indent();
 
-        ImGui::SeparatorText("Transform");
-        glm::vec3 pos = mTransform.Position();
-        glm::vec3 rot = mTransform.Euler();
-        glm::vec3 scale = mTransform.Scale();
 
-        if (ImGui::DragFloat3(GetUniqueLabel("Position"), &pos[0], 0.1f)) {
-            mTransform.SetPosition(pos);
-        }
-        if (ImGui::DragFloat3(GetUniqueLabel("Rotation"), &rot[0], 0.1f)) {
-            mTransform.SetRotation(rot);
-        }
-        if (ImGui::DragFloat3(GetUniqueLabel("Scale"), &scale[0], 0.1f)) {
-            mTransform.SetScale(scale);
-        }
-        mMaterial->OnImGuiRender();
+    ImGui::SeparatorText("Transform");
+    glm::vec3 pos = mTransform.Position();
+    glm::vec3 rot = mTransform.Euler();
+    glm::vec3 scale = mTransform.Scale();
 
-        ImGui::Unindent();
+    if (ImGui::DragFloat3(GetUniqueLabel("Position"), &pos[0], 0.1f)) {
+        mTransform.SetPosition(pos);
     }
+    if (ImGui::DragFloat3(GetUniqueLabel("Rotation"), &rot[0], 0.1f)) {
+        mTransform.SetRotation(rot);
+    }
+    if (ImGui::DragFloat3(GetUniqueLabel("Scale"), &scale[0], 0.1f)) {
+        mTransform.SetScale(scale);
+    }
+    mMaterial->OnImGuiRender();
+
 }
 
 void Renderer::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {

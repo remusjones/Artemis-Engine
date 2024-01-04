@@ -33,11 +33,11 @@ public:
     void RotateAxis(float aAngle, glm::vec3 aRotation);
     void RotateAxis(const glm::vec2& aEulerAxisRotation);
     void RotateAxis(glm::vec3 aEulerRotation);
-
     void Rotate(glm::quat aRotation);
 
-
     void SetScale(glm::vec3 aNewScale);
+
+    void SetMatrix(glm::mat4 aMatrix);
 
     glm::mat4 GetWorldMatrix() const;
     glm::mat4 GetRotationMatrix() const { return glm::mat4_cast(mRotation); }

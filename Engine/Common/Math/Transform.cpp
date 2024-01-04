@@ -6,9 +6,6 @@
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-#include "Objects/Camera.h"
-#include "Objects/Camera.h"
-
 Transform::Transform(): mRotation(glm::identity<glm::quat>()), mPosition(0), mScale(1) {
 }
 
@@ -31,6 +28,7 @@ glm::vec3 Transform::Scale() const {
 void Transform::Translate(glm::vec3 aTranslation) {
     mPosition += aTranslation;
 }
+
 void Transform::TranslateLocal(glm::vec3 aTranslation) {
     mPosition += aTranslation * mRotation;
 }
@@ -57,8 +55,6 @@ void Transform::RotateAxis(const glm::vec2 &aEulerAxisRotation) {
 
     mRotation = mRotation * glm::angleAxis(axisRotation.x, glm::vec3(1, 0, 0));
     mRotation = glm::angleAxis(axisRotation.y, glm::vec3(0, 1, 0)) * mRotation;
-
-
 }
 
 void Transform::RotateAxis(glm::vec3 aEulerRotation) {
@@ -76,6 +72,20 @@ void Transform::Rotate(glm::quat aRotation) {
 
 void Transform::SetScale(glm::vec3 aNewScale) {
     mScale = aNewScale;
+}
+
+void Transform::SetMatrix(glm::mat4 aMatrix) {
+    mPosition = glm::vec3(aMatrix[3][0], aMatrix[3][1], aMatrix[3][2]);
+
+    mScale.x = glm::length(glm::vec3(aMatrix[0][0], aMatrix[0][1], aMatrix[0][2]));
+    mScale.y = glm::length(glm::vec3(aMatrix[1][0], aMatrix[1][1], aMatrix[1][2]));
+    mScale.z = glm::length(glm::vec3(aMatrix[2][0], aMatrix[2][1], aMatrix[2][2]));
+
+    glm::mat3 rotation;
+    rotation[0] = glm::normalize(glm::vec3(aMatrix[0]));
+    rotation[1] = glm::normalize(glm::vec3(aMatrix[1]));
+    rotation[2] = glm::normalize(glm::vec3(aMatrix[2]));
+    mRotation = glm::quat(rotation);
 }
 
 glm::mat4 Transform::GetWorldMatrix() const {
