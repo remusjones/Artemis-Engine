@@ -4,6 +4,7 @@
 
 #pragma once
 #include <string>
+#include <unordered_map>
 
 class ImGuiLayer {
 public:
@@ -20,6 +21,6 @@ private:
      * \return
      * Unique String
      */
-    static std::string GetGUID();
-    std::string mGUID;
+    static std::string MakeGuid();
+    std::unordered_map<const char*, std::string> mConstructedLabels;
 };

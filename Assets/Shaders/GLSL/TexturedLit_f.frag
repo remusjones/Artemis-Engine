@@ -76,7 +76,7 @@ void main() {
     vec3 lightDirection = CalculateLightDirection(sceneData.light.position, inFragPos);
     float diffuse = max(dot(modelNormal, lightDirection), 0.0);
     vec3 viewDirection = normalize(sceneData.viewPos.xyz - inFragPos);
-    vec3 reflectionDirection = reflect(-lightDirection, modelNormal);
+    vec3 reflectionDirection = reflect(lightDirection, modelNormal);
     float specular = pow(max(dot(viewDirection, reflectionDirection), 0.0), materialProperties.shininess);
 
     // Lighting

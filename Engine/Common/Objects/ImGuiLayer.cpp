@@ -8,24 +8,28 @@
 #include <random>
 #include <sstream>
 
+#include "Logger.h"
+
 
 ImGuiLayer::ImGuiLayer() = default;
 
-const char *ImGuiLayer::GetUniqueLabel(const char *aLabel)  {
-    if (mGUID.empty()) {
-        mGUID = GetGUID();
-    }
+const char* ImGuiLayer::GetUniqueLabel(const char *aLabel)  {
 
-    return std::string(std::string(aLabel) + "##" + mGUID).c_str();
+    if (mConstructedLabels.find(aLabel) != mConstructedLabels.end())
+        return mConstructedLabels[aLabel].c_str();
+
+    mConstructedLabels[aLabel] = std::string(aLabel + std::string("##") + MakeGuid());
+    return mConstructedLabels[aLabel].c_str();
 }
 
 
+// Psuedo GUID implementation
 static std::random_device rd;
 static std::mt19937 gen(rd());
 static std::uniform_int_distribution<> dis(0, 15);
 static std::uniform_int_distribution<> dis2(8, 11);
 
-std::string ImGuiLayer::GetGUID() {
+std::string ImGuiLayer::MakeGuid() {
     std::stringstream ss;
     int i;
     ss << std::hex;
