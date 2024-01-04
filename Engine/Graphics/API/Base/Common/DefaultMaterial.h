@@ -5,6 +5,12 @@
 
 
 class DefaultMaterial : public Material {
+public:
+    enum TextureBinding {
+        ALBEDO = 3,
+        NORMAL = 4
+    };
+
     void Create(MaterialBase *aBaseMaterial = nullptr,
                 const char *aMaterialName = "Unknown") override;
 

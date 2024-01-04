@@ -31,12 +31,16 @@ layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec3 inNormal;
 layout(location = 2) in vec3 inColor;
 layout(location = 3) in vec2 inTexCoord;
+layout(location = 4) in vec3 inTangent;
 
 
 layout(location = 0) out vec3 outColor;
 layout(location = 1) out vec2 outUV;
 layout(location = 2) out vec3 outFragPos;
 layout(location = 3) out vec3 outNormal;
+
+layout(location = 4) out vec3 outTangent;
+
 
 void main() {
 
@@ -45,6 +49,7 @@ void main() {
     vec4 fragPos =  inPushConstants.model * vec4(inPosition, 1.0f);
     outFragPos = vec3(fragPos);
     outNormal = mat3(transpose(inverse(inPushConstants.model))) * inNormal;
+    outTangent = mat3(transpose(inverse(inPushConstants.model))) * inTangent;
     outColor = inColor;
     outUV = inTexCoord;
 }

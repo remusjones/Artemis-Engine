@@ -230,12 +230,37 @@ bool LoadUtilities::LoadMeshFromDisk(const char* aFilePath, AllocatedVertexBuffe
 
     for (size_t s = 0; s < shapes.size(); s++)
     {
+        glm::vec3 tangent;
+
         // Loop over faces(polygon)
         size_t index_offset = 0;
         for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++)
         {
             //hardcode loading to triangles
             int fv = 3;
+            if (f % 3 == 0 && f > 0)
+            {
+                const glm::vec3 &pos1 = aResultVertices[aResultIndices[f - 3]].mPosition;
+                const glm::vec3 &pos2 = aResultVertices[aResultIndices[f - 2]].mPosition;
+                const glm::vec3 &pos3 = aResultVertices[aResultIndices[f - 1]].mPosition;
+
+                const glm::vec2 &uv1 = aResultVertices[aResultIndices[f - 3]].mUV;
+                const glm::vec2 &uv2 = aResultVertices[aResultIndices[f - 2]].mUV;
+                const glm::vec2 &uv3 = aResultVertices[aResultIndices[f - 1]].mUV;
+
+                glm::vec3 edge1 = pos2 - pos1;
+                glm::vec3 edge2 = pos3 - pos1;
+                glm::vec2 deltaUV1 = uv2 - uv1;
+                glm::vec2 deltaUV2 = uv3 - uv1;
+
+                float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+
+                tangent.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+                tangent.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+                tangent.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+
+                tangent = glm::normalize(tangent);
+            }
 
             // Loop over vertices in the face.
             for (size_t v = 0; v < fv; v++)
@@ -264,7 +289,7 @@ bool LoadUtilities::LoadMeshFromDisk(const char* aFilePath, AllocatedVertexBuffe
 
                 //we are setting the vertex color as the vertex normal. This is just for display purposes
                 newVertex.mColor = newVertex.mNormal;
-
+                newVertex.mTangent = tangent;
 
                 aResultIndices.push_back(idx.vertex_index);
                 aResultVertices.push_back(newVertex);

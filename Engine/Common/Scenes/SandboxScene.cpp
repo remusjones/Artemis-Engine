@@ -124,10 +124,20 @@ void SandboxScene::Construct(const char *aSceneName) {
     // sphereAlbedo->Create();
     // sphereMaterial->BindTexture(*sphereAlbedo, 3);
 //
-    // auto *sphereNormal = new Texture();
-    // mLoadedTextures["sphereNormal"] = sphereNormal;
-    // sphereNormal->LoadImageFromDisk(std::string(FileManagement::GetWorkingDirectory() +
-    //     "/Assets/Textures/Stone Wall_NRM.png").c_str());
+     auto *stoneNormal = new Texture();
+     mLoadedTextures["sphereNormal"] = stoneNormal;
+     stoneNormal->LoadImageFromDisk(std::string(FileManagement::GetWorkingDirectory() +
+         "/Assets/Textures/Stone Wall_NRM.png").c_str());
+    stoneNormal->Create();
+
+    auto *stoneAlbedo = new Texture();
+    mLoadedTextures["stoneAlbedo"] = stoneAlbedo;
+    stoneAlbedo->LoadImageFromDisk(std::string(FileManagement::GetWorkingDirectory() +
+        "/Assets/Textures/Stone Wall.png").c_str());
+    stoneAlbedo->Create();
+
+    teapotMaterial->BindTexture(*stoneAlbedo, DefaultMaterial::ALBEDO);
+    teapotMaterial->BindTexture(*stoneNormal, DefaultMaterial::NORMAL);
 //
     // sphereNormal->Create();
     // sphereMaterial->BindTexture(*sphereNormal, 4);
