@@ -1,5 +1,6 @@
 #include "DefaultMaterial.h"
 
+#include "imgui.h"
 #include "LoadUtilities.h"
 #include "VulkanGraphicsImpl.h"
 #include "Vulkan/VulkanEngine.h"
@@ -30,6 +31,22 @@ void DefaultMaterial::Create(MaterialBase *aBaseMaterial, const char *aMaterialN
     CreateProperties(1, MaterialProperties());
 
     MakeDefaults();
+}
+
+void DefaultMaterial::OnImGuiRender() {
+    Material::OnImGuiRender();
+    ImGui::SeparatorText("Material");
+    ImGui::ColorEdit4(GetUniqueLabel("Color"), &mMaterialProperties.mColor[0]);
+    if (ImGui::DragFloat(GetUniqueLabel("Shininess"),
+                         &mMaterialProperties.mShininess, 0.1f)) {
+    }
+    if (ImGui::DragFloat(GetUniqueLabel("Specular"),
+                         &mMaterialProperties.mSpecularStrength, 0.1f)) {
+    }
+    int tmp = mMaterialProperties.mDebugRenderState;
+    if (ImGui::Combo(GetUniqueLabel("Debug"), &tmp, mDebugColors.data(), mDebugColors.size())) {
+        mMaterialProperties.mDebugRenderState = tmp;
+    }
 }
 
 void DefaultMaterial::MakeDefaults() {

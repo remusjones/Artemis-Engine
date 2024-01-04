@@ -17,8 +17,10 @@ class Buffer;
 struct MaterialProperties {
     glm::vec4 mColor = glm::vec4(1, 1, 1, 1);
     // TODO: Input Images for thes properties?
-    float mSpecularStrength = 1;
+    float mSpecularStrength = 0.4;
     float mShininess = 32;
+    float mDebugRenderState;
+    float _pad;
 };
 
 class Material : public MaterialBase {

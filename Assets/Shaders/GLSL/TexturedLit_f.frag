@@ -16,12 +16,15 @@ layout(set = 0, binding = 0) uniform SceneBuffer {
     Light light;
     mat4 view;
     mat4 viewproj;
+    vec4 viewPos;
 } sceneData;
 
 layout(set = 0, binding = 1) uniform MaterialProperties {
     vec4 color;
     float specularStrength;
     float shininess;
+    float DebugOutState;
+    float _pad;
 } materialProperties;
 
 
@@ -57,13 +60,16 @@ vec3 CalculateFinalColor(vec3 ambientColor, vec3 diffuseColor, vec3 specularColo
 }
 
 void main() {
-    vec3 normal = texture(textureNormal, inUV).xyz * 2.0 - 1.0;
 
-    vec3 lightPositionObjectSpace = (inPushConstants.model * vec4(sceneData.light.position, 1)).xyz;
-    vec3 lightDirection = CalculateLightDirection(lightPositionObjectSpace, inFragPos);
+    // TODO: Calculate Tangent normals
+    //vec3 texNormal = texture(textureNormal, inUV).xyz * 2.0 - 1.0;
+    vec3 normal = normalize(inNormal);
+    vec3 lightDirection = CalculateLightDirection(sceneData.light.position, inFragPos);
+
     float diffuse = max(dot(normal, lightDirection), 0.0);
-    vec3 viewDirection = normalize(-inFragPos);
-    vec3 reflectionDirection = reflect(-lightDirection, normal);
+
+    vec3 viewDirection = normalize(sceneData.viewPos.xyz - inFragPos);
+    vec3 reflectionDirection = reflect(lightDirection, normal);
     float specular = pow(max(dot(viewDirection, reflectionDirection), 0.0), materialProperties.shininess);
 
     
@@ -74,5 +80,41 @@ void main() {
     vec3 texColor = texture(textureAlbedo, inUV).xyz;
 
     finalColor *= texColor;
-    outColor = vec4(finalColor, 1.0f);
+
+    // Cast to int
+    int debugSwitchInput = int(round(materialProperties.DebugOutState));
+
+    switch(debugSwitchInput)
+    {
+        case 1:
+            outColor = vec4(normal, 1.0f);
+            break;
+        case 2:
+            outColor = vec4(lightDirection, 1.0f);
+            break;
+        case 3:
+            outColor = vec4(viewDirection, 1.0f);
+            break;
+        case 4:
+            outColor = vec4(reflectionDirection, 1.0f);
+            break;
+        case 5:
+            outColor = vec4(ambientColor, 1.0f);
+            break;
+        case 6:
+            outColor = vec4(diffuseColor, 1.0f);
+            break;
+        case 7:
+            outColor = vec4(specularColor, 1.0f);
+            break;
+        case 8:
+            outColor = vec4(texColor, 1.0f);
+            break;
+        case 9:
+            outColor = vec4(inUV, 0.0f, 1.0f);
+            break;
+        default:
+            outColor = vec4(finalColor, 1.0f);
+            break;
+    }
 }

@@ -16,27 +16,23 @@
 #include "Scenes/Scene.h"
 #include "Vulkan/GraphicsPipeline.h"
 
-void MeshObject::Construct()
-{
+void MeshObject::Construct() {
     Super::Construct();
 }
 
-void MeshObject::Tick(float aDeltaTime)
-{
+void MeshObject::Tick(float aDeltaTime) {
     Super::Tick(aDeltaTime);
 }
 
-void MeshObject::Cleanup()
-{
+void MeshObject::Cleanup() {
     DestroyRenderer();
     Super::Cleanup();
 }
 
 void MeshObject::CreateObject(
-    GraphicsPipeline& aBoundGraphicsPipeline,
-    Material& aMaterial,
-    const char* aName)
-{
+    GraphicsPipeline &aBoundGraphicsPipeline,
+    Material &aMaterial,
+    const char *aName) {
     mName = aName;
     Logger::Log(spdlog::level::info, (std::string("Creating object ") + mName).c_str());
     mMaterial = &aMaterial;
@@ -44,8 +40,7 @@ void MeshObject::CreateObject(
 }
 
 void MeshObject::CreateRenderer(
-    GraphicsPipeline& aBoundGraphicsPipeline)
-{
+    GraphicsPipeline &aBoundGraphicsPipeline) {
     // Load Shaders
     mGraphicsPipeline = &aBoundGraphicsPipeline;
     mGraphicsPipeline->AddRenderer(this);
@@ -53,22 +48,17 @@ void MeshObject::CreateRenderer(
     mMesh = new Mesh();
 }
 
-void MeshObject::DestroyRenderer()
-{
+void MeshObject::DestroyRenderer() {
     delete mMesh;
     mMaterial->Destroy();
 }
 
-void MeshObject::Render(VkCommandBuffer aCommandBuffer, const Scene& aScene)
-{
+void MeshObject::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
     mPushConstants.model = mTransform.GetWorldMatrix();
     Renderer::Render(aCommandBuffer, aScene);
 }
-
-void MeshObject::OnImGuiRender()
-{
-    if (ImGui::CollapsingHeader(mName))
-    {
+void MeshObject::OnImGuiRender() {
+    if (ImGui::CollapsingHeader(mName)) {
         ImGui::Indent();
 
         ImGui::SeparatorText("Transform");
@@ -76,36 +66,23 @@ void MeshObject::OnImGuiRender()
         glm::vec3 rot = mTransform.Euler();
         glm::vec3 scale = mTransform.Scale();
 
-        if (ImGui::DragFloat3(GetUniqueLabel("Position"), &pos[0], 0.1f))
-        {
+        if (ImGui::DragFloat3(GetUniqueLabel("Position"), &pos[0], 0.1f)) {
             mTransform.SetPosition(pos);
         }
-        if (ImGui::DragFloat3(GetUniqueLabel("Rotation"), &rot[0], 0.1f))
-        {
+        if (ImGui::DragFloat3(GetUniqueLabel("Rotation"), &rot[0], 0.1f)) {
             mTransform.SetRotation(rot);
         }
-        if (ImGui::DragFloat3(GetUniqueLabel("Scale"), &scale[0], 0.1f))
-        {
+        if (ImGui::DragFloat3(GetUniqueLabel("Scale"), &scale[0], 0.1f)) {
             mTransform.SetScale(scale);
         }
+        mMaterial->OnImGuiRender();
 
-        ImGui::SeparatorText("Material");
-        ImGui::ColorEdit4(GetUniqueLabel("Color"), &mMaterial->mMaterialProperties.mColor[0]);
-        if (ImGui::DragFloat(GetUniqueLabel("Shininess"),
-                             &mMaterial->mMaterialProperties.mShininess, 0.1f))
-        {
-        }
-        if (ImGui::DragFloat(GetUniqueLabel("Specular"),
-                             &mMaterial->mMaterialProperties.mSpecularStrength, 0.1f))
-        {
-        }
         ImGui::Unindent();
     }
 }
 
-void Renderer::Render(VkCommandBuffer aCommandBuffer, const Scene& aScene)
-{
-    void* data;
+void Renderer::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
+    void *data;
     vmaMapMemory(gGraphics->mAllocator, mMaterial->mPropertiesBuffer.mAllocation, &data);
     memcpy(data, &mMaterial->mMaterialProperties, sizeof(MaterialProperties));
     vmaUnmapMemory(gGraphics->mAllocator, mMaterial->mPropertiesBuffer.mAllocation);

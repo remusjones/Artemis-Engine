@@ -12,6 +12,8 @@ struct alignas(16) GPUSceneData {
     glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);
     float ambientStrength = 0.0f;
 
+
     glm::mat4 mViewMatrix;
     glm::mat4 mViewProjectionMatrix;
+    glm::vec4 mViewPos;
 };

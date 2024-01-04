@@ -162,6 +162,7 @@ void SandboxScene::Tick(float aDeltaTime) {
 
     mSceneData.position = mLight->mTransform.Position();
     mSceneData.mViewMatrix = mActiveSceneCamera->GetViewMatrix();
+    mSceneData.mViewPos = glm::vec4(mActiveSceneCamera->mTransform.Position(), 1.0f);
     mSceneData.mViewProjectionMatrix = mActiveSceneCamera->GetViewProjectionMatrix();
 
     mMonkey->mTransform.RotateAxis(aDeltaTime / 5, glm::vec3(0.0f, 1, 0));
