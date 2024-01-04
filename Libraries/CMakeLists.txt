@@ -27,9 +27,9 @@ add_subdirectory(tinyobjloader tinyobjloader)
 # https://github.com/ocornut/imgui.git
 message("Adding ImGui")
 set(IMGUI_PATH imgui)
+
 add_library(imgui STATIC ${IMGUI_PATH})
-target_include_directories(imgui PUBLIC ${IMGUI_PATH} ${IMGUI_PATH}/backends)
-target_sources(imgui PUBLIC
+set(IMGUI_SOURCES
         "${IMGUI_PATH}/imgui.h"
         "${IMGUI_PATH}/imgui.cpp"
         "${IMGUI_PATH}/imgui_demo.cpp"
@@ -39,7 +39,28 @@ target_sources(imgui PUBLIC
         "${IMGUI_PATH}/backends/imgui_impl_vulkan.cpp"
         "${IMGUI_PATH}/backends/imgui_impl_sdl3.cpp"
 )
+target_include_directories(imgui PUBLIC ${IMGUI_PATH} ${IMGUI_PATH}/backends)
+target_sources(imgui PUBLIC ${IMGUI_SOURCES})
 target_link_libraries(imgui SDL3::SDL3-static)
+
+message("Adding ImGuizmo")
+set(IMGUIZMO_PATH imguizmo)
+add_library(imguizmo STATIC ${IMGUIZMO_PATH})
+target_sources(imguizmo PUBLIC
+        "${IMGUIZMO_PATH}/GraphEditor.h"
+        "${IMGUIZMO_PATH}/ImCurveEdit.h"
+        "${IMGUIZMO_PATH}/ImGradient.h"
+        "${IMGUIZMO_PATH}/ImGuizmo.h"
+        "${IMGUIZMO_PATH}/ImSequencer.h"
+        "${IMGUIZMO_PATH}/ImZoomSlider.h"
+        "${IMGUIZMO_PATH}/GraphEditor.cpp"
+        "${IMGUIZMO_PATH}/ImCurveEdit.cpp"
+        "${IMGUIZMO_PATH}/ImGradient.cpp"
+        "${IMGUIZMO_PATH}/ImGuizmo.cpp"
+        "${IMGUIZMO_PATH}/ImSequencer.cpp"
+)
+target_include_directories(imguizmo PUBLIC ${IMGUIZMO_PATH})
+target_link_libraries(imguizmo imgui)
 
 # https://github.com/nothings/stb.git
 message("Adding stb")
@@ -55,5 +76,6 @@ target_link_libraries(
         SDL3::SDL3-static
         GPUOpen::VulkanMemoryAllocator
         tinyobjloader
+        imguizmo
         imgui)
 
