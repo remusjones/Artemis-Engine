@@ -53,10 +53,10 @@ void DefaultMaterial::MakeDefaults() {
     mDefaultAlbedo = std::make_unique<Texture>();
     mDefaultAlbedo->CreateDefault(Color_RGBA(255,255,255,255));
     mDefaultNormal = std::make_unique<Texture>();
-    mDefaultNormal->CreateDefault(Color_RGBA(128, 128, 255, 255));
+    mDefaultNormal->CreateDefault(Color_RGBA(128, 128, 255, 0));
 
-    BindTexture(*mDefaultAlbedo, 3);
-    BindTexture(*mDefaultNormal, 4);
+    BindTexture(*mDefaultAlbedo, ALBEDO);
+    BindTexture(*mDefaultNormal, NORMAL);
 }
 
 void DefaultMaterial::Destroy() {
