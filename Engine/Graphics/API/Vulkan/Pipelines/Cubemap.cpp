@@ -1,25 +1,21 @@
 //
-// Created by Remus on 17/12/2023.
+// Created by Remus on 5/01/2024.
 //
 
-#include <vulkan/vulkan_core.h>
-#include "GraphicsPipeline.h"
+#include "Cubemap.h"
 
 #include <stdexcept>
 
-#include "Logger.h"
-#include "Common/MeshObject.h"
-#include "Base/Common/Data/Vertex.h"
 #include "VulkanGraphicsImpl.h"
-#include "File Management/FileManagement.h"
 #include "Base/Common/Buffers/PushConstants.h"
-#include "Base/Common/Material.h"
-#include "Base/Common/Data/GPUSceneData.h"
-#include "Helpers/VulkanInitialization.h"
-#include "Scenes/Scene.h"
+#include "Base/Common/Data/Vertex.h"
+#include "Vulkan/Common/MeshObject.h"
+#include "Vulkan/Helpers/VulkanInitialization.h"
 
-void GraphicsPipeline::Create() {
-    // Vertex Buffer
+void Cubemap::Create() {
+    GraphicsPipeline::Create();
+
+        // Vertex Buffer
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType =
             VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -46,6 +42,7 @@ void GraphicsPipeline::Create() {
     viewport.y = static_cast<float>(gGraphics->mSwapChain->mSwapChainExtent.height);
     viewport.width = static_cast<float>(gGraphics->mSwapChain->mSwapChainExtent.width); // TODO: rebuild these on Resize
     viewport.height = static_cast<float>(gGraphics->mSwapChain->mSwapChainExtent.height);
+    // TODO: rebuild these on Resize
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
 
@@ -179,75 +176,5 @@ void GraphicsPipeline::Create() {
                                   &pipelineInfo, nullptr,
                                   &mGraphicsPipeline) != VK_SUCCESS) {
         throw std::runtime_error("failed to create graphics pipeline");
-    }
-}
-
-void GraphicsPipeline::AddShader(const char *aPath,
-                                 VkShaderStageFlagBits aStage) {
-    const char *entryName = "main";
-
-    std::vector<char> file = FileManagement::GetShaderFileDataPath(aPath);
-
-    VkShaderModuleCreateInfo createInfo{};
-    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    createInfo.codeSize = file.size();
-    createInfo.pCode = reinterpret_cast<const uint32_t *>(file.data());
-
-    VkShaderModule shaderModule;
-    if (vkCreateShaderModule(gGraphics->mLogicalDevice, &createInfo, nullptr,
-                             &shaderModule) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create shader module");
-    }
-
-    VkPipelineShaderStageCreateInfo shaderStageInfo{};
-    shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    shaderStageInfo.stage = aStage;
-    shaderStageInfo.module = shaderModule;
-    shaderStageInfo.pName = entryName;
-
-    mShadersInPipeline.push_back(shaderStageInfo);
-}
-
-void GraphicsPipeline::Destroy() const {
-    Logger::Log(spdlog::level::info, (std::string("Destroying Pipeline ") + mPipelineName).c_str());
-    for (const auto &i: mShadersInPipeline) {
-        vkDestroyShaderModule(gGraphics->mLogicalDevice, i.module, nullptr);
-    }
-
-    vkDestroyPipelineLayout(gGraphics->mLogicalDevice, mPipelineLayout,
-                            nullptr);
-    vkDestroyPipeline(gGraphics->mLogicalDevice, mGraphicsPipeline, nullptr);
-}
-
-std::vector<std::shared_ptr<Material> > GraphicsPipeline::MakeMaterials(
-    uint8_t aBinding) {
-    // TODO: Use aBinding
-    for (auto material: mMaterials) {
-        material->Create(material.get(), "default");
-    }
-    return mMaterials;
-}
-
-void GraphicsPipeline::AddRenderer(Renderer *aRenderer) {
-    mRenderers.push_back(aRenderer);
-}
-
-void GraphicsPipeline::Draw(VkCommandBuffer aCommandBuffer, Scene &aScene) const {
-    vkCmdBindPipeline(aCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                      mGraphicsPipeline);
-
-
-    const FrameData currentFrame = gGraphics->mVulkanEngine.GetCurrentFrame();
-    void *data;
-    vmaMapMemory(gGraphics->mAllocator, currentFrame.mSceneBuffer.mAllocation, &data);
-    memcpy(data, &aScene.mSceneData, sizeof(GPUSceneData));
-    vmaUnmapMemory(gGraphics->mAllocator, currentFrame.mSceneBuffer.mAllocation);
-
-    for (auto &mRenderer: mRenderers) {
-        auto materialDescriptorSet = mRenderer->mMaterial->GetDescriptorSet();
-        vkCmdBindDescriptorSets(aCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout, 0,
-                                1, &materialDescriptorSet, 0, nullptr);
-
-        mRenderer->Render(aCommandBuffer, aScene);
     }
 }

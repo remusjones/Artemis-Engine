@@ -21,7 +21,7 @@ include_directories(Engine/Common)
 include_directories(Engine/System)
 
 # Link Dependencies
-add_subdirectory(Libraries)
+add_subdirectory(vendor)
 
 # Make assets
 add_subdirectory(Assets)

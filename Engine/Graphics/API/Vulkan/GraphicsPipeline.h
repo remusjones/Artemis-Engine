@@ -7,9 +7,8 @@
 
 #include <memory>
 #include <vector>
-
 #include "Base/Common/Material.h"
-#include "Objects/Camera.h"
+
 class Scene;
 class Material;
 class MaterialBase;
@@ -18,17 +17,16 @@ class GraphicsPipeline {
 public:
     GraphicsPipeline(const char* aPipelineName = "Unknown") : mPipelineName(aPipelineName){};
 
-    void AddShader(const char* aPath, VkShaderStageFlagBits aStage);
-    void AddMaterialBase(const std::shared_ptr<Material> aBase) {
+    virtual void AddShader(const char* aPath, VkShaderStageFlagBits aStage);
+    virtual void AddMaterialBase(const std::shared_ptr<Material> aBase) {
         mMaterials.push_back(aBase);
     };
-    void UpdateDescriptorSets(uint32_t aDescriptorIndex, VkBuffer aBuffer);
 
-    void AddRenderer(Renderer* aRenderer);
-    void Draw(VkCommandBuffer aCommandBuffer, Scene &aScene) const;
+    virtual void AddRenderer(Renderer* aRenderer);
+    virtual void Draw(VkCommandBuffer aCommandBuffer, Scene &aScene) const;
 
-    void Create();
-    void Destroy() const;
+    virtual void Create();
+    virtual void Destroy() const;
 
     template<typename T>
     std::shared_ptr<Material> CreateMaterialInstance() {
@@ -43,7 +41,7 @@ public:
     void BindDescriptor();
     void BindPushConstant(VkPushConstantRange aPushConstant);
 
-private:
+protected:
     void CreateUniformBufferLayouts();
 
 public:

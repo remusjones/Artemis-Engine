@@ -17,7 +17,7 @@
 #include "imgui.h"
 #include "InputManager.h"
 #include "Logger.h"
-#include "../../Libraries/imguizmo/ImGuizmo.h"
+#include "ImGuizmo.h"
 #include "Scenes/SandboxScene.h"
 #include "Vulkan/Common/MeshObject.h"
 

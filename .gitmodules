@@ -11,7 +11,7 @@
     url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
     branch = master
 [submodule "vendor/tinyobjloader"]
-    path = Libraries/tinyobjloader
+    path = vendor/tinyobjloader
     url = https://github.com/tinyobjloader/tinyobjloader.git
     branch = release
 [submodule "vendor/imgui"]
