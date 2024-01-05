@@ -94,7 +94,7 @@ void SandboxScene::Construct(const char *aSceneName) {
                                      *halfLambertMaterial,
                                      "Sphere Lambert");
     mHalfLambertSphere->LoadMesh((FileManagement::GetWorkingDirectory() +
-                                  std::string("/Assets/Models/sphere.obj")).c_str());
+                                  std::string("/Assets/Models/cube.obj")).c_str());
 
 
     // Init positions
