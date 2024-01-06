@@ -7,24 +7,17 @@
 #include "Vulkan/VulkanEngine.h"
 
 void DefaultMaterial::Create(MaterialBase *aBaseMaterial, const char *aMaterialName) {
-    AddBinding(0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL);
 
-    // Binds Scene Lighting Uniform Buffer
-    AddBinding(1, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL);
-
-
-    // Material Properties
-    AddBinding(2, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL);
-
+    AddBinding(SCENE_INFORMATION, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL);
+    AddBinding(PROPERTIES, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL);
     AddBinding(TEXTURE, 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
 
     Material::Create(this, "Default Material");
 
-
     for (int i = 0; i < VulkanEngine::MAX_FRAMES_IN_FLIGHT; i++)
-        SetBuffers(gGraphics->mVulkanEngine.GetFrame(i).mSceneBuffer, 0, 0);
+        SetBuffers(gGraphics->mVulkanEngine.GetFrame(i).mSceneBuffer, SCENE_INFORMATION, 0);
 
-    CreateProperties(1, MaterialProperties());
+    CreateProperties(PROPERTIES, MaterialProperties());
 
     MakeDefaults();
 }

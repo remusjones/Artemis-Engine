@@ -7,7 +7,9 @@
 class DefaultMaterial : public Material {
 public:
     enum BindingLocation {
-        TEXTURE = 3
+        SCENE_INFORMATION = 0,
+        PROPERTIES = 1,
+        TEXTURE = 2
     };
     enum TextureComposite {
         ALBEDO = 0,

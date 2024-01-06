@@ -37,7 +37,7 @@ layout(location = 4) in vec3 inTangent;
 
 layout(location = 0) out vec4 outColor;
 
-layout(set = 0, binding = 3) uniform sampler2DArray textureArray;
+layout(set = 0, binding = 2) uniform sampler2DArray textureArray;
 
 
 vec3 CalculateViewSpaceNormal(vec3 normal, mat4 cameraView) {
