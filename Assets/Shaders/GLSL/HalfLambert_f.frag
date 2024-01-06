@@ -33,8 +33,7 @@ layout(location = 3) in vec3 inNormal;
 layout(location = 4) in vec3 inTangent;
 layout(location = 0) out vec4 outColor;
 
-layout(set = 0, binding = 3) uniform sampler2D textureAlbedo;
-layout(set = 0, binding = 4) uniform sampler2D textureNormal;
+layout(set = 0, binding = 3) uniform sampler2DArray textureArray;
 
 vec3 CalculateLightDirection(vec3 lightPosition, vec3 fragmentPosition) {
     return normalize(lightPosition - fragmentPosition);
@@ -43,7 +42,9 @@ vec3 CalculateFinalColor(vec3 ambientColor, vec3 diffuseColor, vec3 specularColo
     return ambientColor + diffuseColor + specularColor;
 }
 void main() {
-    vec3 texNormal = texture(textureNormal, inUV).xyz * 2.0 - 1.0;
+    int albedoTextureIndex = 0;
+    int normalTextureIndex = 1;
+    vec3 texNormal = texture(textureArray, vec3(inUV, normalTextureIndex)).xyz * 2.0 - 1.0;
     vec3 T = normalize(inTangent);
     vec3 N = normalize(inNormal);
     vec3 B = cross(N, T);
@@ -65,7 +66,7 @@ void main() {
     vec3 specularColor = attenuation * materialProperties.specularStrength * specular * sceneData.light.color;
 
     vec3 finalColor = CalculateFinalColor(ambientColor, diffuseColor, specularColor);
-    vec3 texColor = texture(textureAlbedo, inUV).xyz;
+    vec3 texColor = texture(textureArray, vec3(inUV, albedoTextureIndex)).xyz;
     finalColor *= texColor;
 
     outColor = vec4(finalColor, 1.0f);

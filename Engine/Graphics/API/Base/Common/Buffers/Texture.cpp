@@ -1,24 +1,13 @@
 #include "Texture.h"
 #include <stdexcept>
 #include "LoadUtilities.h"
-#include "Logger.h"
 #include "VulkanGraphicsImpl.h"
 #include "Vulkan/Helpers/VulkanInitialization.h"
 
 
-void Texture::LoadImageFromDisk(const char *aFilePath) {
-    LoadUtilities::LoadImageFromDisk(gGraphics, aFilePath, mAllocatedImage);
-    mImageCount = 1;
-}
-
 void Texture::LoadImagesFromDisk(const std::vector<std::string> &aPaths) {
     LoadUtilities::LoadImagesFromDisk(gGraphics, aPaths, mAllocatedImage);
     mImageCount = aPaths.size();
-}
-
-void Texture::CreateDefault(Color_RGBA aColor) {
-    LoadUtilities::CreateImage(1, 1, gGraphics, mAllocatedImage, aColor);
-    Create();
 }
 
 void Texture::Create(VkFilter aSamplerFilter,
@@ -33,7 +22,7 @@ void Texture::Create(VkFilter aSamplerFilter,
         VkImageViewCreateInfo viewInfo{};
         viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         viewInfo.image = mAllocatedImage.mImage; // the VkImage object
-        viewInfo.viewType = mImageCount > 1 ? VK_IMAGE_VIEW_TYPE_2D_ARRAY : VK_IMAGE_VIEW_TYPE_2D;
+        viewInfo.viewType =VK_IMAGE_VIEW_TYPE_2D_ARRAY;
         viewInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
         viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         viewInfo.subresourceRange.baseMipLevel = 0;
@@ -62,6 +51,5 @@ void Texture::Destroy() const {
     for (auto imageView: mImageViews) {
         vkDestroyImageView(gGraphics->mLogicalDevice, imageView, nullptr);
     }
-
     vkDestroySampler(gGraphics->mLogicalDevice, mSampler, nullptr);
 }

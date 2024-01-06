@@ -108,23 +108,173 @@ bool LoadUtilities::LoadImagesFromDisk(VulkanGraphics *aEngine, const std::vecto
     const VkFormat image_format = VK_FORMAT_R8G8B8A8_SRGB;
 
     VkDeviceSize layerSize = 0;
+    VkDeviceSize imageSize = 0;
+
+    int texWidth, texHeight, texChannels;
+    stbi_uc *pixels;
+
+    int maxTexWidth = 0;
+    int maxTexHeight = 0;
+    bool sizeMismatch = false;
+
+    // Find maximum dimensions.
+    for (const auto &path: aPaths) {
+        stbi_info(path.c_str(), &texWidth, &texHeight, &texChannels);
+        maxTexWidth = std::max(maxTexWidth, texWidth);
+        maxTexHeight = std::max(maxTexHeight, texHeight);
+        if (maxTexWidth != texWidth || maxTexHeight != texHeight)
+            sizeMismatch = true;
+        imageSize += maxTexWidth * maxTexHeight * texChannels;
+    }
+    if (sizeMismatch)
+        Logger::Log(spdlog::level::err, "Image Height/Width mismatch - this will likely cause issues.");
+
+    //Create the staging buffer
+    AllocatedBuffer stagingBuffer;
+    stagingBuffer.Create(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingBuffer.mBuffer, stagingBuffer.mAllocation);
+
+    // Map the memory
+    void *data;
+    vmaMapMemory(gGraphics->mAllocator, stagingBuffer.mAllocation, &data);
+    uint64_t memAddress = reinterpret_cast<uint64_t>(data);
+
+    // Load each image into staging buffer
+    for (int i = 0; i < imageCount; i++) {
+        pixels = stbi_load(aPaths[i].c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+        layerSize = texWidth * texHeight * texChannels;
+
+        if (pixels) {
+            memcpy(reinterpret_cast<void *>(memAddress), pixels, layerSize);
+            memAddress += layerSize;
+            stbi_image_free(pixels);
+        } else {
+            Logger::Log(spdlog::level::err, (std::string("Could not load file ") + aPaths[i]).c_str());
+        }
+    }
+
+    vmaUnmapMemory(gGraphics->mAllocator, stagingBuffer.mAllocation);
+
+
+    VkExtent3D imageExtent;
+    imageExtent.width = static_cast<uint32_t>(maxTexWidth);
+    imageExtent.height = static_cast<uint32_t>(maxTexHeight);
+    imageExtent.depth = 1;
+
+    VkImageCreateInfo dimg_info = {};
+    dimg_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    dimg_info.pNext = nullptr;
+
+    dimg_info.imageType = VK_IMAGE_TYPE_2D;
+
+    dimg_info.format = image_format;
+    dimg_info.extent = imageExtent;
+
+    dimg_info.mipLevels = 1;
+    dimg_info.arrayLayers = imageCount;
+    dimg_info.samples = VK_SAMPLE_COUNT_1_BIT;
+    dimg_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+    dimg_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+
+    AllocatedImage newImage;
+    VmaAllocationCreateInfo dimg_allocinfo = {};
+    dimg_allocinfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+
+    VkResult result = vmaCreateImage(aEngine->mAllocator, &dimg_info, &dimg_allocinfo, &newImage.mImage,
+                                     &newImage.mAllocation, nullptr);
+
+    if (result != VK_SUCCESS) {
+        Logger::Log(spdlog::level::err, "vmaCreateImage failed!");
+        // Always cleanup after an error!
+        vmaDestroyBuffer(gGraphics->mAllocator, stagingBuffer.mBuffer, stagingBuffer.mAllocation);
+        return false;
+    }
+    if (!newImage.mImage || !newImage.mAllocation) {
+        Logger::Log(spdlog::level::err, "Image or allocation from vmaCreateImage is null!");
+        vmaDestroyBuffer(gGraphics->mAllocator, stagingBuffer.mBuffer, stagingBuffer.mAllocation);
+        return false;
+    }
+    aEngine->mVulkanEngine.SubmitBufferCommand([&](VkCommandBuffer cmd) {
+        VkImageSubresourceRange range;
+        range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        range.baseMipLevel = 0;
+        range.levelCount = 1;
+        range.baseArrayLayer = 0;
+        range.layerCount = imageCount;
+
+        VkImageMemoryBarrier imageBarrier_toTransfer = {};
+        imageBarrier_toTransfer.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+
+        imageBarrier_toTransfer.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        imageBarrier_toTransfer.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        imageBarrier_toTransfer.image = newImage.mImage;
+        imageBarrier_toTransfer.subresourceRange = range;
+
+        imageBarrier_toTransfer.srcAccessMask = 0;
+        imageBarrier_toTransfer.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0,
+                             nullptr, 1, &imageBarrier_toTransfer);
+
+        VkBufferImageCopy copyRegion = {};
+        copyRegion.bufferOffset = 0;
+        copyRegion.bufferRowLength = 0;
+        copyRegion.bufferImageHeight = 0;
+
+        copyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        copyRegion.imageSubresource.mipLevel = 0;
+        copyRegion.imageSubresource.baseArrayLayer = 0;
+        copyRegion.imageSubresource.layerCount = imageCount;
+        copyRegion.imageExtent = imageExtent;
+
+        //copy the buffer into the image
+        vkCmdCopyBufferToImage(cmd, stagingBuffer.mBuffer, newImage.mImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
+                               &copyRegion);
+
+        VkImageMemoryBarrier imageBarrier_toReadable = imageBarrier_toTransfer;
+
+        imageBarrier_toReadable.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        imageBarrier_toReadable.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        imageBarrier_toReadable.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        imageBarrier_toReadable.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr,
+                             0, nullptr, 1, &imageBarrier_toReadable);
+    });
+    // Cleanup staging buffer
+    vmaDestroyBuffer(aEngine->mAllocator, stagingBuffer.mBuffer, stagingBuffer.mAllocation);
+    aResult = newImage;
+    return true;
+}
+
+bool LoadUtilities::CreateImageArray(const int aWidth, const int aHeight,
+                                     VulkanGraphics *aEngine,
+                                     AllocatedImage &aResult,
+                                     std::vector<Color_RGBA> &aColors) {
+    const int imageCount = aColors.size();
+    const VkFormat image_format = VK_FORMAT_R8G8B8A8_SRGB;
+
+    VkDeviceSize layerSize = 0;
     VkDeviceSize imageSize;
 
     AllocatedBuffer stagingBuffer;
     void *data;
-    int texWidth, texHeight, texChannels;
+    int texWidth = aWidth, texHeight = aHeight, texChannels = STBI_rgb_alpha;
+
     uint64_t memAddress = 0;
     stbi_uc *pixels;
 
 
     // Recursively load all image into staging buffer
     for (int i = 0; i < imageCount; i++) {
-        Logger::Log(spdlog::level::info, (std::string("Loading file: ") + aPaths[i]).c_str());
-
-        pixels = stbi_load(aPaths[i].c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-        if (!pixels) {
-            Logger::Log(spdlog::level::err, (std::string("Could not load file ") + aPaths[i]).c_str());
+        pixels = new stbi_uc[4 * texWidth * texHeight];
+        for (int i = 0; i < 4 * texWidth * texHeight; i += 4) {
+            pixels[i] = aColors[i].R; // red
+            pixels[i + 1] = aColors[i].G; // green
+            pixels[i + 2] = aColors[i].B; // blue
+            pixels[i + 3] = aColors[i].A; // alpha
         }
+
         if (i == 0) {
             layerSize = texWidth * texHeight * texChannels;
             imageSize = layerSize * imageCount;
@@ -138,8 +288,8 @@ bool LoadUtilities::LoadImagesFromDisk(VulkanGraphics *aEngine, const std::vecto
             memAddress = reinterpret_cast<uint64_t>(data);
         }
         memcpy(reinterpret_cast<void *>(memAddress), pixels, layerSize);
-        stbi_image_free(pixels);
         memAddress += layerSize;
+        delete[] pixels;
     }
     vmaUnmapMemory(gGraphics->mAllocator, stagingBuffer.mAllocation);
 

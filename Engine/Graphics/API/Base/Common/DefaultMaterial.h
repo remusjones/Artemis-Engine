@@ -6,9 +6,12 @@
 
 class DefaultMaterial : public Material {
 public:
-    enum TextureBinding {
-        ALBEDO = 3,
-        NORMAL = 4
+    enum BindingLocation {
+        TEXTURE = 3
+    };
+    enum TextureComposite {
+        ALBEDO = 0,
+        NORMAL = 1
     };
 
     void Create(MaterialBase *aBaseMaterial = nullptr,
@@ -20,8 +23,7 @@ public:
 
     void Destroy() override;
 
-    std::unique_ptr<Texture> mDefaultAlbedo;
-    std::unique_ptr<Texture> mDefaultNormal;
+    std::unique_ptr<Texture> mTextures;
     std::vector<const char *> mDebugColors{
         "Default",
         "normal",
@@ -33,5 +35,10 @@ public:
         "specularColor",
         "texColor",
         "inUV",
+    };
+
+    static constexpr const char* DefaultAssetPaths[] = {
+        "/Assets/Textures/albedo_4096.png",
+        "/Assets/Textures/normal_4096.png",
     };
 };

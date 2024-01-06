@@ -28,6 +28,10 @@ class LoadUtilities {
 public:
     static bool LoadImageFromDisk(const VulkanGraphics *aEngine, const char *aFilePath, AllocatedImage &aResult);
     static bool LoadImagesFromDisk(VulkanGraphics *aEngine, const std::vector<std::string>& aPaths, AllocatedImage &aResult);
+
+    static bool CreateImageArray(const int aWidth, const int aHeight, VulkanGraphics *aEngine, AllocatedImage &aResult,
+                                 std::vector<Color_RGBA> &aColors);
+
     static bool LoadCubemap(VulkanGraphics *aEngine, const char *aFilePath, VkFormat aFormat, AllocatedImage &aResult);
     static bool CreateImage(const int aWidth, const int aHeight, VulkanGraphics *aEngine, AllocatedImage &aResult, Color_RGBA aColor);
     static bool LoadMeshFromDisk(const char *aFilePath, AllocatedVertexBuffer &aResult,

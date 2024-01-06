@@ -14,8 +14,6 @@ void DefaultMaterialTest::Create(MaterialBase *aBaseMaterial, const char *aMater
     // Material Properties
     AddBinding(2, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL);
 
-    // Texture Binding
-    // TODO: Make dynamic count?
     AddBinding(TEXTURE, 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
 
     Material::Create(this, "Default2 Material");
