@@ -22,6 +22,8 @@ layout(set = 0, binding = 1) uniform MaterialProperties {
     vec4 color;
     float specularStrength;
     float shininess;
+    float DebugOutState;
+    float _pad;
 } materialProperties;
 
 
@@ -69,5 +71,39 @@ void main() {
     vec3 texColor = texture(textureArray, vec3(inUV, albedoTextureIndex)).xyz;
     finalColor *= texColor;
 
-    outColor = vec4(finalColor, 1.0f);
+    int debugSwitchInput = int(round(materialProperties.DebugOutState));
+
+    switch(debugSwitchInput)
+    {
+        case 1:
+        outColor = vec4(modelNormal, 1.0f);
+        break;
+        case 2:
+        outColor = vec4(lightDirection, 1.0f);
+        break;
+        case 3:
+        outColor = vec4(viewDirection, 1.0f);
+        break;
+        case 4:
+        outColor = vec4(reflectionDirection, 1.0f);
+        break;
+        case 5:
+        outColor = vec4(ambientColor, 1.0f);
+        break;
+        case 6:
+        outColor = vec4(diffuseColor, 1.0f);
+        break;
+        case 7:
+        outColor = vec4(specularColor, 1.0f);
+        break;
+        case 8:
+        outColor = vec4(texColor, 1.0f);
+        break;
+        case 9:
+        outColor = vec4(inUV, 0.0f, 1.0f);
+        break;
+        default:
+        outColor = vec4(finalColor, 1.0f);
+        break;
+    }
 }

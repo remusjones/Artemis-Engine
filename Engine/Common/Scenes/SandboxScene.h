@@ -26,5 +26,5 @@ private:
     MeshObject *mTeapot;
     MeshObject *mLight;
     MeshObject *mSphere;
-    MeshObject *mHalfLambertSphere;
+    MeshObject *mCube;
 };

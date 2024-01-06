@@ -4,9 +4,7 @@
 
 #include "SandboxScene.h"
 
-#include "LoadUtilities.h"
 #include "VulkanGraphicsImpl.h"
-#include "Base/DefaultMaterialTest.h"
 #include "Base/Common/DefaultMaterial.h"
 #include "Base/Common/Material.h"
 #include "File Management/FileManagement.h"
@@ -89,11 +87,11 @@ void SandboxScene::Construct(const char *aSceneName) {
     mSphere->LoadMesh((FileManagement::GetWorkingDirectory() +
                        std::string("/Assets/Models/sphere.obj")).c_str());
 
-    mHalfLambertSphere = new MeshObject();
-    mHalfLambertSphere->CreateObject(*halfLambertMeshPipeline,
+    mCube = new MeshObject();
+    mCube->CreateObject(*halfLambertMeshPipeline,
                                      *halfLambertMaterial,
-                                     "Sphere Lambert");
-    mHalfLambertSphere->LoadMesh((FileManagement::GetWorkingDirectory() +
+                                     "Cube Half Lambert");
+    mCube->LoadMesh((FileManagement::GetWorkingDirectory() +
                                   std::string("/Assets/Models/cube.obj")).c_str());
 
 
@@ -103,7 +101,7 @@ void SandboxScene::Construct(const char *aSceneName) {
     mTeapot->mTransform.SetPosition({2, 0, -20.0f});
     mTeapot->mTransform.SetScale({0.1f, 0.1f, 0.1f});
     mSphere->mTransform.SetPosition({-5, 0, -5});
-    mHalfLambertSphere->mTransform.SetPosition({-2, 0, -5});
+    mCube->mTransform.SetPosition({-2, 0, -5});
     mLight->mTransform.SetScale({0.1f, 0.1f, 0.1f});
     mLight->mTransform.SetScale({0.2f, 0.2f, 0.2f});
 
@@ -113,7 +111,7 @@ void SandboxScene::Construct(const char *aSceneName) {
     mObjects.push_back(mTeapot);
     mObjects.push_back(mLight);
     mObjects.push_back(mSphere);
-    mObjects.push_back(mHalfLambertSphere);
+    mObjects.push_back(mCube);
 
 
     // TODO: Condense into texture create function
