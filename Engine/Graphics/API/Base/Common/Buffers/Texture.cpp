@@ -1,16 +1,17 @@
 #include "Texture.h"
 #include <stdexcept>
 #include "LoadUtilities.h"
+#include "Logger.h"
 #include "VulkanGraphicsImpl.h"
 #include "Vulkan/Helpers/VulkanInitialization.h"
 
 
 void Texture::LoadImageFromDisk(const char *aFilePath) {
-    LoadUtilities::LoadImageFromDisk(gGraphics, aFilePath,mAllocatedImage);
+    LoadUtilities::LoadImageFromDisk(gGraphics, aFilePath, mAllocatedImage);
     mImageCount = 1;
 }
 
-void Texture::LoadImagesFromDisk(const std::vector<std::string>& aPaths) {
+void Texture::LoadImagesFromDisk(const std::vector<std::string> &aPaths) {
     LoadUtilities::LoadImagesFromDisk(gGraphics, aPaths, mAllocatedImage);
     mImageCount = aPaths.size();
 }
@@ -22,7 +23,6 @@ void Texture::CreateDefault(Color_RGBA aColor) {
 
 void Texture::Create(VkFilter aSamplerFilter,
                      VkSamplerAddressMode aSamplerAddressMode) {
-
     const VkSamplerCreateInfo samplerInfo = VulkanInitialization::SamplerCreateInfo(
         aSamplerFilter, aSamplerAddressMode);
     vkCreateSampler(gGraphics->mLogicalDevice, &samplerInfo, nullptr, &mSampler);
@@ -51,7 +51,7 @@ void Texture::Create(VkFilter aSamplerFilter,
         imageBufferInfo.imageView = imageView;
         imageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-        mImageBufferInfo.push_back(imageBufferInfo);  // add image info to the array
+        mImageBufferInfo.push_back(imageBufferInfo); // add image info to the array
     }
 }
 
@@ -59,7 +59,7 @@ void Texture::Destroy() const {
     vmaDestroyImage(gGraphics->mAllocator, mAllocatedImage.mImage, mAllocatedImage.mAllocation);
 
     // Destroy each imageView
-    for(auto imageView : mImageViews) {
+    for (auto imageView: mImageViews) {
         vkDestroyImageView(gGraphics->mLogicalDevice, imageView, nullptr);
     }
 

@@ -35,7 +35,7 @@ public:
     void AddBinding(const uint32_t aBinding, const uint32_t aCount,
                     const VkDescriptorType aType, VkShaderStageFlagBits aShaderStage);
 
-    void SetBuffers(const AllocatedBuffer &aBuffer, const uint8_t aBinding, const uint8_t aIndex);
+    void SetBuffers(const AllocatedBuffer &aBuffer, const uint8_t aBinding, const uint8_t aIndex) const;
 
     VkDescriptorSet GetDescriptorSet() const { return mDescriptorSet; }
     VkDescriptorSetLayout GetDescriptorLayout() const { return mLayout; }

@@ -52,7 +52,6 @@ void Material::BindTexture(Texture &aTexture, const uint8_t aBinding) {
     writeDescriptorSet.descriptorCount = static_cast<uint32_t>(imageInfos.size()); // setting to the total number of textures in the array
     writeDescriptorSet.pImageInfo = imageInfos.data(); // pointer to the images' information array
 
-    // single vkUpdateDescriptorSets() call for all textures in the array
     vkUpdateDescriptorSets(gGraphics->mLogicalDevice, 1, &writeDescriptorSet, 0, nullptr);
 }
 
@@ -66,7 +65,7 @@ void Material::AddBinding(const uint32_t aBinding, const uint32_t aCount,
     mBindings.push_back(binding);
 }
 
-void Material::SetBuffers(const AllocatedBuffer &aBuffer, const uint8_t aBinding, const uint8_t aIndex) {
+void Material::SetBuffers(const AllocatedBuffer &aBuffer, const uint8_t aBinding, const uint8_t aIndex) const {
     const VkDescriptorSetLayoutBinding &binding = mBindings[aBinding];
 
     auto *descriptors = static_cast<VkDescriptorBufferInfo *>(alloca(

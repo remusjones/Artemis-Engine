@@ -59,7 +59,6 @@ void MeshObject::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
 }
 void MeshObject::OnImGuiRender() {
 
-
     ImGui::SeparatorText("Transform");
     glm::vec3 pos = mTransform.Position();
     glm::vec3 rot = mTransform.Euler();
@@ -75,7 +74,6 @@ void MeshObject::OnImGuiRender() {
         mTransform.SetScale(scale);
     }
     mMaterial->OnImGuiRender();
-
 }
 
 void Renderer::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {

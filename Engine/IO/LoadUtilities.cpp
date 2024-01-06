@@ -332,7 +332,7 @@ bool LoadUtilities::LoadCubemap(VulkanGraphics *aEngine, const char *aFilePath, 
         vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr,
                              0, nullptr, 1, &imageBarrier_toReadable);
     });
-    vmaDestroyBuffer(aEngine->mAllocator, stagingBuffer.mBuffer, stagingBuffer.mAllocation);
+    stagingBuffer.Destroy();
     aResult = newImage;
     return true;
 }
@@ -423,7 +423,7 @@ bool LoadUtilities::CreateImage(const int aWidth, const int aHeight,
         vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr,
                              0, nullptr, 1, &imageBarrier_toReadable);
     });
-    vmaDestroyBuffer(aEngine->mAllocator, stagingBuffer.mBuffer, stagingBuffer.mAllocation);
+    stagingBuffer.Destroy();
     aResult = newImage;
     return true;
 }
