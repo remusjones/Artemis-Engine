@@ -27,6 +27,8 @@ class LoadUtilities {
 public:
     static bool LoadImageFromDisk(VulkanGraphics *aEngine, const char *aFilePath, AllocatedImage &aResult);
 
+    static bool LoadCubemap(VulkanGraphics *aEngine, const char *aFilePath, VkFormat aFormat, AllocatedImage &aResult);
+
     static bool CreateImage(const int aWidth, const int aHeight, VulkanGraphics *aEngine, AllocatedImage &aResult, Color_RGBA aColor);
 
     static bool LoadMeshFromDisk(const char *aFilePath, AllocatedVertexBuffer &aResult,

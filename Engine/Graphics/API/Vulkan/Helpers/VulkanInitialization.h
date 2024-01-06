@@ -27,6 +27,27 @@ public:
 
         return info;
     }
+	static VkImageCreateInfo CreateImageInfoCubemap(
+		const VkFormat aFormat,
+		const VkExtent3D aExtent) {
+
+    	VkImageCreateInfo imageInfo{};
+    	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    	imageInfo.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
+    	imageInfo.imageType = VK_IMAGE_TYPE_2D;
+    	imageInfo.extent = aExtent;
+    	imageInfo.extent.depth = 1;
+    	imageInfo.mipLevels = 1;
+    	imageInfo.arrayLayers = 1;
+    	imageInfo.format = aFormat;
+    	imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+    	imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    	imageInfo.usage =  VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+    	imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+    	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    	return imageInfo;
+    }
+
     static VkImageViewCreateInfo ImageViewCreateInfo(const VkFormat aFormat,
                                                      const VkImage aImage, const VkImageAspectFlags aAspectFlags) {
 	    //build a image-view for the depth image to use for rendering

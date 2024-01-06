@@ -1,6 +1,8 @@
 #pragma once
-#include "Vulkan/GraphicsPipeline.h"
+#include <vulkan/vulkan_core.h>
 
-class Cubemap : public GraphicsPipeline{
-    void Create() override;
+class Cubemap {
+    void Create();
+
+    VkSampler mSampler;
 };
