@@ -37,11 +37,10 @@ layout(location = 4) in vec3 inTangent;
 
 layout(location = 0) out vec4 outColor;
 
-layout(set = 0, binding = 3) uniform sampler2D textureAlbedo;
-layout(set = 0, binding = 4) uniform sampler2D textureNormal;
+//layout(set = 0, binding = 3) uniform sampler2D textureAlbedo;
+//layout(set = 0, binding = 4) uniform sampler2D textureNormal;
 
-
-
+layout(set = 0, binding = 3) uniform sampler2DArray textureArray; //
 
 vec3 CalculateViewSpaceNormal(vec3 normal, mat4 cameraView) {
     mat3 normalMatrix = mat3(cameraView);
@@ -67,8 +66,12 @@ vec3 CalculateFinalColor(vec3 ambientColor, vec3 diffuseColor, vec3 specularColo
 
 void main() {
 
+    int albedoTextureIndex = 0;
+    int normalTextureIndex = 1;
+    vec3 texNormal = texture(textureArray, vec3(inUV, normalTextureIndex)).xyz * 2.0 - 1.0;  // Accessing normal texture
+    // ... Various Calculations
+
     // TNB Normals
-    vec3 texNormal = texture(textureNormal, inUV).xyz * 2.0 - 1.0;
     vec3 T = normalize(inTangent);
     vec3 N = normalize(inNormal);
     vec3 B = cross(N, T);
@@ -90,7 +93,8 @@ void main() {
     vec3 specularColor = attenuation * materialProperties.specularStrength * specular * sceneData.light.color;
 
     vec3 finalColor = CalculateFinalColor(ambientColor, diffuseColor, specularColor);
-    vec3 texColor = texture(textureAlbedo, inUV).xyz;
+    vec3 texColor = texture(textureArray, vec3(inUV, albedoTextureIndex)).xyz;
+
 
     finalColor *= texColor;
 

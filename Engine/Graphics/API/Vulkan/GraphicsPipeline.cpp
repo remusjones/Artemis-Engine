@@ -244,9 +244,11 @@ void GraphicsPipeline::Draw(VkCommandBuffer aCommandBuffer, Scene &aScene) const
     vmaUnmapMemory(gGraphics->mAllocator, currentFrame.mSceneBuffer.mAllocation);
 
     for (auto &mRenderer: mRenderers) {
-        auto materialDescriptorSet = mRenderer->mMaterial->GetDescriptorSet();
+        std::vector<VkDescriptorSet> descriptorSets;
+        descriptorSets.push_back(mRenderer->mMaterial->GetDescriptorSet());
+
         vkCmdBindDescriptorSets(aCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout, 0,
-                                1, &materialDescriptorSet, 0, nullptr);
+                                descriptorSets.size(), descriptorSets.data(), 0, nullptr);
 
         mRenderer->Render(aCommandBuffer, aScene);
     }

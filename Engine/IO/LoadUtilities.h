@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include <string>
 #include "VulkanGraphicsImpl.h"
 
 
@@ -25,12 +26,10 @@ struct Color_RGBA {
 
 class LoadUtilities {
 public:
-    static bool LoadImageFromDisk(VulkanGraphics *aEngine, const char *aFilePath, AllocatedImage &aResult);
-
+    static bool LoadImageFromDisk(const VulkanGraphics *aEngine, const char *aFilePath, AllocatedImage &aResult);
+    static bool LoadImagesFromDisk(VulkanGraphics *aEngine, const std::vector<std::string>& aPaths, AllocatedImage &aResult);
     static bool LoadCubemap(VulkanGraphics *aEngine, const char *aFilePath, VkFormat aFormat, AllocatedImage &aResult);
-
     static bool CreateImage(const int aWidth, const int aHeight, VulkanGraphics *aEngine, AllocatedImage &aResult, Color_RGBA aColor);
-
     static bool LoadMeshFromDisk(const char *aFilePath, AllocatedVertexBuffer &aResult,
                                  std::vector<Vertex> &aResultVertices,
                                  std::vector<int16_t> &aResultIndices);

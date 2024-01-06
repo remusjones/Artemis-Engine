@@ -8,7 +8,6 @@
 
 #include "VulkanGraphicsImpl.h"
 #include "Buffers/Texture.h"
-#include "Vulkan/Helpers/VulkanInitialization.h"
 
 void Material::Create(MaterialBase *aBaseMaterial, const char *aMaterialName) {
 
@@ -29,9 +28,6 @@ void Material::Create(MaterialBase *aBaseMaterial, const char *aMaterialName) {
     if (err == VK_ERROR_OUT_OF_POOL_MEMORY) {
         throw std::runtime_error("Out of pool memory");
     }
-
-    for (auto boundTexture: mBoundTextures) {
-    }
 }
 
 void Material::CreateProperties(const uint32_t aBinding, const MaterialProperties &aMaterialProperties) {
@@ -45,9 +41,19 @@ void Material::CreateProperties(const uint32_t aBinding, const MaterialPropertie
 }
 
 void Material::BindTexture(Texture &aTexture, const uint8_t aBinding) {
-    mBoundTextures[aBinding] = VulkanInitialization::WriteDescriptorImage(
-        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, GetDescriptorSet(), &aTexture.mImageBufferInfo, aBinding);
-    vkUpdateDescriptorSets(gGraphics->mLogicalDevice, 1, &mBoundTextures[aBinding], 0, nullptr);
+    std::vector<VkDescriptorImageInfo> imageInfos = aTexture.mImageBufferInfo;
+
+    VkWriteDescriptorSet writeDescriptorSet{};
+    writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    writeDescriptorSet.dstSet = GetDescriptorSet();
+    writeDescriptorSet.dstBinding = aBinding;
+    writeDescriptorSet.dstArrayElement = 0; // starting from the first array element
+    writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    writeDescriptorSet.descriptorCount = static_cast<uint32_t>(imageInfos.size()); // setting to the total number of textures in the array
+    writeDescriptorSet.pImageInfo = imageInfos.data(); // pointer to the images' information array
+
+    // single vkUpdateDescriptorSets() call for all textures in the array
+    vkUpdateDescriptorSets(gGraphics->mLogicalDevice, 1, &writeDescriptorSet, 0, nullptr);
 }
 
 void Material::AddBinding(const uint32_t aBinding, const uint32_t aCount,

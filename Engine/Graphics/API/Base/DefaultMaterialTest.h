@@ -1,14 +1,17 @@
+//
+// Created by Remus on 6/01/2024.
+//
+
 #pragma once
 #include <memory>
 
-#include "Material.h"
+#include "Common/Material.h"
 
 
-class DefaultMaterial : public Material {
+class DefaultMaterialTest : public Material {
 public:
     enum TextureBinding {
-        ALBEDO = 3,
-        NORMAL = 4
+        TEXTURE = 3
     };
 
     void Create(MaterialBase *aBaseMaterial = nullptr,
@@ -20,8 +23,7 @@ public:
 
     void Destroy() override;
 
-    std::unique_ptr<Texture> mDefaultAlbedo;
-    std::unique_ptr<Texture> mDefaultNormal;
+    std::unique_ptr<Texture> mTextures;
     std::vector<const char *> mDebugColors{
         "Default",
         "normal",

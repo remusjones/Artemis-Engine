@@ -12,19 +12,17 @@
 #include "Logger.h"
 #include "Vulkan/Helpers/VulkanInitialization.h"
 
-bool LoadUtilities::LoadImageFromDisk(VulkanGraphics* aEngine, const char* aFilePath, AllocatedImage& aResult)
-{
+bool LoadUtilities::LoadImageFromDisk(const VulkanGraphics *aEngine, const char *aFilePath, AllocatedImage &aResult) {
     int texWidth, texHeight, texChannels;
 
-    stbi_uc* pixels = stbi_load(aFilePath, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+    stbi_uc *pixels = stbi_load(aFilePath, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 
-    if (!pixels)
-    {
+    if (!pixels) {
         Logger::Log(spdlog::level::err, (std::string("Could not load file ") + aFilePath).c_str());
         return false;
     }
 
-    void* pixel_ptr = pixels;
+    void *pixel_ptr = pixels;
     VkDeviceSize imageSize = texWidth * texHeight * 4;
 
     VkFormat image_format = VK_FORMAT_R8G8B8A8_SRGB;
@@ -41,7 +39,7 @@ bool LoadUtilities::LoadImageFromDisk(VulkanGraphics* aEngine, const char* aFile
     imageExtent.depth = 1;
 
     VkImageCreateInfo dimg_info = VulkanInitialization::CreateImageInfo(image_format, VK_IMAGE_USAGE_SAMPLED_BIT |
-                                                                        VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+                                                                            VK_IMAGE_USAGE_TRANSFER_DST_BIT,
                                                                         imageExtent);
 
     AllocatedImage newImage;
@@ -51,8 +49,7 @@ bool LoadUtilities::LoadImageFromDisk(VulkanGraphics* aEngine, const char* aFile
     //allocate and create the image
     vmaCreateImage(aEngine->mAllocator, &dimg_info, &dimg_allocinfo, &newImage.mImage, &newImage.mAllocation, nullptr);
 
-    aEngine->mVulkanEngine.SubmitBufferCommand([&](VkCommandBuffer cmd)
-    {
+    aEngine->mVulkanEngine.SubmitBufferCommand([&](VkCommandBuffer cmd) {
         VkImageSubresourceRange range;
         range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         range.baseMipLevel = 0;
@@ -105,19 +102,151 @@ bool LoadUtilities::LoadImageFromDisk(VulkanGraphics* aEngine, const char* aFile
     return true;
 }
 
-bool LoadUtilities::LoadCubemap(VulkanGraphics* aEngine, const char* aFilePath, VkFormat aFormat, AllocatedImage&
-aResult) {
+bool LoadUtilities::LoadImagesFromDisk(VulkanGraphics *aEngine, const std::vector<std::string> &aPaths,
+                                       AllocatedImage &aResult) {
+    const int imageCount = aPaths.size();
+    const VkFormat image_format = VK_FORMAT_R8G8B8A8_SRGB;
+
+    VkDeviceSize layerSize = 0;
+    VkDeviceSize imageSize;
+
+    AllocatedBuffer stagingBuffer;
+    void *data;
     int texWidth, texHeight, texChannels;
+    uint64_t memAddress = 0;
+    stbi_uc *pixels;
 
-    stbi_uc* pixels = stbi_load(aFilePath, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 
-    if (!pixels)
-    {
+    // Recursively load all image into staging buffer
+    for (int i = 0; i < imageCount; i++) {
+        Logger::Log(spdlog::level::info, (std::string("Loading file: ") + aPaths[i]).c_str());
+
+        pixels = stbi_load(aPaths[i].c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+        if (!pixels) {
+            Logger::Log(spdlog::level::err, (std::string("Could not load file ") + aPaths[i]).c_str());
+        }
+        if (i == 0) {
+            layerSize = texWidth * texHeight * texChannels;
+            imageSize = layerSize * imageCount;
+
+            // Allocate Manually
+            stagingBuffer.Create(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                 stagingBuffer.mBuffer,
+                                 stagingBuffer.mAllocation);
+
+            vmaMapMemory(gGraphics->mAllocator, stagingBuffer.mAllocation, &data);
+            memAddress = reinterpret_cast<uint64_t>(data);
+        }
+        memcpy(reinterpret_cast<void *>(memAddress), pixels, layerSize);
+        stbi_image_free(pixels);
+        memAddress += layerSize;
+    }
+    vmaUnmapMemory(gGraphics->mAllocator, stagingBuffer.mAllocation);
+
+
+    VkExtent3D imageExtent;
+    imageExtent.width = static_cast<uint32_t>(texWidth);
+    imageExtent.height = static_cast<uint32_t>(texHeight);
+    imageExtent.depth = 1;
+
+    VkImageCreateInfo dimg_info = {};
+    dimg_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    dimg_info.pNext = nullptr;
+
+    dimg_info.imageType = VK_IMAGE_TYPE_2D;
+
+    dimg_info.format = image_format;
+    dimg_info.extent = imageExtent;
+
+    dimg_info.mipLevels = 1;
+    dimg_info.arrayLayers = imageCount;
+    dimg_info.samples = VK_SAMPLE_COUNT_1_BIT;
+    dimg_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+    dimg_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+
+    AllocatedImage newImage;
+    VmaAllocationCreateInfo dimg_allocinfo = {};
+    dimg_allocinfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+
+    VkResult result = vmaCreateImage(aEngine->mAllocator, &dimg_info, &dimg_allocinfo, &newImage.mImage,
+                                     &newImage.mAllocation, nullptr);
+
+    if (result != VK_SUCCESS) {
+        Logger::Log(spdlog::level::err, "vmaCreateImage failed!");
+        // Always cleanup after an error!
+        vmaDestroyBuffer(gGraphics->mAllocator, stagingBuffer.mBuffer, stagingBuffer.mAllocation);
+        return false;
+    }
+    if (!newImage.mImage || !newImage.mAllocation) {
+        Logger::Log(spdlog::level::err, "Image or allocation from vmaCreateImage is null!");
+        vmaDestroyBuffer(gGraphics->mAllocator, stagingBuffer.mBuffer, stagingBuffer.mAllocation);
+        return false;
+    }
+    aEngine->mVulkanEngine.SubmitBufferCommand([&](VkCommandBuffer cmd) {
+        VkImageSubresourceRange range;
+        range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        range.baseMipLevel = 0;
+        range.levelCount = 1;
+        range.baseArrayLayer = 0;
+        range.layerCount = imageCount;
+
+        VkImageMemoryBarrier imageBarrier_toTransfer = {};
+        imageBarrier_toTransfer.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+
+        imageBarrier_toTransfer.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        imageBarrier_toTransfer.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        imageBarrier_toTransfer.image = newImage.mImage;
+        imageBarrier_toTransfer.subresourceRange = range;
+
+        imageBarrier_toTransfer.srcAccessMask = 0;
+        imageBarrier_toTransfer.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0,
+                             nullptr, 1, &imageBarrier_toTransfer);
+
+        VkBufferImageCopy copyRegion = {};
+        copyRegion.bufferOffset = 0;
+        copyRegion.bufferRowLength = 0;
+        copyRegion.bufferImageHeight = 0;
+
+        copyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        copyRegion.imageSubresource.mipLevel = 0;
+        copyRegion.imageSubresource.baseArrayLayer = 0;
+        copyRegion.imageSubresource.layerCount = imageCount;
+        copyRegion.imageExtent = imageExtent;
+
+        //copy the buffer into the image
+        vkCmdCopyBufferToImage(cmd, stagingBuffer.mBuffer, newImage.mImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
+                               &copyRegion);
+
+        VkImageMemoryBarrier imageBarrier_toReadable = imageBarrier_toTransfer;
+
+        imageBarrier_toReadable.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        imageBarrier_toReadable.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        imageBarrier_toReadable.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        imageBarrier_toReadable.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr,
+                             0, nullptr, 1, &imageBarrier_toReadable);
+    });
+    // Cleanup staging buffer
+    vmaDestroyBuffer(aEngine->mAllocator, stagingBuffer.mBuffer, stagingBuffer.mAllocation);
+    aResult = newImage;
+    return true;
+}
+
+bool LoadUtilities::LoadCubemap(VulkanGraphics *aEngine, const char *aFilePath, VkFormat aFormat, AllocatedImage &
+                                aResult) {
+    int texWidth, texHeight, texChannels;
+    stbi_uc *pixels = stbi_load(aFilePath, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+
+    if (!pixels) {
         Logger::Log(spdlog::level::err, (std::string("Could not load file ") + aFilePath).c_str());
         return false;
     }
 
-    void* pixel_ptr = pixels;
+    void *pixel_ptr = pixels;
     VkDeviceSize imageSize = texWidth * texHeight * 4;
 
     VkFormat image_format = aFormat;
@@ -144,7 +273,7 @@ aResult) {
     dimg_info.format = image_format;
     dimg_info.tiling = VK_IMAGE_TILING_OPTIMAL;
     dimg_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    dimg_info.usage =  VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+    dimg_info.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
     dimg_info.samples = VK_SAMPLE_COUNT_1_BIT;
     dimg_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
@@ -155,8 +284,7 @@ aResult) {
     //allocate and create the image
     vmaCreateImage(aEngine->mAllocator, &dimg_info, &dimg_allocinfo, &newImage.mImage, &newImage.mAllocation, nullptr);
 
-    aEngine->mVulkanEngine.SubmitBufferCommand([&](VkCommandBuffer cmd)
-    {
+    aEngine->mVulkanEngine.SubmitBufferCommand([&](VkCommandBuffer cmd) {
         VkImageSubresourceRange range;
         range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         range.baseMipLevel = 0;
@@ -207,24 +335,22 @@ aResult) {
     vmaDestroyBuffer(aEngine->mAllocator, stagingBuffer.mBuffer, stagingBuffer.mAllocation);
     aResult = newImage;
     return true;
-
-
 }
-bool LoadUtilities::CreateImage(const int aWidth, const int aHeight,
-    VulkanGraphics *aEngine,
-    AllocatedImage &aResult,
-    Color_RGBA aColor = Color_RGBA(1,1,1,1)) {
 
-    int texWidth = aWidth, texHeight = aHeight;  // Assuming RGB texture
-    stbi_uc* pixels = new stbi_uc[4 * texWidth * texHeight];
+bool LoadUtilities::CreateImage(const int aWidth, const int aHeight,
+                                VulkanGraphics *aEngine,
+                                AllocatedImage &aResult,
+                                Color_RGBA aColor = Color_RGBA(1, 1, 1, 1)) {
+    int texWidth = aWidth, texHeight = aHeight; // Assuming RGB texture
+    stbi_uc *pixels = new stbi_uc[4 * texWidth * texHeight];
     for (int i = 0; i < 4 * texWidth * texHeight; i += 4) {
-        pixels[i] = aColor.R;     // red
+        pixels[i] = aColor.R; // red
         pixels[i + 1] = aColor.G; // green
         pixels[i + 2] = aColor.B; // blue
         pixels[i + 3] = aColor.A; // alpha
     }
 
-    void* pixel_ptr = pixels;
+    void *pixel_ptr = pixels;
     VkDeviceSize imageSize = texWidth * texHeight * 4;
 
     VkFormat image_format = VK_FORMAT_R8G8B8A8_SRGB;
@@ -239,7 +365,7 @@ bool LoadUtilities::CreateImage(const int aWidth, const int aHeight,
     imageExtent.depth = 1;
 
     VkImageCreateInfo dimg_info = VulkanInitialization::CreateImageInfo(image_format, VK_IMAGE_USAGE_SAMPLED_BIT |
-                                                                        VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+                                                                            VK_IMAGE_USAGE_TRANSFER_DST_BIT,
                                                                         imageExtent);
 
     AllocatedImage newImage;
@@ -249,8 +375,7 @@ bool LoadUtilities::CreateImage(const int aWidth, const int aHeight,
     //allocate and create the image
     vmaCreateImage(aEngine->mAllocator, &dimg_info, &dimg_allocinfo, &newImage.mImage, &newImage.mAllocation, nullptr);
 
-    aEngine->mVulkanEngine.SubmitBufferCommand([&](VkCommandBuffer cmd)
-    {
+    aEngine->mVulkanEngine.SubmitBufferCommand([&](VkCommandBuffer cmd) {
         VkImageSubresourceRange range;
         range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         range.baseMipLevel = 0;
@@ -303,9 +428,8 @@ bool LoadUtilities::CreateImage(const int aWidth, const int aHeight,
     return true;
 }
 
-bool LoadUtilities::LoadMeshFromDisk(const char* aFilePath, AllocatedVertexBuffer& aResult,
-                                     std::vector<Vertex>& aResultVertices, std::vector<int16_t>& aResultIndices)
-{
+bool LoadUtilities::LoadMeshFromDisk(const char *aFilePath, AllocatedVertexBuffer &aResult,
+                                     std::vector<Vertex> &aResultVertices, std::vector<int16_t> &aResultIndices) {
     //attrib will contain the vertex arrays of the file
     tinyobj::attrib_t attrib;
     //shapes contains the info for each separate object in the file
@@ -320,31 +444,26 @@ bool LoadUtilities::LoadMeshFromDisk(const char* aFilePath, AllocatedVertexBuffe
     //load the OBJ file
     LoadObj(&attrib, &shapes, &materials, &warn, &err, aFilePath, nullptr);
 
-    if (!warn.empty())
-    {
+    if (!warn.empty()) {
         Logger::Log(spdlog::level::warn, warn.c_str());
     }
     //if we have any error, print it to the console, and break the mesh loading.
     //This happens if the file can't be found or is malformed
-    if (!err.empty())
-    {
+    if (!err.empty()) {
         Logger::Log(spdlog::level::err, err.c_str());
         return false;
     }
 
 
-    for (size_t s = 0; s < shapes.size(); s++)
-    {
+    for (size_t s = 0; s < shapes.size(); s++) {
         glm::vec3 tangent;
 
         // Loop over faces(polygon)
         size_t index_offset = 0;
-        for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++)
-        {
+        for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++) {
             //hardcode loading to triangles
             int fv = 3;
-            if (f % 3 == 0 && f > 0)
-            {
+            if (f % 3 == 0 && f > 0) {
                 const glm::vec3 &pos1 = aResultVertices[aResultIndices[f - 3]].mPosition;
                 const glm::vec3 &pos2 = aResultVertices[aResultIndices[f - 2]].mPosition;
                 const glm::vec3 &pos3 = aResultVertices[aResultIndices[f - 1]].mPosition;
@@ -368,8 +487,7 @@ bool LoadUtilities::LoadMeshFromDisk(const char* aFilePath, AllocatedVertexBuffe
             }
 
             // Loop over vertices in the face.
-            for (size_t v = 0; v < fv; v++)
-            {
+            for (size_t v = 0; v < fv; v++) {
                 // access to vertex
                 tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
 

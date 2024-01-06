@@ -1,12 +1,19 @@
 #include "Texture.h"
-
+#include <stdexcept>
 #include "LoadUtilities.h"
 #include "VulkanGraphicsImpl.h"
 #include "Vulkan/Helpers/VulkanInitialization.h"
 
 
 void Texture::LoadImageFromDisk(const char *aFilePath) {
-    LoadUtilities::LoadImageFromDisk(gGraphics, aFilePath,mAllocatedImage); }
+    LoadUtilities::LoadImageFromDisk(gGraphics, aFilePath,mAllocatedImage);
+    mImageCount = 1;
+}
+
+void Texture::LoadImagesFromDisk(const std::vector<std::string>& aPaths) {
+    LoadUtilities::LoadImagesFromDisk(gGraphics, aPaths, mAllocatedImage);
+    mImageCount = aPaths.size();
+}
 
 void Texture::CreateDefault(Color_RGBA aColor) {
     LoadUtilities::CreateImage(1, 1, gGraphics, mAllocatedImage, aColor);
@@ -15,23 +22,46 @@ void Texture::CreateDefault(Color_RGBA aColor) {
 
 void Texture::Create(VkFilter aSamplerFilter,
                      VkSamplerAddressMode aSamplerAddressMode) {
-    VkImageViewCreateInfo imageinfo = VulkanInitialization::ImageViewCreateInfo(
-        VK_FORMAT_R8G8B8A8_SRGB, mAllocatedImage.mImage,
-        VK_IMAGE_ASPECT_COLOR_BIT);
-
-    vkCreateImageView(gGraphics->mLogicalDevice, &imageinfo, nullptr, &mImageView);
 
     const VkSamplerCreateInfo samplerInfo = VulkanInitialization::SamplerCreateInfo(
         aSamplerFilter, aSamplerAddressMode);
     vkCreateSampler(gGraphics->mLogicalDevice, &samplerInfo, nullptr, &mSampler);
 
-    mImageBufferInfo.sampler = mSampler;
-    mImageBufferInfo.imageView = mImageView;
-    mImageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+    // Creating image views for each layer
+    for (uint32_t i = 0; i < mImageCount; ++i) {
+        VkImageViewCreateInfo viewInfo{};
+        viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        viewInfo.image = mAllocatedImage.mImage; // the VkImage object
+        viewInfo.viewType = mImageCount > 1 ? VK_IMAGE_VIEW_TYPE_2D_ARRAY : VK_IMAGE_VIEW_TYPE_2D;
+        viewInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
+        viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        viewInfo.subresourceRange.baseMipLevel = 0;
+        viewInfo.subresourceRange.levelCount = 1;
+        viewInfo.subresourceRange.baseArrayLayer = 0;
+        viewInfo.subresourceRange.layerCount = mImageCount;
+
+        VkImageView imageView;
+        if (vkCreateImageView(gGraphics->mLogicalDevice, &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create texture image view!");
+        }
+        mImageViews.push_back(imageView); // add to image view array
+        VkDescriptorImageInfo imageBufferInfo;
+        imageBufferInfo.sampler = mSampler;
+        imageBufferInfo.imageView = imageView;
+        imageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        mImageBufferInfo.push_back(imageBufferInfo);  // add image info to the array
+    }
 }
 
 void Texture::Destroy() const {
     vmaDestroyImage(gGraphics->mAllocator, mAllocatedImage.mImage, mAllocatedImage.mAllocation);
-    vkDestroyImageView(gGraphics->mLogicalDevice, mImageView, nullptr);
+
+    // Destroy each imageView
+    for(auto imageView : mImageViews) {
+        vkDestroyImageView(gGraphics->mLogicalDevice, imageView, nullptr);
+    }
+
     vkDestroySampler(gGraphics->mLogicalDevice, mSampler, nullptr);
 }

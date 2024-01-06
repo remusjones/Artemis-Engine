@@ -5,6 +5,7 @@
 #include "SandboxScene.h"
 
 #include "VulkanGraphicsImpl.h"
+#include "Base/DefaultMaterialTest.h"
 #include "Base/Common/DefaultMaterial.h"
 #include "Base/Common/Material.h"
 #include "File Management/FileManagement.h"
@@ -19,6 +20,7 @@ void SandboxScene::Construct(const char *aSceneName) {
     GraphicsPipeline *unlitMeshPipeline = new GraphicsPipeline("Unlit Mesh Pipeline");
     GraphicsPipeline *texturedMeshPipeline = new GraphicsPipeline("Textured Mesh Pipeline");
     GraphicsPipeline *halfLambertMeshPipeline = new GraphicsPipeline("Half Lambert Mesh Pipeline");
+    GraphicsPipeline *arrayTestTexturedMeshPipeline = new GraphicsPipeline("Sampler2DArray test pipeline");
 
     vertexLitPipeline->AddShader("/Assets/Shaders/3DVertexLit_v.spv",
                                  VK_SHADER_STAGE_VERTEX_BIT);
@@ -40,6 +42,11 @@ void SandboxScene::Construct(const char *aSceneName) {
     halfLambertMeshPipeline->AddShader("/Assets/Shaders/HalfLambert_f.spv",
                                        VK_SHADER_STAGE_FRAGMENT_BIT);
 
+    arrayTestTexturedMeshPipeline->AddShader("/Assets/Shaders/3DObject_v.spv",
+                                    VK_SHADER_STAGE_VERTEX_BIT);
+    arrayTestTexturedMeshPipeline->AddShader("/Assets/Shaders/TexturedLit_2DArray_f.spv",
+                                    VK_SHADER_STAGE_FRAGMENT_BIT);
+
 
     Material *monkeyMaterial = vertexLitPipeline->CreateMaterialInstance<DefaultMaterial>().get();
     Material *monkeyTexturedMaterial = texturedMeshPipeline->CreateMaterialInstance<DefaultMaterial>().get();
@@ -47,13 +54,13 @@ void SandboxScene::Construct(const char *aSceneName) {
     Material *lightMaterial = unlitMeshPipeline->CreateMaterialInstance<DefaultMaterial>().get();
     Material *sphereMaterial = texturedMeshPipeline->CreateMaterialInstance<DefaultMaterial>().get();
     Material *halfLambertMaterial = halfLambertMeshPipeline->CreateMaterialInstance<DefaultMaterial>().get();
-
+    Material *testSphereMaterial = arrayTestTexturedMeshPipeline->CreateMaterialInstance<DefaultMaterialTest>().get();
 
     vertexLitPipeline->MakeMaterials(0);
     unlitMeshPipeline->MakeMaterials(0);
     texturedMeshPipeline->MakeMaterials(0);
     halfLambertMeshPipeline->MakeMaterials(0);
-
+    arrayTestTexturedMeshPipeline->MakeMaterials(0);
 
     // Create Objects, and bind mesh and materials
 
@@ -84,7 +91,7 @@ void SandboxScene::Construct(const char *aSceneName) {
          std::string("/Assets/Models/sphere.obj")).c_str());
 
     mSphere = new MeshObject();
-    mSphere->CreateObject(*texturedMeshPipeline, *sphereMaterial,
+    mSphere->CreateObject(*arrayTestTexturedMeshPipeline, *testSphereMaterial,
                           "Sphere");
     mSphere->LoadMesh((FileManagement::GetWorkingDirectory() +
                        std::string("/Assets/Models/sphere.obj")).c_str());
@@ -147,6 +154,19 @@ void SandboxScene::Construct(const char *aSceneName) {
 
     teapotMaterial->BindTexture(*stoneAlbedo, DefaultMaterial::ALBEDO);
     teapotMaterial->BindTexture(*stoneNormal, DefaultMaterial::NORMAL);
+
+
+    auto* combinedTexture = new Texture();
+    std::vector<std::string> set;
+    set.push_back(std::string(FileManagement::GetWorkingDirectory() +
+                                               "/Assets/Textures/Stone Wall.png"));
+    set.push_back(std::string(FileManagement::GetWorkingDirectory() +
+                                               "/Assets/Textures/Stone Wall_NRM.png"));
+    combinedTexture->LoadImagesFromDisk(set);
+    combinedTexture->Create();
+    mLoadedTextures["combinedTexture"] = combinedTexture;
+    testSphereMaterial->BindTexture(*combinedTexture, 3);
+
     //
     // sphereNormal->Create();
     // sphereMaterial->BindTexture(*sphereNormal, 4);
@@ -165,7 +185,7 @@ void SandboxScene::Construct(const char *aSceneName) {
     AddGraphicsPipeline(unlitMeshPipeline);
     AddGraphicsPipeline(texturedMeshPipeline);
     AddGraphicsPipeline(halfLambertMeshPipeline);
-
+    AddGraphicsPipeline(arrayTestTexturedMeshPipeline);
     Scene::Construct(aSceneName);
 }
 

@@ -3,6 +3,9 @@
 //
 
 #pragma once
+#include <vector>
+#include <bits/basic_string.h>
+
 #include "AllocatedImage.h"
 
 struct Color_RGBA;
@@ -11,6 +14,7 @@ class Texture {
 public:
     Texture() = default;
     void LoadImageFromDisk(const char* aFilePath);
+    void LoadImagesFromDisk(const std::vector<std::string>& aPaths);
 
     void CreateDefault(Color_RGBA aColor);
 
@@ -18,10 +22,12 @@ public:
     void Create(VkFilter aSamplerFilter = VK_FILTER_LINEAR,
                 VkSamplerAddressMode aSamplerAddressMode = VK_SAMPLER_ADDRESS_MODE_REPEAT);
 
+
     void Destroy() const;
 
     AllocatedImage mAllocatedImage;
-    VkImageView mImageView;
+    uint32_t mImageCount = 1;
+    std::vector<VkImageView> mImageViews;
     VkSampler mSampler;
-    VkDescriptorImageInfo mImageBufferInfo;
+    std::vector<VkDescriptorImageInfo> mImageBufferInfo;
 };
