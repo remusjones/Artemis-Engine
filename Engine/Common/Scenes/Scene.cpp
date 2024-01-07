@@ -10,8 +10,8 @@
 #include "Logger.h"
 
 #include "VulkanGraphicsImpl.h"
-#include "Vulkan/GraphicsPipeline.h"
 #include "Vulkan/Common/MeshObject.h"
+#include "Vulkan/Systems/GraphicsPipeline.h"
 
 
 void Scene::Construct(const char *aSceneName) {
@@ -129,7 +129,7 @@ void Scene::OnImGuiRender() {
         ImGui::Text("Objects: ");
         ImGui::SameLine();
         ImGui::Text(std::to_string(static_cast<int32_t>(mObjects.size())).c_str());
-        ImGui::Text("Graphic Pipelines: ");
+        ImGui::Text("Graphic Systems: ");
         ImGui::SameLine();
         ImGui::Text(std::to_string(static_cast<int32_t>(mGraphicsPipelines.size())).c_str());
     }

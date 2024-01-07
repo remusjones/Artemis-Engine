@@ -10,8 +10,8 @@
 #include "File Management/FileManagement.h"
 #include "Objects/Camera.h"
 #include "Objects/FlyCamera.h"
-#include "Vulkan/GraphicsPipeline.h"
 #include "Vulkan/Common/MeshObject.h"
+#include "Vulkan/Systems/GraphicsPipeline.h"
 
 void SandboxScene::Construct(const char *aSceneName) {
     // Create basic mesh pipeline
@@ -20,24 +20,24 @@ void SandboxScene::Construct(const char *aSceneName) {
     GraphicsPipeline *texturedMeshPipeline = new GraphicsPipeline("Textured Mesh Pipeline");
     GraphicsPipeline *halfLambertMeshPipeline = new GraphicsPipeline("Half Lambert Mesh Pipeline");
 
-    vertexLitPipeline->AddShader("/Assets/Shaders/3DVertexLit_v.spv",
+    vertexLitPipeline->CreateShaderModule("/Assets/Shaders/3DVertexLit_v.spv",
                                  VK_SHADER_STAGE_VERTEX_BIT);
-    vertexLitPipeline->AddShader("/Assets/Shaders/Lit_f.spv",
+    vertexLitPipeline->CreateShaderModule("/Assets/Shaders/Lit_f.spv",
                                  VK_SHADER_STAGE_FRAGMENT_BIT);
 
-    unlitMeshPipeline->AddShader("/Assets/Shaders/3DUnlit_v.spv",
+    unlitMeshPipeline->CreateShaderModule("/Assets/Shaders/3DUnlit_v.spv",
                                  VK_SHADER_STAGE_VERTEX_BIT);
-    unlitMeshPipeline->AddShader("/Assets/Shaders/Lit_f.spv",
+    unlitMeshPipeline->CreateShaderModule("/Assets/Shaders/Lit_f.spv",
                                  VK_SHADER_STAGE_FRAGMENT_BIT);
 
-    texturedMeshPipeline->AddShader("/Assets/Shaders/3DObject_v.spv",
+    texturedMeshPipeline->CreateShaderModule("/Assets/Shaders/3DObject_v.spv",
                                     VK_SHADER_STAGE_VERTEX_BIT);
-    texturedMeshPipeline->AddShader("/Assets/Shaders/TexturedLit_f.spv",
+    texturedMeshPipeline->CreateShaderModule("/Assets/Shaders/TexturedLit_f.spv",
                                     VK_SHADER_STAGE_FRAGMENT_BIT);
 
-    halfLambertMeshPipeline->AddShader("/Assets/Shaders/3DObject_v.spv",
+    halfLambertMeshPipeline->CreateShaderModule("/Assets/Shaders/3DObject_v.spv",
                                        VK_SHADER_STAGE_VERTEX_BIT);
-    halfLambertMeshPipeline->AddShader("/Assets/Shaders/HalfLambert_f.spv",
+    halfLambertMeshPipeline->CreateShaderModule("/Assets/Shaders/HalfLambert_f.spv",
                                        VK_SHADER_STAGE_FRAGMENT_BIT);
 
 

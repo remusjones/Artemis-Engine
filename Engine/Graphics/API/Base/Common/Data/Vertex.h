@@ -25,9 +25,9 @@ public:
         return bindingDescription;
     }
 
-    static std::array<VkVertexInputAttributeDescription, 5>
+    static std::vector<VkVertexInputAttributeDescription>
     GetAttributeDescriptions() {
-        std::array<VkVertexInputAttributeDescription, 5> attributeDescriptions{};
+        std::vector<VkVertexInputAttributeDescription> attributeDescriptions(5);
         attributeDescriptions[0].binding = 0;
         attributeDescriptions[0].location = 0;
         attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;

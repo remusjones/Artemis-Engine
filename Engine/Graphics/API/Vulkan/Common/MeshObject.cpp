@@ -13,8 +13,9 @@
 #include "VulkanGraphicsImpl.h"
 #include "Base/Common/Data/Mesh.h"
 #include "Scenes/Scene.h"
-#include "Vulkan/GraphicsPipeline.h"
 #include <glm/gtc/type_ptr.hpp>
+
+#include "Vulkan/Systems/GraphicsPipeline.h"
 
 void MeshObject::Construct() {
     Super::Construct();

@@ -103,7 +103,7 @@ bool LoadUtilities::LoadImageFromDisk(const VulkanGraphics *aEngine, const char 
     return true;
 }
 
-bool LoadUtilities::LoadImagesFromDisk(VulkanGraphics *aEngine, const std::vector<std::string> &aPaths,
+bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics *aEngine, const std::vector<std::string> &aPaths,
                                        AllocatedImage &aResult) {
     const int imageCount = aPaths.size();
     const VkFormat image_format = VK_FORMAT_R8G8B8A8_SRGB;
@@ -284,9 +284,9 @@ bool LoadUtilities::LoadImagesFromDisk(VulkanGraphics *aEngine, const std::vecto
 }
 
 bool LoadUtilities::CreateImageArray(const int aWidth, const int aHeight,
-                                     VulkanGraphics *aEngine,
+                                     const VulkanGraphics *aEngine,
                                      AllocatedImage &aResult,
-                                     std::vector<Color_RGBA> &aColors) {
+                                     const std::vector<Color_RGBA> &aColors) {
     const int imageCount = aColors.size();
     const VkFormat image_format = VK_FORMAT_R8G8B8A8_SRGB;
 

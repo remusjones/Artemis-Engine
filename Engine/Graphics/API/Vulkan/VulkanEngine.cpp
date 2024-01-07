@@ -6,7 +6,6 @@
 
 #include <imgui_impl_vulkan.h>
 
-#include "GraphicsPipeline.h"
 #include "VulkanGraphicsImpl.h"
 #include <iostream>
 

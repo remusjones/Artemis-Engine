@@ -9,6 +9,7 @@
 #include <vector>
 #include "Base/Common/Material.h"
 
+struct PipelineConfigInfo;
 class Scene;
 class Material;
 class MaterialBase;
@@ -17,16 +18,16 @@ class GraphicsPipeline {
 public:
     GraphicsPipeline(const char* aPipelineName = "Unknown") : mPipelineName(aPipelineName){};
 
-    virtual void AddShader(const char* aPath, VkShaderStageFlagBits aStage);
-    virtual void AddMaterialBase(const std::shared_ptr<Material> aBase) {
+    void CreateShaderModule(const char* aPath, VkShaderStageFlagBits aStage);
+    void AddMaterialBase(const std::shared_ptr<Material> aBase) {
         mMaterials.push_back(aBase);
     };
 
-    virtual void AddRenderer(Renderer* aRenderer);
-    virtual void Draw(VkCommandBuffer aCommandBuffer, Scene &aScene) const;
+    void AddRenderer(Renderer* aRenderer);
+    void Draw(VkCommandBuffer aCommandBuffer, Scene &aScene) const;
 
-    virtual void Create();
-    virtual void Destroy() const;
+    void Create();
+    void Destroy() const;
 
     template<typename T>
     std::shared_ptr<Material> CreateMaterialInstance() {
@@ -40,11 +41,9 @@ public:
 
     void BindDescriptor();
     void BindPushConstant(VkPushConstantRange aPushConstant);
-
-protected:
     void CreateUniformBufferLayouts();
+    void DefaultPipelineConfigInfo(PipelineConfigInfo& aConfigInfo);
 
-public:
     const char* mPipelineName;
     VkPipelineLayout mPipelineLayout;
     VkPipeline mGraphicsPipeline;
