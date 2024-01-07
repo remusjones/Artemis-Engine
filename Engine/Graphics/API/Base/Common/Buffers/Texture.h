@@ -3,9 +3,8 @@
 //
 
 #pragma once
+#include <string>
 #include <vector>
-#include <bits/basic_string.h>
-
 #include "AllocatedImage.h"
 
 struct Color_RGBA;
