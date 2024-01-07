@@ -501,9 +501,8 @@ void VulkanGraphicsImpl::InitializePhysicalDevice()
     else
     {
         VkPhysicalDeviceProperties deviceProperties;
-        VkPhysicalDeviceFeatures deviceFeatures;
         vkGetPhysicalDeviceProperties(mPhysicalDevice, &deviceProperties);
-        vkGetPhysicalDeviceFeatures(mPhysicalDevice, &deviceFeatures);
+        vkGetPhysicalDeviceFeatures(mPhysicalDevice, &mDeviceFeatures);
 
         Logger::Log(spdlog::level::debug, (std::string("Selecting GPU: ") + deviceProperties.deviceName).c_str());
     }

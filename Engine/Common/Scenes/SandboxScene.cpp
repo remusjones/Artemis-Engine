@@ -5,40 +5,42 @@
 #include "SandboxScene.h"
 
 #include "VulkanGraphicsImpl.h"
+#include "Base/Common/Cubemap.h"
 #include "Base/Common/DefaultMaterial.h"
 #include "Base/Common/Material.h"
 #include "File Management/FileManagement.h"
 #include "Objects/Camera.h"
 #include "Objects/FlyCamera.h"
 #include "Vulkan/Common/MeshObject.h"
+#include "Vulkan/Systems/CubemapRenderSystem.h"
 #include "Vulkan/Systems/GraphicsPipeline.h"
 
 void SandboxScene::Construct(const char *aSceneName) {
     // Create basic mesh pipeline
-    GraphicsPipeline *vertexLitPipeline = new GraphicsPipeline("Lit Mesh Pipeline");
+    GraphicsPipeline *vertexLitPipeline = new GraphicsPipeline("Vertex Lit Mesh");
     GraphicsPipeline *unlitMeshPipeline = new GraphicsPipeline("Unlit Mesh Pipeline");
     GraphicsPipeline *texturedMeshPipeline = new GraphicsPipeline("Textured Mesh Pipeline");
     GraphicsPipeline *halfLambertMeshPipeline = new GraphicsPipeline("Half Lambert Mesh Pipeline");
 
     vertexLitPipeline->CreateShaderModule("/Assets/Shaders/3DVertexLit_v.spv",
-                                 VK_SHADER_STAGE_VERTEX_BIT);
+                                          VK_SHADER_STAGE_VERTEX_BIT);
     vertexLitPipeline->CreateShaderModule("/Assets/Shaders/Lit_f.spv",
-                                 VK_SHADER_STAGE_FRAGMENT_BIT);
+                                          VK_SHADER_STAGE_FRAGMENT_BIT);
 
     unlitMeshPipeline->CreateShaderModule("/Assets/Shaders/3DUnlit_v.spv",
-                                 VK_SHADER_STAGE_VERTEX_BIT);
+                                          VK_SHADER_STAGE_VERTEX_BIT);
     unlitMeshPipeline->CreateShaderModule("/Assets/Shaders/Lit_f.spv",
-                                 VK_SHADER_STAGE_FRAGMENT_BIT);
+                                          VK_SHADER_STAGE_FRAGMENT_BIT);
 
     texturedMeshPipeline->CreateShaderModule("/Assets/Shaders/3DObject_v.spv",
-                                    VK_SHADER_STAGE_VERTEX_BIT);
+                                             VK_SHADER_STAGE_VERTEX_BIT);
     texturedMeshPipeline->CreateShaderModule("/Assets/Shaders/TexturedLit_f.spv",
-                                    VK_SHADER_STAGE_FRAGMENT_BIT);
+                                             VK_SHADER_STAGE_FRAGMENT_BIT);
 
     halfLambertMeshPipeline->CreateShaderModule("/Assets/Shaders/3DObject_v.spv",
-                                       VK_SHADER_STAGE_VERTEX_BIT);
+                                                VK_SHADER_STAGE_VERTEX_BIT);
     halfLambertMeshPipeline->CreateShaderModule("/Assets/Shaders/HalfLambert_f.spv",
-                                       VK_SHADER_STAGE_FRAGMENT_BIT);
+                                                VK_SHADER_STAGE_FRAGMENT_BIT);
 
 
     Material *monkeyMaterial = vertexLitPipeline->CreateMaterialInstance<DefaultMaterial>().get();
@@ -89,10 +91,10 @@ void SandboxScene::Construct(const char *aSceneName) {
 
     mCube = new MeshObject();
     mCube->CreateObject(*halfLambertMeshPipeline,
-                                     *halfLambertMaterial,
-                                     "Cube Half Lambert");
+                        *halfLambertMaterial,
+                        "Cube Half Lambert");
     mCube->LoadMesh((FileManagement::GetWorkingDirectory() +
-                                  std::string("/Assets/Models/cube.obj")).c_str());
+                     std::string("/Assets/Models/cube.obj")).c_str());
 
 
     // Init positions
@@ -139,23 +141,23 @@ void SandboxScene::Construct(const char *aSceneName) {
     stoneTexture->LoadImagesFromDisk(stoneSet);
     stoneTexture->Create();
 
-    teapotMaterial->BindTexture(*stoneTexture, DefaultMaterial::TEXTURE);
+    teapotMaterial->BindTexture(stoneTexture->mImageBufferInfo, DefaultMaterial::TEXTURE);
 
 
-   // auto *combinedTexture = new Texture();
-   // std::vector<std::string> set;
-   // set.push_back(std::string(FileManagement::GetWorkingDirectory() +
-   //                           "/Assets/Textures/Stone Wall.png"));
-   // set.push_back(std::string(FileManagement::GetWorkingDirectory() +
-   //                           "/Assets/Textures/Stone Wall_NRM.png"));
-   // //combinedTexture->LoadImagesFromDisk(set);
-   // std::vector<Color_RGBA> testColors;
-   // testColors.push_back(Color_RGBA(255, 255, 255, 255));
-   // testColors.push_back(Color_RGBA(127, 127, 255, 1));
-   // combinedTexture->CreateDefault(testColors);
-   // //combinedTexture->Create();
-   // mLoadedTextures["combinedTexture"] = combinedTexture;
-   // testSphereMaterial->BindTexture(*combinedTexture, 3);
+    // auto *combinedTexture = new Texture();
+    // std::vector<std::string> set;
+    // set.push_back(std::string(FileManagement::GetWorkingDirectory() +
+    //                           "/Assets/Textures/Stone Wall.png"));
+    // set.push_back(std::string(FileManagement::GetWorkingDirectory() +
+    //                           "/Assets/Textures/Stone Wall_NRM.png"));
+    // //combinedTexture->LoadImagesFromDisk(set);
+    // std::vector<Color_RGBA> testColors;
+    // testColors.push_back(Color_RGBA(255, 255, 255, 255));
+    // testColors.push_back(Color_RGBA(127, 127, 255, 1));
+    // combinedTexture->CreateDefault(testColors);
+    // //combinedTexture->Create();
+    // mLoadedTextures["combinedTexture"] = combinedTexture;
+    // testSphereMaterial->BindTexture(*combinedTexture, 3);
 
     //
     // sphereNormal->Create();
@@ -170,8 +172,27 @@ void SandboxScene::Construct(const char *aSceneName) {
     mActiveSceneCamera->Construct();
     mActiveSceneCamera->mTransform.SetPosition({0, 0, -5.0f});
 
+    // TODO: Clean allll this up
+    Cubemap *cubemap = new Cubemap();
+    cubemap->Create(nullptr, "Cubemap Material");
+    cubemapCube = new MeshObject();
+    cubemapCube->mName = "Skybox";
+    mObjects.push_back(cubemapCube);
+    cubemapCube->mMesh = new Mesh();
+    cubemapCube->LoadMesh((FileManagement::GetWorkingDirectory() +
+                           std::string("/Assets/Models/cube.obj")).c_str());
+    cubemapCube->mMaterial = cubemap;
 
-    AddGraphicsPipeline(vertexLitPipeline);
+
+    std::vector<VkDescriptorSetLayout> mCubemapLayouts;
+    mCubemapLayouts.push_back(cubemap->GetDescriptorLayout());
+    cubemapRenderPipeline = new CubemapRenderSystem(mCubemapLayouts);
+
+    AddGraphicsPipeline(cubemapRenderPipeline->mPipeline.get());
+    cubemapCube->mGraphicsPipeline = cubemapRenderPipeline->mPipeline.get();
+    cubemapCube->mGraphicsPipeline->AddRenderer(cubemapCube);
+
+    //AddGraphicsPipeline(vertexLitPipeline);
     AddGraphicsPipeline(unlitMeshPipeline);
     AddGraphicsPipeline(texturedMeshPipeline);
     AddGraphicsPipeline(halfLambertMeshPipeline);
@@ -204,4 +225,5 @@ void SandboxScene::Cleanup() {
         delete loadedTextures.second;
     }
     Scene::Cleanup();
+    delete cubemapRenderPipeline;
 }

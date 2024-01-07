@@ -3,11 +3,8 @@
 //
 
 #pragma once
-#include "GraphicsPipeline.h"
 
 struct PipelineConfigInfo {
-    PipelineConfigInfo(const PipelineConfigInfo&) = delete;
-    PipelineConfigInfo& operator=(const PipelineConfigInfo&) = delete;
 
     // input assembly stage
     VkPipelineViewportStateCreateInfo viewportInfo;

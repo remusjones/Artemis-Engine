@@ -27,7 +27,8 @@ struct Color_RGBA {
 class LoadUtilities {
 public:
     static bool LoadImageFromDisk(const VulkanGraphics *aEngine, const char *aFilePath, AllocatedImage &aResult);
-    static bool LoadImagesFromDisk(const VulkanGraphics *aEngine, const std::vector<std::string>& aPaths, AllocatedImage &aResult);
+    static bool LoadImagesFromDisk(const VulkanGraphics *aEngine, const std::vector<std::string> &aPaths, AllocatedImage &aResult, VkImageCreateFlags
+                                   aImageCreateFlags = 0);
 
     static bool CreateImageArray(const int aWidth, const int aHeight, const VulkanGraphics *aEngine, AllocatedImage &aResult,
                                  const std::vector<Color_RGBA> &aColors);

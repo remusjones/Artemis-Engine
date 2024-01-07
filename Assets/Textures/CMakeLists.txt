@@ -1,4 +1,4 @@
-file(GLOB_RECURSE TEXTURE_FILES CONFIGURE_DEPENDS "*.png")
+file(GLOB_RECURSE TEXTURE_FILES CONFIGURE_DEPENDS "*.png" "*.jpg")
 foreach(FILE ${TEXTURE_FILES})
     # Get the file name without directory
     get_filename_component(FILE_NAME ${FILE} NAME)

@@ -24,7 +24,7 @@ void Scene::Construct(const char *aSceneName) {
 
 void Scene::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
                    uint32_t aCurrentFrame) {
-    for (const auto obj: mGraphicsPipelines) {
+    for (auto obj: mGraphicsPipelines) {
         obj->Draw(aCommandBuffer, *this);
     }
 

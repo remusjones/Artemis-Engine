@@ -3,11 +3,8 @@
 //
 
 #include "Material.h"
-
 #include <stdexcept>
-
 #include "VulkanGraphicsImpl.h"
-#include "Buffers/Texture.h"
 
 void Material::Create(MaterialBase *aBaseMaterial, const char *aMaterialName) {
 
@@ -40,8 +37,7 @@ void Material::CreateProperties(const uint32_t aBinding, const MaterialPropertie
         SetBuffers(mPropertiesBuffer, aBinding, 0);
 }
 
-void Material::BindTexture(Texture &aTexture, const uint8_t aBinding) {
-    std::vector<VkDescriptorImageInfo> imageInfos = aTexture.mImageBufferInfo;
+void Material::BindTexture(const std::vector<VkDescriptorImageInfo>& textureInfo, const uint8_t aBinding) const {
 
     VkWriteDescriptorSet writeDescriptorSet{};
     writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -49,8 +45,8 @@ void Material::BindTexture(Texture &aTexture, const uint8_t aBinding) {
     writeDescriptorSet.dstBinding = aBinding;
     writeDescriptorSet.dstArrayElement = 0; // starting from the first array element
     writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    writeDescriptorSet.descriptorCount = static_cast<uint32_t>(imageInfos.size()); // setting to the total number of textures in the array
-    writeDescriptorSet.pImageInfo = imageInfos.data(); // pointer to the images' information array
+    writeDescriptorSet.descriptorCount = static_cast<uint32_t>(textureInfo.size()); // setting to the total number of textures in the array
+    writeDescriptorSet.pImageInfo = textureInfo.data(); // pointer to the images' information array
 
     vkUpdateDescriptorSets(gGraphics->mLogicalDevice, 1, &writeDescriptorSet, 0, nullptr);
 }

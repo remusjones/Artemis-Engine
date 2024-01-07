@@ -4,18 +4,27 @@
 
 #pragma once
 #include <memory>
-#include <vector>
 #include <vulkan/vulkan_core.h>
 
-class GraphicsPipeline;
+#include "GraphicsPipeline.h"
+
+
+class Cubemap;
 
 class CubemapRenderSystem {
 public:
-    CubemapRenderSystem(VkRenderPass aRenderPass, std::vector<VkDescriptorSetLayout>& aDescriptorSetLayouts);
+    CubemapRenderSystem(std::vector<VkDescriptorSetLayout> aDescriptorLayouts);
+
 private:
-    void CreatePipelineLayout(std::vector<VkDescriptorSetLayout>& aDescriptorSetLayouts);
-    void CreatePipeline(VkRenderPass aRenderPass);
+    void CreatePipelineLayout();
+
+    void CreatePipeline();
 
     VkPipelineLayout mPipelineLayout;
+    std::vector<VkDescriptorSetLayout> mBoundDescriptorLayouts;
+
+    PipelineConfigInfo mPipelineConfig{};
+
+public:
     std::unique_ptr<GraphicsPipeline> mPipeline;
 };

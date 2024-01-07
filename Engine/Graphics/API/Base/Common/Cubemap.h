@@ -1,16 +1,20 @@
 #pragma once
 #include <vulkan/vulkan_core.h>
 
+#include "Material.h"
 #include "Buffers/AllocatedImage.h"
 
-class Cubemap {
-    void Create();
-    void Destroy();
+class Cubemap : public Material {
+public:
+    void Create(MaterialBase *aBaseMaterial, const char *aMaterialName) override;
+    void Destroy() override;
 
     VkSampler mSampler;
     VkDescriptorImageInfo mDescriptorImageInfo;
     VkImageView mImageView;
-    VkImageLayout mImageLayout;
     AllocatedImage mAllocatedImage;
+
+    VkDescriptorSet mDescriptorSet;
+
 };
 

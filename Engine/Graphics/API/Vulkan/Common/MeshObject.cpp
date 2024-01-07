@@ -42,7 +42,6 @@ void MeshObject::CreateObject(
 
 void MeshObject::CreateRenderer(
     GraphicsPipeline &aBoundGraphicsPipeline) {
-    // Load Shaders
     mGraphicsPipeline = &aBoundGraphicsPipeline;
     mGraphicsPipeline->AddRenderer(this);
 
@@ -79,12 +78,15 @@ void MeshObject::OnImGuiRender() {
 
 void Renderer::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
     void *data;
-    vmaMapMemory(gGraphics->mAllocator, mMaterial->mPropertiesBuffer.mAllocation, &data);
-    memcpy(data, &mMaterial->mMaterialProperties, sizeof(MaterialProperties));
-    vmaUnmapMemory(gGraphics->mAllocator, mMaterial->mPropertiesBuffer.mAllocation);
+    // TODO: Move the properties binding out of here? lol
+    if (mMaterial->mPropertiesBuffer.mAllocation != nullptr) {
+        vmaMapMemory(gGraphics->mAllocator, mMaterial->mPropertiesBuffer.mAllocation, &data);
+        memcpy(data, &mMaterial->mMaterialProperties, sizeof(MaterialProperties));
+        vmaUnmapMemory(gGraphics->mAllocator, mMaterial->mPropertiesBuffer.mAllocation);
+    }
 
     mMesh->Bind(aCommandBuffer);
-    vkCmdPushConstants(aCommandBuffer, mGraphicsPipeline->mPipelineLayout,
+    vkCmdPushConstants(aCommandBuffer, mGraphicsPipeline->mPipelineConfig.pipelineLayout,
                        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
                        sizeof(PushConstants), &mPushConstants);
     vkCmdDraw(aCommandBuffer, mMesh->GetVertices().size(), 1, 0, 0);

@@ -14,7 +14,7 @@ public:
     Texture() = default;
     void LoadImagesFromDisk(const std::vector<std::string>& aPaths);
 
-    void Create(VkFilter aSamplerFilter = VK_FILTER_LINEAR,
+    virtual void Create(VkFilter aSamplerFilter = VK_FILTER_LINEAR,
                 VkSamplerAddressMode aSamplerAddressMode = VK_SAMPLER_ADDRESS_MODE_REPEAT);
 
 

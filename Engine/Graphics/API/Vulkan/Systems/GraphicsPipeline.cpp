@@ -20,11 +20,6 @@
 #include "Vulkan/Helpers/VulkanInitialization.h"
 
 void GraphicsPipeline::Create() {
-    PipelineConfigInfo pipelineConfigInfo{};
-    DefaultPipelineConfigInfo(pipelineConfigInfo);
-    // Vertex Buffer
-
-
     std::vector<VkDynamicState> dynamicStates = {
         VK_DYNAMIC_STATE_VIEWPORT,
         VK_DYNAMIC_STATE_SCISSOR
@@ -35,61 +30,64 @@ void GraphicsPipeline::Create() {
     dynamicState.dynamicStateCount = 2;
     dynamicState.pDynamicStates = dynamicStates.data();
 
-    VkPushConstantRange pushConstant;
-    pushConstant.offset = 0;
-    pushConstant.size = sizeof(PushConstants);
-    pushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    if (mPipelineConfig.pipelineLayout == VK_NULL_HANDLE) {
+        VkPushConstantRange pushConstant;
+        pushConstant.offset = 0;
+        pushConstant.size = sizeof(PushConstants);
+        pushConstant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+
+        VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+        pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        pipelineLayoutInfo.pushConstantRangeCount = 1;
+        pipelineLayoutInfo.pPushConstantRanges = &pushConstant;
+
+        // Bind these elsewhere?
+        std::vector<VkDescriptorSetLayout> layouts;
+        for (int i = 0; i < mRenderers.size(); i++) {
+            layouts.push_back(mRenderers[i]->mMaterial->GetDescriptorLayout());
+        }
+        //hook the global set layout
+        pipelineLayoutInfo.setLayoutCount = layouts.size();
+        pipelineLayoutInfo.pSetLayouts = layouts.data();
 
 
-    VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.pushConstantRangeCount = 1;
-    pipelineLayoutInfo.pPushConstantRanges = &pushConstant;
+        if (vkCreatePipelineLayout(gGraphics->mLogicalDevice, &pipelineLayoutInfo,
+                                   nullptr, &mPipelineConfig.pipelineLayout) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create pipeline layout");
+        }
 
-    // Bind these elsewhere?
-    std::vector<VkDescriptorSetLayout> layouts;
-    for (int i = 0; i < mRenderers.size(); i++) {
-        layouts.push_back(mRenderers[i]->mMaterial->GetDescriptorLayout());
+
+        mPipelineConfig.depthStencilInfo = VulkanInitialization::DepthStencilCreateInfo(true, true,
+                                                                     VK_COMPARE_OP_LESS_OR_EQUAL);
     }
-    //hook the global set layout
-    pipelineLayoutInfo.setLayoutCount = layouts.size();
-    pipelineLayoutInfo.pSetLayouts = layouts.data();
 
 
-    if (vkCreatePipelineLayout(gGraphics->mLogicalDevice, &pipelineLayoutInfo,
-                               nullptr, &mPipelineLayout) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create pipeline layout");
-    }
-
-    mDepthStencil = VulkanInitialization::DepthStencilCreateInfo(true, true,
-                                                                 VK_COMPARE_OP_LESS_OR_EQUAL);
-
-
+    // TODO: bind these dynamically
     // Vertex Information
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType =
             VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertexInputInfo.vertexBindingDescriptionCount = 1;
     vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(
-        pipelineConfigInfo.mAttributeDescriptions.size());
+        mPipelineConfig.mAttributeDescriptions.size());
 
-    vertexInputInfo.pVertexBindingDescriptions = pipelineConfigInfo.mBindingDescriptions.data();
-    vertexInputInfo.pVertexAttributeDescriptions = pipelineConfigInfo.mAttributeDescriptions.data();
+    vertexInputInfo.pVertexBindingDescriptions = mPipelineConfig.mBindingDescriptions.data();
+    vertexInputInfo.pVertexAttributeDescriptions = mPipelineConfig.mAttributeDescriptions.data();
 
     // Pipeline
     VkGraphicsPipelineCreateInfo pipelineInfo{};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
     pipelineInfo.stageCount = 2;
-    pipelineInfo.pDepthStencilState = &mDepthStencil;
+    pipelineInfo.pDepthStencilState = &mPipelineConfig.depthStencilInfo;
     pipelineInfo.pStages = mShadersInPipeline.data();
     pipelineInfo.pVertexInputState = &vertexInputInfo;
-    pipelineInfo.pInputAssemblyState = &pipelineConfigInfo.inputAssemblyInfo;
-    pipelineInfo.pViewportState = &pipelineConfigInfo.viewportInfo;
-    pipelineInfo.pRasterizationState = &pipelineConfigInfo.rasterizationInfo;
-    pipelineInfo.pMultisampleState = &pipelineConfigInfo.multisampleInfo;
-    pipelineInfo.pColorBlendState = &pipelineConfigInfo.colorBlendInfo;
+    pipelineInfo.pInputAssemblyState = &mPipelineConfig.inputAssemblyInfo;
+    pipelineInfo.pViewportState = &mPipelineConfig.viewportInfo;
+    pipelineInfo.pRasterizationState = &mPipelineConfig.rasterizationInfo;
+    pipelineInfo.pMultisampleState = &mPipelineConfig.multisampleInfo;
+    pipelineInfo.pColorBlendState = &mPipelineConfig.colorBlendInfo;
     pipelineInfo.pDynamicState = &dynamicState;
-    pipelineInfo.layout = mPipelineLayout;
+    pipelineInfo.layout = mPipelineConfig.pipelineLayout;
     pipelineInfo.renderPass = gGraphics->mSwapChain->mRenderPass;
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
@@ -133,7 +131,7 @@ void GraphicsPipeline::Destroy() const {
         vkDestroyShaderModule(gGraphics->mLogicalDevice, i.module, nullptr);
     }
 
-    vkDestroyPipelineLayout(gGraphics->mLogicalDevice, mPipelineLayout,
+    vkDestroyPipelineLayout(gGraphics->mLogicalDevice, mPipelineConfig.pipelineLayout,
                             nullptr);
     vkDestroyPipeline(gGraphics->mLogicalDevice, mGraphicsPipeline, nullptr);
 }
@@ -151,6 +149,8 @@ void GraphicsPipeline::DefaultPipelineConfigInfo(PipelineConfigInfo &aConfigInfo
     aConfigInfo.inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
     aConfigInfo.inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     aConfigInfo.inputAssemblyInfo.primitiveRestartEnable = VK_FALSE;
+    aConfigInfo.inputAssemblyInfo.pNext = nullptr;
+    aConfigInfo.inputAssemblyInfo.flags = 0;
 
     aConfigInfo.viewportInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
     aConfigInfo.viewportInfo.viewportCount = 1;
@@ -177,6 +177,7 @@ void GraphicsPipeline::DefaultPipelineConfigInfo(PipelineConfigInfo &aConfigInfo
     aConfigInfo.multisampleInfo.pSampleMask = nullptr; // Optional
     aConfigInfo.multisampleInfo.alphaToCoverageEnable = VK_FALSE; // Optional
     aConfigInfo.multisampleInfo.alphaToOneEnable = VK_FALSE; // Optional
+
 
     aConfigInfo.colorBlendAttachment.colorWriteMask =
             VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
@@ -242,7 +243,7 @@ void GraphicsPipeline::Draw(VkCommandBuffer aCommandBuffer, Scene &aScene) const
         std::vector<VkDescriptorSet> descriptorSets;
         descriptorSets.push_back(mRenderer->mMaterial->GetDescriptorSet());
 
-        vkCmdBindDescriptorSets(aCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineLayout, 0,
+        vkCmdBindDescriptorSets(aCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipelineConfig.pipelineLayout, 0,
                                 descriptorSets.size(), descriptorSets.data(), 0, nullptr);
 
         mRenderer->Render(aCommandBuffer, aScene);

@@ -30,7 +30,7 @@ public:
 
     void CreateProperties(const uint32_t aBinding, const MaterialProperties &aMaterialProperties);
 
-    void BindTexture(Texture &aTexture, uint8_t aBinding);
+    void BindTexture(const std::vector<VkDescriptorImageInfo> &textureInfo, const uint8_t aBinding) const;
 
     void AddBinding(const uint32_t aBinding, const uint32_t aCount,
                     const VkDescriptorType aType, VkShaderStageFlagBits aShaderStage);

@@ -9,29 +9,25 @@
 #include "File Management/FileManagement.h"
 #include "Vulkan/Helpers/VulkanInitialization.h"
 
-void Cubemap::Create() {
+void Cubemap::Create(MaterialBase *aBaseMaterial, const char *aMaterialName) {
     AllocatedImage image;
 
     const int mipLevel = 1;
     VkFormat format = VK_FORMAT_R8G8B8A8_SRGB;
 
     // Load n sides of cubemap here ..
-    LoadUtilities::LoadCubemap(gGraphics, std::string(FileManagement::GetWorkingDirectory() +
-                                                      "/Assets/Textures/Stone Wall.png").c_str(), format, image);
-    std::vector<std::string> cubemapImagePaths;
-    // Right
-    // Left
-    // uP
-    // Down
-    // Front
-    // back
-    cubemapImagePaths.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/graycloud_rt.jpg");
-    cubemapImagePaths.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/graycloud_lt.jpg");
-    cubemapImagePaths.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/graycloud_up.jpg");
-    cubemapImagePaths.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/graycloud_dn.jpg");
-    cubemapImagePaths.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/graycloud_ft.jpg");
-    cubemapImagePaths.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/graycloud_bk.jpg");
 
+    // TODO: Pass these into the constructor
+    std::vector<std::string> cubemapImagePaths;
+
+    cubemapImagePaths.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/right.jpg");
+    cubemapImagePaths.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/left.jpg");
+    cubemapImagePaths.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/top.jpg");
+    cubemapImagePaths.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/bottom.jpg");
+    cubemapImagePaths.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/front.jpg");
+    cubemapImagePaths.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/back.jpg");
+
+    LoadUtilities::LoadImagesFromDisk(gGraphics, cubemapImagePaths, image, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT);
 
     VkSamplerCreateInfo samplerCreateInfo{};
     samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -49,15 +45,14 @@ void Cubemap::Create() {
     samplerCreateInfo.maxLod = static_cast<float>(mipLevel);
     samplerCreateInfo.maxAnisotropy = 4.0;
     samplerCreateInfo.anisotropyEnable = VK_TRUE;
-    samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-
+    samplerCreateInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_WHITE;
     {
         auto result = vkCreateSampler(gGraphics->mLogicalDevice, &samplerCreateInfo, nullptr, &mSampler);
-        if (result != VK_SUCCESS)
-        {
+        if (result != VK_SUCCESS) {
             Logger::Log(spdlog::level::critical, "failed to create Sampler!");
         }
     }
+
     VkImageViewCreateInfo view{};
     view.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     view.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
@@ -69,19 +64,28 @@ void Cubemap::Create() {
     view.subresourceRange.layerCount = 6;
     view.subresourceRange.levelCount = mipLevel;
     view.image = image.mImage;
-
-
     {
         auto result = vkCreateImageView(gGraphics->mLogicalDevice, &view, nullptr, &mImageView);
-        if (result != VK_SUCCESS)
-        {
+        if (result != VK_SUCCESS) {
             Logger::Log(spdlog::level::critical, "failed to create image view!");
         }
     }
 
-    mDescriptorImageInfo.sampler     = mSampler;
-    mDescriptorImageInfo.imageView   = mImageView;
-    mDescriptorImageInfo.imageLayout = mImageLayout;
+    mDescriptorImageInfo.sampler = mSampler;
+    mDescriptorImageInfo.imageView = mImageView;
+    mDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+    AddBinding(0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL);
+    AddBinding(1, 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
+
+    Material::Create(this, aMaterialName);
+
+    for (int i = 0; i < VulkanEngine::MAX_FRAMES_IN_FLIGHT; i++)
+        SetBuffers(gGraphics->mVulkanEngine.GetFrame(i).mSceneBuffer, 0, 0);
+
+    std::vector<VkDescriptorImageInfo> descriptorInfos;
+    descriptorInfos.push_back(mDescriptorImageInfo);
+    BindTexture(descriptorInfos, 1);
 }
 
 void Cubemap::Destroy() {

@@ -48,7 +48,7 @@ void DefaultMaterial::MakeDefaults() {
         mDefaultTexture->LoadImagesFromDisk(paths);
         mDefaultTexture->Create();
     }
-    BindTexture(*mDefaultTexture, TEXTURE);
+    BindTexture(mDefaultTexture->mImageBufferInfo, TEXTURE);
 }
 
 void DefaultMaterial::Destroy() {

@@ -7,6 +7,7 @@
 
 #include "Scene.h"
 #include "Base/Common/Buffers/Texture.h"
+#include "Vulkan/Systems/CubemapRenderSystem.h"
 
 
 class SandboxScene final : public Scene {
@@ -27,4 +28,7 @@ private:
     MeshObject *mLight;
     MeshObject *mSphere;
     MeshObject *mCube;
+
+    MeshObject *cubemapCube;
+    CubemapRenderSystem* cubemapRenderPipeline;
 };
