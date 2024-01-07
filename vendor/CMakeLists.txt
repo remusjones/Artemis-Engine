@@ -64,7 +64,6 @@ target_link_libraries(imguizmo imgui)
 
 # https://github.com/nothings/stb.git
 message("Adding stb")
-set(STB_SOURCES "stb/stb_image.h")
 target_include_directories(${PROJECT_NAME} PRIVATE "stb/")
 
 # Link libraries

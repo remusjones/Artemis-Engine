@@ -3,9 +3,10 @@
 //
 
 #include "LoadUtilities.h"
-
 #include "tiny_obj_loader.h"
 #include "Base/Common/Data/Mesh.h"
+#define STB_IMAGE_RESIZE_IMPLEMENTATION
+#include <stb_image_resize2.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
@@ -115,20 +116,14 @@ bool LoadUtilities::LoadImagesFromDisk(VulkanGraphics *aEngine, const std::vecto
 
     int maxTexWidth = 0;
     int maxTexHeight = 0;
-    bool sizeMismatch = false;
 
     // Find maximum dimensions.
     for (const auto &path: aPaths) {
         stbi_info(path.c_str(), &texWidth, &texHeight, &texChannels);
         maxTexWidth = std::max(maxTexWidth, texWidth);
         maxTexHeight = std::max(maxTexHeight, texHeight);
-        if (maxTexWidth != texWidth || maxTexHeight != texHeight)
-            sizeMismatch = true;
         imageSize += maxTexWidth * maxTexHeight * texChannels;
     }
-    if (sizeMismatch)
-        Logger::Log(spdlog::level::err, "Image Height/Width mismatch - this will likely cause issues.");
-
     //Create the staging buffer
     AllocatedBuffer stagingBuffer;
     stagingBuffer.Create(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingBuffer.mBuffer, stagingBuffer.mAllocation);
@@ -138,12 +133,52 @@ bool LoadUtilities::LoadImagesFromDisk(VulkanGraphics *aEngine, const std::vecto
     vmaMapMemory(gGraphics->mAllocator, stagingBuffer.mAllocation, &data);
     uint64_t memAddress = reinterpret_cast<uint64_t>(data);
 
-    // Load each image into staging buffer
     for (int i = 0; i < imageCount; i++) {
+        // Load the image file
         pixels = stbi_load(aPaths[i].c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
         layerSize = texWidth * texHeight * texChannels;
 
         if (pixels) {
+            // Check if image needs to be upscaled to largest image
+            if (texWidth < maxTexWidth || texHeight < maxTexHeight) {
+                Logger::Log(spdlog::level::debug, (std::string("Upscaling Image: ") + aPaths[i]).c_str());
+                const float aspectRatio = static_cast<float>(texWidth) / static_cast<float>(texHeight);
+                int newWidth = texWidth;
+                int newHeight = texHeight;
+
+                if (texWidth < maxTexWidth) {
+                    newWidth = maxTexWidth;
+                    newHeight = static_cast<int>(newWidth / aspectRatio);
+                    if (newHeight > maxTexHeight) {
+                        newHeight = maxTexHeight;
+                        newWidth = static_cast<int>(newHeight * aspectRatio);
+                    }
+                }
+                if (texHeight < maxTexHeight) {
+                    newHeight = maxTexHeight;
+                    newWidth = static_cast<int>(newHeight * aspectRatio);
+                    if (newWidth > maxTexWidth) {
+                        newWidth = maxTexWidth;
+                        newHeight = static_cast<int>(newWidth / aspectRatio);
+                    }
+                }
+
+                // Create a new array and resize the image
+                uint8_t *newPixels = new uint8_t[newWidth * newHeight * texChannels];
+
+                if (!stbir_resize_uint8_srgb(pixels, texWidth, texHeight, 0, newPixels, newWidth, newHeight, 0,
+                                             STBIR_RGBA)) {
+                    // Error during resize, you can use logger here
+                    Logger::Log(spdlog::level::err, (std::string("Failed to Resize Image: ") + aPaths[i]).c_str());
+                }
+
+                // Free the original image and copy the resized one
+                stbi_image_free(pixels);
+                pixels = newPixels;
+                layerSize = newWidth * newHeight * texChannels;
+            }
+
+            // Copy data to memory
             memcpy(reinterpret_cast<void *>(memAddress), pixels, layerSize);
             memAddress += layerSize;
             stbi_image_free(pixels);
@@ -181,6 +216,7 @@ bool LoadUtilities::LoadImagesFromDisk(VulkanGraphics *aEngine, const std::vecto
 
     VkResult result = vmaCreateImage(aEngine->mAllocator, &dimg_info, &dimg_allocinfo, &newImage.mImage,
                                      &newImage.mAllocation, nullptr);
+
 
     if (result != VK_SUCCESS) {
         Logger::Log(spdlog::level::err, "vmaCreateImage failed!");
