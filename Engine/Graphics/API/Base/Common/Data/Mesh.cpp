@@ -3,10 +3,8 @@
 //
 
 #include "Mesh.h"
-#include <tiny_obj_loader.h>
 
 #include "LoadUtilities.h"
-#include "Logger.h"
 #include "Base/Common/Buffers/AllocatedBuffer.h"
 #include "Base/Common/Buffers/AllocatedVertexBuffer.h"
 

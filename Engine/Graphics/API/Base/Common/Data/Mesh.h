@@ -12,16 +12,13 @@ class AllocatedVertexBuffer;
 class Mesh {
 public:
     Mesh();
-
     ~Mesh();
 
     void Bind(VkCommandBuffer aCommandBuffer) const;
-
     bool LoadFromObject(const char *aFileName, const char *aMtlDirectory);
 
-    std::vector<Vertex> GetVertices() { return mVertices; };
-    std::vector<int32_t> GetIndices() { return mIndices; };
-
+    std::vector<Vertex> GetVertices() { return mVertices; }
+    std::vector<int32_t> GetIndices() { return mIndices; }
 
 private:
     std::vector<Vertex> mVertices;
