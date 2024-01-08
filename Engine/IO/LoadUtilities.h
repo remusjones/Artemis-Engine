@@ -39,5 +39,4 @@ public:
                                  std::vector<Vertex> &aResultVertices,
                                  std::vector<int32_t> &aResultIndices, const char *aMtlDirectory);
 
-    static void CalculateTangents(std::vector<Vertex> &vertices, const std::vector<int32_t> &indices);
 };

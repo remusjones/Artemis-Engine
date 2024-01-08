@@ -445,14 +445,12 @@ bool LoadUtilities::LoadMeshFromDisk(const char *aFilePath, AllocatedVertexBuffe
                 newVertex.mUV.x = attrib.texcoords[2 * idx.texcoord_index + 0];
                 newVertex.mUV.y = 1 - attrib.texcoords[2 * idx.texcoord_index + 1];
 
-
                 aResultIndices.push_back(idx.vertex_index);
                 aResultVertices.push_back(newVertex);
             }
             index_offset += fv;
         }
     }
-    CalculateTangents(aResultVertices, aResultIndices);
     *aResult = new AllocatedVertexBuffer(aResultVertices, aResultIndices);
 
     std::string bufferName;
@@ -465,40 +463,4 @@ bool LoadUtilities::LoadMeshFromDisk(const char *aFilePath, AllocatedVertexBuffe
                              *aResult)->mIndicesBuffer->mAllocation,
                          (bufferName + " Indice Buffer").c_str());
     return true;
-}
-
-void LoadUtilities::CalculateTangents(std::vector<Vertex> &vertices, const std::vector<int32_t> &indices) {
-    for (int i = 0; i < vertices.size(); i += 3) {
-        Vertex &v0 = vertices[indices[i]];
-        Vertex &v1 = vertices[indices[i + 1]];
-        Vertex &v2 = vertices[indices[i + 2]];
-
-        glm::vec3 deltaPos1 = v1.mPosition - v0.mPosition;
-        glm::vec3 deltaPos2 = v2.mPosition - v0.mPosition;
-
-        glm::vec2 deltaUV1 = v1.mUV - v0.mUV;
-        glm::vec2 deltaUV2 = v2.mUV - v0.mUV;
-
-        float r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
-        glm::vec3 tangent = (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y) * r;
-        glm::vec3 bitangent = (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x) * r;
-
-        v0.mTangent = tangent;
-        v1.mTangent = tangent;
-        v2.mTangent = tangent;
-
-        v0.mBiTangent = bitangent;
-        v1.mBiTangent = bitangent;
-        v2.mBiTangent = bitangent;
-    }
-
-    for (auto &vertex: vertices) {
-        //vertex.mTangent = glm::normalize(vertex.mTangent);
-        //vertex.mBiTangent = glm::normalize(vertex.mBiTangent);
-
-
-        // TODO: unfuck the tangents lol
-        vertex.mTangent = glm::vec3(1,1,1);
-        vertex.mBiTangent = glm::vec3(1,1,1);
-    }
 }
