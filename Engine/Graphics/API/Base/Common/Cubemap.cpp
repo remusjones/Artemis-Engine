@@ -20,12 +20,12 @@ void Cubemap::Create(MaterialBase *aBaseMaterial, const char *aMaterialName) {
     // TODO: Pass these into the constructor
     std::vector<std::string> cubemapImagePaths;
 
-    cubemapImagePaths.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/right.jpg");
-    cubemapImagePaths.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/left.jpg");
-    cubemapImagePaths.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/top.jpg");
-    cubemapImagePaths.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/bottom.jpg");
-    cubemapImagePaths.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/front.jpg");
-    cubemapImagePaths.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/back.jpg");
+    cubemapImagePaths.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/MegaSunRight.png");
+    cubemapImagePaths.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/MegaSunLeft.png");
+    cubemapImagePaths.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/MegaSunTop.png");
+    cubemapImagePaths.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/MegaSunBottom.png");
+    cubemapImagePaths.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/MegaSunFront.png");
+    cubemapImagePaths.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/MegaSunBack.png");
 
     LoadUtilities::LoadImagesFromDisk(gGraphics, cubemapImagePaths, image, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT);
 

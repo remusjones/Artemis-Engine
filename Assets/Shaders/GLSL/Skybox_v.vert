@@ -16,7 +16,7 @@ layout(set = 0, binding = 0) uniform SceneBuffer {
     Light mLight;
 
     mat4 view;
-    mat4 viewproj;
+    mat4 proj;
 
 } sceneData;
 
@@ -36,7 +36,7 @@ layout(location = 4) in vec3 inTangent;
 layout(location = 0) out vec3 fragUVW;
 
 void main() {
-
-    gl_Position = sceneData.viewproj * inPushConstants.model * vec4(inPosition, 1.0);
+    //TODO: Move the view matrix input to be already stripped of translation components
+    gl_Position = sceneData.proj * mat4(mat3(sceneData.view)) * inPushConstants.model * vec4(inPosition, 1.0);
     fragUVW = inPosition;
 }

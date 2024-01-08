@@ -12,7 +12,7 @@ layout(set = 0, binding = 0) uniform SceneBuffer {
     float ambientStrength;
 
     mat4 view;
-    mat4 viewproj;
+    mat4 proj;
 } sceneData;
 
 
@@ -35,7 +35,7 @@ layout(location = 1) out vec2 uv;
 
 void main() {
 
-    gl_Position = sceneData.viewproj * inPushConstants.model * vec4(inPosition, 1.0);
+    gl_Position = sceneData.proj * sceneData.view * inPushConstants.model * vec4(inPosition, 1.0);
 
     vec3 result = vec3(materialProperties.color);
     fragColor = result;

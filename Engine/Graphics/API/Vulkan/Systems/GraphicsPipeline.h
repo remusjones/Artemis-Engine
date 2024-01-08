@@ -26,12 +26,6 @@ public:
         NUMBER_OF_SUBPASSES
     };
 
-
-    GraphicsPipeline(const char *aPipelineName = "Unknown") : mPipelineName(
-        aPipelineName) {
-        DefaultPipelineConfigInfo(mPipelineConfig);
-    }
-
     GraphicsPipeline(const char *aPipelineName,
         const PipelineConfigInfo &aConfigInfo) : mPipelineName(
         aPipelineName) {

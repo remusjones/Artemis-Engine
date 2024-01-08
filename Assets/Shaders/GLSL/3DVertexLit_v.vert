@@ -12,7 +12,7 @@ layout(set = 0, binding = 0) uniform SceneBuffer {
     float ambientStrength;
 
     mat4 view;
-    mat4 viewproj;
+    mat4 proj;
 } sceneData;
 
 layout(set = 0, binding = 1) uniform MaterialProperties{
@@ -32,7 +32,7 @@ layout(location = 0) out vec3 fragColor;
 layout(location = 1) out vec2 texCoord;
 
 void main() {
-    gl_Position = sceneData.viewproj * inPushConstants.model * vec4(inPosition, 1.0);
+    gl_Position = sceneData.proj * sceneData.view * inPushConstants.model * vec4(inPosition, 1.0);
 
     mat3 normalMatrix = transpose(inverse(mat3(inPushConstants.model)));
     vec3 worldNormal = normalize(normalMatrix * inNormal);

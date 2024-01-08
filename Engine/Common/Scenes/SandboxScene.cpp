@@ -16,11 +16,13 @@
 #include "Vulkan/Systems/GraphicsPipeline.h"
 
 void SandboxScene::Construct(const char *aSceneName) {
+
+    GraphicsPipeline::DefaultPipelineConfigInfo(mDefaultPipelineConfig);
     // Create basic mesh pipeline
-    GraphicsPipeline *vertexLitPipeline = new GraphicsPipeline("Vertex Lit Mesh");
-    GraphicsPipeline *unlitMeshPipeline = new GraphicsPipeline("Unlit Mesh Pipeline");
-    GraphicsPipeline *texturedMeshPipeline = new GraphicsPipeline("Textured Mesh Pipeline");
-    GraphicsPipeline *halfLambertMeshPipeline = new GraphicsPipeline("Half Lambert Mesh Pipeline");
+    GraphicsPipeline *vertexLitPipeline = new GraphicsPipeline("Vertex Lit Mesh", mDefaultPipelineConfig);
+    GraphicsPipeline *unlitMeshPipeline = new GraphicsPipeline("Unlit Mesh Pipeline", mDefaultPipelineConfig);
+    GraphicsPipeline *texturedMeshPipeline = new GraphicsPipeline("Textured Mesh Pipeline", mDefaultPipelineConfig);
+    GraphicsPipeline *halfLambertMeshPipeline = new GraphicsPipeline("Half Lambert Mesh Pipeline", mDefaultPipelineConfig);
 
     vertexLitPipeline->CreateShaderModule("/Assets/Shaders/3DVertexLit_v.spv",
                                           VK_SHADER_STAGE_VERTEX_BIT);
@@ -209,7 +211,7 @@ void SandboxScene::Tick(float aDeltaTime) {
     mSceneData.position = mLight->mTransform.Position();
     mSceneData.mViewMatrix = mActiveSceneCamera->GetViewMatrix();
     mSceneData.mViewPos = glm::vec4(mActiveSceneCamera->mTransform.Position(), 1.0f);
-    mSceneData.mViewProjectionMatrix = mActiveSceneCamera->GetViewProjectionMatrix();
+    mSceneData.mViewProjectionMatrix = mActiveSceneCamera->GetPerspectiveMatrix();
 
     mMonkey->mTransform.RotateAxis(aDeltaTime / 5, glm::vec3(0.0f, 1, 0));
     mMonkey2->mTransform.RotateAxis(aDeltaTime / 5, glm::vec3(0.0f, 1, 0));

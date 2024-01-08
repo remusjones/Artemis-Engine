@@ -31,4 +31,5 @@ private:
 
     MeshObject *cubemapCube;
     CubemapRenderSystem* cubemapRenderPipeline;
+    PipelineConfigInfo mDefaultPipelineConfig;
 };

@@ -20,16 +20,6 @@
 #include "Vulkan/Helpers/VulkanInitialization.h"
 
 void GraphicsPipeline::Create() {
-    std::vector<VkDynamicState> dynamicStates = {
-        VK_DYNAMIC_STATE_VIEWPORT,
-        VK_DYNAMIC_STATE_SCISSOR
-    };
-
-    VkPipelineDynamicStateCreateInfo dynamicState{};
-    dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-    dynamicState.dynamicStateCount = 2;
-    dynamicState.pDynamicStates = dynamicStates.data();
-
     if (mPipelineConfig.pipelineLayout == VK_NULL_HANDLE) {
         VkPushConstantRange pushConstant;
         pushConstant.offset = 0;
@@ -58,7 +48,8 @@ void GraphicsPipeline::Create() {
 
 
         mPipelineConfig.depthStencilInfo = VulkanInitialization::DepthStencilCreateInfo(true, true,
-                                                                     VK_COMPARE_OP_LESS_OR_EQUAL);
+            VK_COMPARE_OP_LESS_OR_EQUAL);
+        mPipelineConfig.renderPass = gGraphics->mSwapChain->mRenderPass;
     }
 
 
@@ -86,10 +77,11 @@ void GraphicsPipeline::Create() {
     pipelineInfo.pRasterizationState = &mPipelineConfig.rasterizationInfo;
     pipelineInfo.pMultisampleState = &mPipelineConfig.multisampleInfo;
     pipelineInfo.pColorBlendState = &mPipelineConfig.colorBlendInfo;
-    pipelineInfo.pDynamicState = &dynamicState;
+    pipelineInfo.pDynamicState = &mPipelineConfig.dynamicStateInfo;
     pipelineInfo.layout = mPipelineConfig.pipelineLayout;
-    pipelineInfo.renderPass = gGraphics->mSwapChain->mRenderPass;
-    pipelineInfo.subpass = 0;
+    pipelineInfo.renderPass = mPipelineConfig.renderPass;
+    // TODO: Increase amount of subpasses
+    pipelineInfo.subpass = 0; // mPipelineConfig.subpass;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
     if (vkCreateGraphicsPipelines(gGraphics->mLogicalDevice, VK_NULL_HANDLE, 1,
@@ -163,7 +155,7 @@ void GraphicsPipeline::DefaultPipelineConfigInfo(PipelineConfigInfo &aConfigInfo
     aConfigInfo.rasterizationInfo.rasterizerDiscardEnable = VK_FALSE;
     aConfigInfo.rasterizationInfo.polygonMode = VK_POLYGON_MODE_FILL;
     aConfigInfo.rasterizationInfo.lineWidth = 1.0f;
-    aConfigInfo.rasterizationInfo.cullMode = VK_CULL_MODE_NONE;
+    aConfigInfo.rasterizationInfo.cullMode = VK_CULL_MODE_BACK_BIT;
     aConfigInfo.rasterizationInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     aConfigInfo.rasterizationInfo.depthBiasEnable = VK_FALSE;
     aConfigInfo.rasterizationInfo.depthBiasConstantFactor = 0.0f; // Optional
@@ -216,6 +208,9 @@ void GraphicsPipeline::DefaultPipelineConfigInfo(PipelineConfigInfo &aConfigInfo
     aConfigInfo.dynamicStateInfo.pDynamicStates = aConfigInfo.dynamicStateEnables.data();
     aConfigInfo.dynamicStateInfo.dynamicStateCount = static_cast<uint32_t>(aConfigInfo.dynamicStateEnables.size());
     aConfigInfo.dynamicStateInfo.flags = 0;
+    aConfigInfo.dynamicStateInfo.pNext = VK_NULL_HANDLE;
+
+    aConfigInfo.subpass = static_cast<uint32_t>(GraphicsPipeline::SubPasses::SUBPASS_GEOMETRY);
 
     std::vector<VkVertexInputBindingDescription> bindingDescriptions(1);
     bindingDescriptions[0] = Vertex::GetBindingDescription();
@@ -232,8 +227,8 @@ void GraphicsPipeline::Draw(VkCommandBuffer aCommandBuffer, Scene &aScene) const
     vkCmdBindPipeline(aCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                       mGraphicsPipeline);
 
-
     const FrameData currentFrame = gGraphics->mVulkanEngine.GetCurrentFrame();
+
     void *data;
     vmaMapMemory(gGraphics->mAllocator, currentFrame.mSceneBuffer.mAllocation, &data);
     memcpy(data, &aScene.mSceneData, sizeof(GPUSceneData));

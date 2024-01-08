@@ -16,7 +16,7 @@ layout(set = 0, binding = 0) uniform SceneBuffer {
     Light mLight;
 
     mat4 view;
-    mat4 viewproj;
+    mat4 proj;
 
 } sceneData;
 
@@ -44,7 +44,7 @@ layout(location = 4) out vec3 outTangent;
 
 void main() {
 
-    gl_Position = sceneData.viewproj * inPushConstants.model * vec4(inPosition, 1.0);
+    gl_Position = sceneData.proj * sceneData.view * inPushConstants.model * vec4(inPosition, 1.0);
 
     vec4 fragPos =  inPushConstants.model * vec4(inPosition, 1.0f);
     outFragPos = vec3(fragPos);
