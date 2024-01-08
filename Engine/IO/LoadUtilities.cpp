@@ -432,6 +432,10 @@ bool LoadUtilities::LoadMeshFromDisk(const char *aFilePath, AllocatedVertexBuffe
                 tinyobj::real_t ny = attrib.normals[3 * idx.normal_index + 1];
                 tinyobj::real_t nz = attrib.normals[3 * idx.normal_index + 2];
 
+                tinyobj::real_t cx = attrib.colors[3 * idx.vertex_index + 0];
+                tinyobj::real_t cy = attrib.colors[3 * idx.vertex_index + 1];
+                tinyobj::real_t cz = attrib.colors[3 * idx.vertex_index + 2];
+
                 Vertex newVertex;
                 newVertex.mPosition.x = vx;
                 newVertex.mPosition.y = vy;
@@ -439,11 +443,10 @@ bool LoadUtilities::LoadMeshFromDisk(const char *aFilePath, AllocatedVertexBuffe
 
                 newVertex.mNormal.x = nx;
                 newVertex.mNormal.y = ny;
-                newVertex.mNormal.z = nz;
-
-                newVertex.mColor = newVertex.mNormal;
+                newVertex.mNormal.z = nz;;
+                newVertex.mColor = glm::vec3(cx, cy, cz);
                 newVertex.mUV.x = attrib.texcoords[2 * idx.texcoord_index + 0];
-                newVertex.mUV.y = 1 - attrib.texcoords[2 * idx.texcoord_index + 1];
+                newVertex.mUV.y = attrib.texcoords[2 * idx.texcoord_index + 1];
 
                 aResultIndices.push_back(idx.vertex_index);
                 aResultVertices.push_back(newVertex);
