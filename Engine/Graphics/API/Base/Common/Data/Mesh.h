@@ -20,11 +20,11 @@ public:
     bool LoadFromObject(const char *aFileName, const char *aMtlDirectory);
 
     std::vector<Vertex> GetVertices() { return mVertices; };
-    std::vector<int16_t> GetIndices() { return mIndices; };
+    std::vector<int32_t> GetIndices() { return mIndices; };
 
 
 private:
     std::vector<Vertex> mVertices;
-    std::vector<int16_t> mIndices;
+    std::vector<int32_t> mIndices;
     AllocatedVertexBuffer *mVertexBuffer;
 };

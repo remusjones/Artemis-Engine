@@ -25,6 +25,7 @@ struct MaterialProperties {
 
 class Material : public MaterialBase {
 public:
+
     virtual void Create(MaterialBase *aBaseMaterial,
                         const char *aMaterialName = "");
 
@@ -40,13 +41,14 @@ public:
     VkDescriptorSet GetDescriptorSet() const { return mDescriptorSet; }
     VkDescriptorSetLayout GetDescriptorLayout() const { return mLayout; }
 
-    virtual void Destroy();
+    void Destroy() override;
 
     MaterialProperties mMaterialProperties;
     AllocatedBuffer mPropertiesBuffer;
+    const char * mMaterialName;
 
 protected:
-    const MaterialBase *mMaterialBase;
+    MaterialBase *mMaterialBase;
     VkDescriptorSetLayout mLayout = VK_NULL_HANDLE;
     VkDescriptorSet mDescriptorSet;
 

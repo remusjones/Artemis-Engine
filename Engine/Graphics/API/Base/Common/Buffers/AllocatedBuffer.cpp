@@ -4,6 +4,7 @@
 
 #include "AllocatedBuffer.h"
 
+#include "Logger.h"
 #include "VulkanGraphicsImpl.h"
 
 AllocatedBuffer::AllocatedBuffer(const void *aData, VkDeviceSize aBufferSize,
@@ -14,6 +15,7 @@ AllocatedBuffer::AllocatedBuffer(const void *aData, VkDeviceSize aBufferSize,
     vmaMapMemory(gGraphics->mAllocator, mAllocation, &data);
     memcpy(data, aData, aBufferSize);
     vmaUnmapMemory(gGraphics->mAllocator, mAllocation);
+
 }
 
 AllocatedBuffer::~AllocatedBuffer() {
@@ -22,7 +24,6 @@ AllocatedBuffer::~AllocatedBuffer() {
 void AllocatedBuffer::Create(VkDeviceSize aSize,
                              VkBufferUsageFlags aUsage,
                              VkBuffer &aBuffer, VmaAllocation &aAllocation) {
-
     VkBufferCreateInfo bufferInfo = {};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     bufferInfo.size = aSize;

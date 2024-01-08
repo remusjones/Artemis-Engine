@@ -52,7 +52,6 @@ void GraphicsPipeline::Create() {
         mPipelineConfig.renderPass = gGraphics->mSwapChain->mRenderPass;
     }
 
-
     // TODO: bind these dynamically
     // Vertex Information
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
@@ -122,6 +121,10 @@ void GraphicsPipeline::Destroy() const {
     for (const auto &i: mShadersInPipeline) {
         vkDestroyShaderModule(gGraphics->mLogicalDevice, i.module, nullptr);
     }
+    for (const auto &i : mMaterials) {
+        Logger::Log(spdlog::level::debug, (std::string("Destroying Material: ") + i->mMaterialName).c_str());
+        i->Destroy();
+    }
 
     vkDestroyPipelineLayout(gGraphics->mLogicalDevice, mPipelineConfig.pipelineLayout,
                             nullptr);
@@ -131,7 +134,7 @@ void GraphicsPipeline::Destroy() const {
 std::vector<std::shared_ptr<Material>> GraphicsPipeline::MakeMaterials(
     uint8_t aBinding) {
     // TODO: Use aBinding
-    for (auto material: mMaterials) {
+    for (const auto& material: mMaterials) {
         material->Create(material.get(), "default");
     }
     return mMaterials;
@@ -223,7 +226,7 @@ void GraphicsPipeline::AddRenderer(Renderer *aRenderer) {
     mRenderers.push_back(aRenderer);
 }
 
-void GraphicsPipeline::Draw(VkCommandBuffer aCommandBuffer, Scene &aScene) const {
+void GraphicsPipeline::Draw(VkCommandBuffer aCommandBuffer, const Scene &aScene) const {
     vkCmdBindPipeline(aCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                       mGraphicsPipeline);
 

@@ -5,7 +5,7 @@
 #pragma once
 
 
-#include "..\..\Base\Common\Buffers\PushConstants.h"
+#include "Base/Common/Buffers/PushConstants.h"
 #include "Base/Common/Data/Mesh.h"
 #include "Base/Common/Data/Vertex.h"
 #include "Math/Transform.h"

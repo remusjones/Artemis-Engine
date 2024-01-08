@@ -5,10 +5,11 @@
 #include "AllocatedVertexBuffer.h"
 
 #include "AllocatedBuffer.h"
+#include "Logger.h"
 #include "../Data/Vertex.h"
 
 AllocatedVertexBuffer::AllocatedVertexBuffer(const std::vector<Vertex> &aVertices,
-                                             const std::vector<int16_t> &aIndices) {
+                                             const std::vector<int32_t> &aIndices) {
     mVerticesBuffer = new AllocatedBuffer(aVertices.data(),
                                           sizeof(aVertices[0]) *
                                           aVertices.size(),

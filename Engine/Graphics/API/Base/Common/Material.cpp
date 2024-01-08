@@ -25,6 +25,8 @@ void Material::Create(MaterialBase *aBaseMaterial, const char *aMaterialName) {
     if (err == VK_ERROR_OUT_OF_POOL_MEMORY) {
         throw std::runtime_error("Out of pool memory");
     }
+
+    mMaterialName = aMaterialName;
 }
 
 void Material::CreateProperties(const uint32_t aBinding, const MaterialProperties &aMaterialProperties) {
@@ -90,4 +92,5 @@ void Material::Destroy() {
 
     if (mPropertiesBuffer.mBuffer)
         mPropertiesBuffer.Destroy();
+
 }

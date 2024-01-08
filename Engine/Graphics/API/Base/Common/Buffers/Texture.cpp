@@ -1,6 +1,7 @@
 #include "Texture.h"
 #include <stdexcept>
 #include "LoadUtilities.h"
+#include "Logger.h"
 #include "VulkanGraphicsImpl.h"
 #include "Vulkan/Helpers/VulkanInitialization.h"
 
@@ -16,13 +17,12 @@ void Texture::Create(VkFilter aSamplerFilter,
         aSamplerFilter, aSamplerAddressMode);
     vkCreateSampler(gGraphics->mLogicalDevice, &samplerInfo, nullptr, &mSampler);
 
-
     // Creating image views for each layer
     for (uint32_t i = 0; i < mImageCount; ++i) {
         VkImageViewCreateInfo viewInfo{};
         viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         viewInfo.image = mAllocatedImage.mImage; // the VkImage object
-        viewInfo.viewType =VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+        viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
         viewInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
         viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         viewInfo.subresourceRange.baseMipLevel = 0;
@@ -46,7 +46,6 @@ void Texture::Create(VkFilter aSamplerFilter,
 
 void Texture::Destroy() const {
     vmaDestroyImage(gGraphics->mAllocator, mAllocatedImage.mImage, mAllocatedImage.mAllocation);
-
     // Destroy each imageView
     for (auto imageView: mImageViews) {
         vkDestroyImageView(gGraphics->mLogicalDevice, imageView, nullptr);

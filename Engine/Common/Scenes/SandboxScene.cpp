@@ -172,8 +172,12 @@ void SandboxScene::Construct(const char *aSceneName) {
     mActiveSceneCamera->Construct();
     mActiveSceneCamera->mTransform.SetPosition({0, 0, -5.0f});
 
-    // TODO: Clean allll this up
-    mCubemap = new Cubemap();
+    // ----- TODO: Clean allll this up
+    // Due to refactor of dynamic pipeline creation
+    // there is issues with creation order here, and as such
+    // constriants where some dependants on others eee
+
+    mCubemap = std::make_shared<Cubemap>();
     mCubemap->Create(nullptr, "Cubemap Material");
     mCubemapMesh = new MeshObject();
     mCubemapMesh->mName = "Skybox";
@@ -181,16 +185,19 @@ void SandboxScene::Construct(const char *aSceneName) {
     mCubemapMesh->mMesh = new Mesh();
     mCubemapMesh->LoadMesh((FileManagement::GetWorkingDirectory() +
                            std::string("/Assets/Models/cube.obj")).c_str());
-    mCubemapMesh->mMaterial = mCubemap;
+    mCubemapMesh->mMaterial = mCubemap.get();
 
 
     std::vector<VkDescriptorSetLayout> mCubemapLayouts;
     mCubemapLayouts.push_back(mCubemap->GetDescriptorLayout());
     mCubemapPipeline = std::make_unique<CubemapRenderSystem>(mCubemapLayouts);
+    mCubemapPipeline->mPipeline->mMaterials.push_back(mCubemap);
 
     AddGraphicsPipeline(mCubemapPipeline->mPipeline.get());
     mCubemapMesh->mGraphicsPipeline = mCubemapPipeline->mPipeline.get();
     mCubemapMesh->mGraphicsPipeline->AddRenderer(mCubemapMesh);
+    // ----
+
 
     AddGraphicsPipeline(mVertexLitPipeline.get());
     AddGraphicsPipeline(mUnlitMeshPipeline.get());
@@ -225,6 +232,4 @@ void SandboxScene::Cleanup() {
         delete loadedTextures.second;
     }
     Scene::Cleanup();
-
-    delete mCubemap;
 }

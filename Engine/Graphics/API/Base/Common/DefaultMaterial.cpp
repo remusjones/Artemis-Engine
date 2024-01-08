@@ -12,7 +12,7 @@ void DefaultMaterial::Create(MaterialBase *aBaseMaterial, const char *aMaterialN
     AddBinding(PROPERTIES, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL);
     AddBinding(TEXTURE, 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
 
-    Material::Create(this, "Default Material");
+    Material::Create(this, aMaterialName);
 
     for (int i = 0; i < VulkanEngine::MAX_FRAMES_IN_FLIGHT; i++)
         SetBuffers(gGraphics->mVulkanEngine.GetFrame(i).mSceneBuffer, SCENE_INFORMATION, 0);
@@ -38,7 +38,7 @@ void DefaultMaterial::OnImGuiRender() {
     }
 }
 static std::unique_ptr<Texture> mDefaultTexture = nullptr;
-void DefaultMaterial::MakeDefaults() {
+void DefaultMaterial::MakeDefaults() const {
     if (mDefaultTexture == nullptr) {
         mDefaultTexture = std::make_unique<Texture>();
         std::vector<Color_RGBA> defaultColors;
@@ -56,6 +56,5 @@ void DefaultMaterial::Destroy() {
         mDefaultTexture->Destroy();
         mDefaultTexture.reset();
     }
-
     Material::Destroy();
 }

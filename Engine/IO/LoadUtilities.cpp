@@ -130,6 +130,10 @@ bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics *aEngine, const std:
     AllocatedBuffer stagingBuffer;
     stagingBuffer.Create(totalSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingBuffer.mBuffer, stagingBuffer.mAllocation);
 
+    std::string bufferName;
+    bufferName.append(aPaths[0]);
+    vmaSetAllocationName(gGraphics->mAllocator, stagingBuffer.mAllocation, (bufferName + " staging buffer").c_str());
+
     // Map the memory
     void *data;
     vmaMapMemory(gGraphics->mAllocator, stagingBuffer.mAllocation, &data);
@@ -221,148 +225,11 @@ bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics *aEngine, const std:
                                      &newImage.mAllocation, nullptr);
 
 
-    if (result != VK_SUCCESS) {
-        Logger::Log(spdlog::level::err, "vmaCreateImage failed!");
-        // Always cleanup after an error!
-        vmaDestroyBuffer(gGraphics->mAllocator, stagingBuffer.mBuffer, stagingBuffer.mAllocation);
-        return false;
-    }
-    if (!newImage.mImage || !newImage.mAllocation) {
-        Logger::Log(spdlog::level::err, "Image or allocation from vmaCreateImage is null!");
-        vmaDestroyBuffer(gGraphics->mAllocator, stagingBuffer.mBuffer, stagingBuffer.mAllocation);
-        return false;
-    }
-    aEngine->mVulkanEngine.SubmitBufferCommand([&](VkCommandBuffer cmd) {
-        VkImageSubresourceRange range;
-        range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        range.baseMipLevel = 0;
-        range.levelCount = 1;
-        range.baseArrayLayer = 0;
-        range.layerCount = imageCount;
-
-        VkImageMemoryBarrier imageBarrier_toTransfer = {};
-        imageBarrier_toTransfer.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-
-        imageBarrier_toTransfer.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        imageBarrier_toTransfer.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-        imageBarrier_toTransfer.image = newImage.mImage;
-        imageBarrier_toTransfer.subresourceRange = range;
-
-        imageBarrier_toTransfer.srcAccessMask = 0;
-        imageBarrier_toTransfer.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-
-        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0,
-                             nullptr, 1, &imageBarrier_toTransfer);
-
-        VkBufferImageCopy copyRegion = {};
-        copyRegion.bufferOffset = 0;
-        copyRegion.bufferRowLength = 0;
-        copyRegion.bufferImageHeight = 0;
-
-        copyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        copyRegion.imageSubresource.mipLevel = 0;
-        copyRegion.imageSubresource.baseArrayLayer = 0;
-        copyRegion.imageSubresource.layerCount = imageCount;
-        copyRegion.imageExtent = imageExtent;
-
-        //copy the buffer into the image
-        vkCmdCopyBufferToImage(cmd, stagingBuffer.mBuffer, newImage.mImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
-                               &copyRegion);
-
-        VkImageMemoryBarrier imageBarrier_toReadable = imageBarrier_toTransfer;
-
-        imageBarrier_toReadable.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-        imageBarrier_toReadable.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-        imageBarrier_toReadable.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-        imageBarrier_toReadable.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr,
-                             0, nullptr, 1, &imageBarrier_toReadable);
-    });
-    // Cleanup staging buffer
-    vmaDestroyBuffer(aEngine->mAllocator, stagingBuffer.mBuffer, stagingBuffer.mAllocation);
-    aResult = newImage;
-    return true;
-}
-
-bool LoadUtilities::CreateImageArray(const int aWidth, const int aHeight,
-                                     const VulkanGraphics *aEngine,
-                                     AllocatedImage &aResult,
-                                     const std::vector<Color_RGBA> &aColors) {
-    const int imageCount = aColors.size();
-    const VkFormat image_format = VK_FORMAT_R8G8B8A8_SRGB;
-
-    VkDeviceSize layerSize = 0;
-    VkDeviceSize imageSize;
-
-    AllocatedBuffer stagingBuffer;
-    void *data;
-    int texWidth = aWidth, texHeight = aHeight, texChannels = STBI_rgb_alpha;
-
-    uint64_t memAddress = 0;
-    stbi_uc *pixels;
-
-
-    // Recursively load all image into staging buffer
-    for (int i = 0; i < imageCount; i++) {
-        pixels = new stbi_uc[4 * texWidth * texHeight];
-        for (int i = 0; i < 4 * texWidth * texHeight; i += 4) {
-            pixels[i] = aColors[i].R; // red
-            pixels[i + 1] = aColors[i].G; // green
-            pixels[i + 2] = aColors[i].B; // blue
-            pixels[i + 3] = aColors[i].A; // alpha
-        }
-
-        if (i == 0) {
-            layerSize = texWidth * texHeight * texChannels;
-            imageSize = layerSize * imageCount;
-
-            // Allocate Manually
-            stagingBuffer.Create(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                                 stagingBuffer.mBuffer,
-                                 stagingBuffer.mAllocation);
-
-            vmaMapMemory(gGraphics->mAllocator, stagingBuffer.mAllocation, &data);
-            memAddress = reinterpret_cast<uint64_t>(data);
-        }
-        memcpy(reinterpret_cast<void *>(memAddress), pixels, layerSize);
-        memAddress += layerSize;
-        delete[] pixels;
-    }
-    vmaUnmapMemory(gGraphics->mAllocator, stagingBuffer.mAllocation);
-
-
-    VkExtent3D imageExtent;
-    imageExtent.width = static_cast<uint32_t>(texWidth);
-    imageExtent.height = static_cast<uint32_t>(texHeight);
-    imageExtent.depth = 1;
-
-    VkImageCreateInfo dimg_info = {};
-    dimg_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    dimg_info.pNext = nullptr;
-
-    dimg_info.imageType = VK_IMAGE_TYPE_2D;
-
-    dimg_info.format = image_format;
-    dimg_info.extent = imageExtent;
-
-    dimg_info.mipLevels = 1;
-    dimg_info.arrayLayers = imageCount;
-    dimg_info.samples = VK_SAMPLE_COUNT_1_BIT;
-    dimg_info.tiling = VK_IMAGE_TILING_OPTIMAL;
-    dimg_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-
-    AllocatedImage newImage;
-    VmaAllocationCreateInfo dimg_allocinfo = {};
-    dimg_allocinfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-
-    VkResult result = vmaCreateImage(aEngine->mAllocator, &dimg_info, &dimg_allocinfo, &newImage.mImage,
-                                     &newImage.mAllocation, nullptr);
+    vmaSetAllocationName(gGraphics->mAllocator, newImage.mAllocation,
+                         (bufferName + "  VkImage").c_str());
 
     if (result != VK_SUCCESS) {
         Logger::Log(spdlog::level::err, "vmaCreateImage failed!");
-        // Always cleanup after an error!
         vmaDestroyBuffer(gGraphics->mAllocator, stagingBuffer.mBuffer, stagingBuffer.mAllocation);
         return false;
     }
@@ -516,8 +383,9 @@ bool LoadUtilities::CreateImage(const int aWidth, const int aHeight,
     return true;
 }
 
-bool LoadUtilities::LoadMeshFromDisk(const char *aFilePath, AllocatedVertexBuffer &aResult,
-                                     std::vector<Vertex> &aResultVertices, std::vector<int16_t> &aResultIndices) {
+bool LoadUtilities::LoadMeshFromDisk(const char *aFilePath, AllocatedVertexBuffer **aResult,
+                                     std::vector<Vertex> &aResultVertices, std::vector<int32_t> &aResultIndices,
+                                     const char *aMtlDirectory = "") {
     //attrib will contain the vertex arrays of the file
     tinyobj::attrib_t attrib;
     //shapes contains the info for each separate object in the file
@@ -530,7 +398,7 @@ bool LoadUtilities::LoadMeshFromDisk(const char *aFilePath, AllocatedVertexBuffe
     std::string err;
 
     //load the OBJ file
-    LoadObj(&attrib, &shapes, &materials, &warn, &err, aFilePath, nullptr);
+    LoadObj(&attrib, &shapes, &materials, &warn, &err, aFilePath, aMtlDirectory);
 
     if (!warn.empty()) {
         Logger::Log(spdlog::level::warn, warn.c_str());
@@ -544,35 +412,11 @@ bool LoadUtilities::LoadMeshFromDisk(const char *aFilePath, AllocatedVertexBuffe
 
 
     for (size_t s = 0; s < shapes.size(); s++) {
-        glm::vec3 tangent;
-
         // Loop over faces(polygon)
         size_t index_offset = 0;
         for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++) {
             //hardcode loading to triangles
             int fv = 3;
-            if (f % 3 == 0 && f > 0) {
-                const glm::vec3 &pos1 = aResultVertices[aResultIndices[f - 3]].mPosition;
-                const glm::vec3 &pos2 = aResultVertices[aResultIndices[f - 2]].mPosition;
-                const glm::vec3 &pos3 = aResultVertices[aResultIndices[f - 1]].mPosition;
-
-                const glm::vec2 &uv1 = aResultVertices[aResultIndices[f - 3]].mUV;
-                const glm::vec2 &uv2 = aResultVertices[aResultIndices[f - 2]].mUV;
-                const glm::vec2 &uv3 = aResultVertices[aResultIndices[f - 1]].mUV;
-
-                glm::vec3 edge1 = pos2 - pos1;
-                glm::vec3 edge2 = pos3 - pos1;
-                glm::vec2 deltaUV1 = uv2 - uv1;
-                glm::vec2 deltaUV2 = uv3 - uv1;
-
-                float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
-
-                tangent.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
-                tangent.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
-                tangent.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
-
-                tangent = glm::normalize(tangent);
-            }
 
             // Loop over vertices in the face.
             for (size_t v = 0; v < fv; v++) {
@@ -588,7 +432,6 @@ bool LoadUtilities::LoadMeshFromDisk(const char *aFilePath, AllocatedVertexBuffe
                 tinyobj::real_t ny = attrib.normals[3 * idx.normal_index + 1];
                 tinyobj::real_t nz = attrib.normals[3 * idx.normal_index + 2];
 
-                //copy it into our vertex
                 Vertex newVertex;
                 newVertex.mPosition.x = vx;
                 newVertex.mPosition.y = vy;
@@ -598,9 +441,10 @@ bool LoadUtilities::LoadMeshFromDisk(const char *aFilePath, AllocatedVertexBuffe
                 newVertex.mNormal.y = ny;
                 newVertex.mNormal.z = nz;
 
-                //we are setting the vertex color as the vertex normal. This is just for display purposes
                 newVertex.mColor = newVertex.mNormal;
-                newVertex.mTangent = tangent;
+                newVertex.mUV.x = attrib.texcoords[2 * idx.texcoord_index + 0];
+                newVertex.mUV.y = 1 - attrib.texcoords[2 * idx.texcoord_index + 1];
+
 
                 aResultIndices.push_back(idx.vertex_index);
                 aResultVertices.push_back(newVertex);
@@ -608,6 +452,53 @@ bool LoadUtilities::LoadMeshFromDisk(const char *aFilePath, AllocatedVertexBuffe
             index_offset += fv;
         }
     }
-    aResult = AllocatedVertexBuffer(aResultVertices, aResultIndices);
+    CalculateTangents(aResultVertices, aResultIndices);
+    *aResult = new AllocatedVertexBuffer(aResultVertices, aResultIndices);
+
+    std::string bufferName;
+    bufferName.append(aFilePath);
+    vmaSetAllocationName(gGraphics->mAllocator, (
+                             *aResult)->mVerticesBuffer->mAllocation,
+                         (bufferName + " Vertice Buffer").c_str());
+
+    vmaSetAllocationName(gGraphics->mAllocator, (
+                             *aResult)->mIndicesBuffer->mAllocation,
+                         (bufferName + " Indice Buffer").c_str());
     return true;
+}
+
+void LoadUtilities::CalculateTangents(std::vector<Vertex> &vertices, const std::vector<int32_t> &indices) {
+    for (int i = 0; i < vertices.size(); i += 3) {
+        Vertex &v0 = vertices[indices[i]];
+        Vertex &v1 = vertices[indices[i + 1]];
+        Vertex &v2 = vertices[indices[i + 2]];
+
+        glm::vec3 deltaPos1 = v1.mPosition - v0.mPosition;
+        glm::vec3 deltaPos2 = v2.mPosition - v0.mPosition;
+
+        glm::vec2 deltaUV1 = v1.mUV - v0.mUV;
+        glm::vec2 deltaUV2 = v2.mUV - v0.mUV;
+
+        float r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
+        glm::vec3 tangent = (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y) * r;
+        glm::vec3 bitangent = (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x) * r;
+
+        v0.mTangent = tangent;
+        v1.mTangent = tangent;
+        v2.mTangent = tangent;
+
+        v0.mBiTangent = bitangent;
+        v1.mBiTangent = bitangent;
+        v2.mBiTangent = bitangent;
+    }
+
+    for (auto &vertex: vertices) {
+        //vertex.mTangent = glm::normalize(vertex.mTangent);
+        //vertex.mBiTangent = glm::normalize(vertex.mBiTangent);
+
+
+        // TODO: unfuck the tangents lol
+        vertex.mTangent = glm::vec3(1,1,1);
+        vertex.mBiTangent = glm::vec3(1,1,1);
+    }
 }

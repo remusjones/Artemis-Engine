@@ -11,6 +11,7 @@
 class MaterialBase : public ImGuiLayer{
 public:
     virtual void OnImGuiRender() {};
+    virtual void Destroy();
     void AddBinding(const uint32_t aBinding, const uint32_t aCount, const VkDescriptorType aType, const
     VkShaderStageFlagBits aStage);
 

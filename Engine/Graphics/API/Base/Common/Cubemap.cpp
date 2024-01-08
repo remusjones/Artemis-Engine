@@ -10,7 +10,6 @@
 #include "Vulkan/Helpers/VulkanInitialization.h"
 
 void Cubemap::Create(MaterialBase *aBaseMaterial, const char *aMaterialName) {
-    AllocatedImage image;
 
     const int mipLevel = 1;
     VkFormat format = VK_FORMAT_R8G8B8A8_SRGB;
@@ -27,7 +26,7 @@ void Cubemap::Create(MaterialBase *aBaseMaterial, const char *aMaterialName) {
     cubemapImagePaths.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/MegaSunFront.png");
     cubemapImagePaths.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/MegaSunBack.png");
 
-    LoadUtilities::LoadImagesFromDisk(gGraphics, cubemapImagePaths, image, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT);
+    LoadUtilities::LoadImagesFromDisk(gGraphics, cubemapImagePaths, mAllocatedImage, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT);
 
     VkSamplerCreateInfo samplerCreateInfo{};
     samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -62,7 +61,7 @@ void Cubemap::Create(MaterialBase *aBaseMaterial, const char *aMaterialName) {
     view.subresourceRange.baseArrayLayer = 0;
     view.subresourceRange.layerCount = 6;
     view.subresourceRange.levelCount = mipLevel;
-    view.image = image.mImage; {
+    view.image = mAllocatedImage.mImage; {
         auto result = vkCreateImageView(gGraphics->mLogicalDevice, &view, nullptr, &mImageView);
         if (result != VK_SUCCESS) {
             Logger::Log(spdlog::level::critical, "failed to create image view!");
@@ -87,8 +86,8 @@ void Cubemap::Create(MaterialBase *aBaseMaterial, const char *aMaterialName) {
 }
 
 void Cubemap::Destroy() {
-    Material::Destroy();
     vkDestroyImageView(gGraphics->mLogicalDevice, mImageView, nullptr);
     vkDestroySampler(gGraphics->mLogicalDevice, mSampler, nullptr);
     vmaDestroyImage(gGraphics->mAllocator, mAllocatedImage.mImage, mAllocatedImage.mAllocation);
+    Material::Destroy();
 }

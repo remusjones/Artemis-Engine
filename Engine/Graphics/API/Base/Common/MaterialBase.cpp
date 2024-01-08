@@ -5,6 +5,9 @@
 #include "MaterialBase.h"
 #include "VulkanGraphicsImpl.h"
 
+void MaterialBase::Destroy() {
+}
+
 void MaterialBase::AddBinding(const uint32_t aBinding, const uint32_t aCount, const VkDescriptorType aType,
                               VkShaderStageFlagBits aStage) {
     VkDescriptorSetLayoutBinding binding = {};

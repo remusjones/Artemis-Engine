@@ -21,7 +21,7 @@ public:
 
     void OnImGuiRender() override;
 
-    void MakeDefaults();
+    void MakeDefaults() const;
 
     void Destroy() override;
 

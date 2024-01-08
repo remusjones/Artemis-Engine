@@ -35,7 +35,9 @@ public:
 
     static bool LoadCubemap(VulkanGraphics *aEngine, const char *aFilePath, VkFormat aFormat, AllocatedImage &aResult);
     static bool CreateImage(const int aWidth, const int aHeight, VulkanGraphics *aEngine, AllocatedImage &aResult, Color_RGBA aColor);
-    static bool LoadMeshFromDisk(const char *aFilePath, AllocatedVertexBuffer &aResult,
+    static bool LoadMeshFromDisk(const char *aFilePath, AllocatedVertexBuffer **aResult,
                                  std::vector<Vertex> &aResultVertices,
-                                 std::vector<int16_t> &aResultIndices);
+                                 std::vector<int32_t> &aResultIndices, const char *aMtlDirectory);
+
+    static void CalculateTangents(std::vector<Vertex> &vertices, const std::vector<int32_t> &indices);
 };

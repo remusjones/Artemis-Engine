@@ -40,7 +40,7 @@ public:
 
     void AddRenderer(Renderer *aRenderer);
 
-    void Draw(VkCommandBuffer aCommandBuffer, Scene &aScene) const;
+    void Draw(VkCommandBuffer aCommandBuffer, const Scene &aScene) const;
 
     void Create();
 
@@ -54,13 +54,9 @@ public:
         return material;
     }
 
-    std::vector<std::shared_ptr<Material> > MakeMaterials(uint8_t aBinding);
+    std::vector<std::shared_ptr<Material>> MakeMaterials(uint8_t aBinding);
 
     static void DefaultPipelineConfigInfo(PipelineConfigInfo &aConfigInfo);
-
-    void BindDescriptor();
-    void BindPushConstant(VkPushConstantRange aPushConstant);
-    void CreateUniformBufferLayouts();
 
     const char *mPipelineName;
     PipelineConfigInfo mPipelineConfig;

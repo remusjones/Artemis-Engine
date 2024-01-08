@@ -3,12 +3,12 @@
 //
 
 #pragma once
-#include <unordered_map>
 
+#include <memory>
 #include "Scene.h"
-#include "Base/Common/Buffers/Texture.h"
 #include "Vulkan/Systems/CubemapRenderSystem.h"
 
+class Texture;
 
 class SandboxScene final : public Scene {
 public:
@@ -31,9 +31,8 @@ private:
     MeshObject *mCube;
     MeshObject *mCubemapMesh;
 
-    Cubemap* mCubemap;
+    std::shared_ptr<Cubemap> mCubemap;
     std::unique_ptr<CubemapRenderSystem> mCubemapPipeline;
-
     std::unique_ptr<GraphicsPipeline> mTexturedMeshPipeline;
     std::unique_ptr<GraphicsPipeline> mHalfLambertMeshPipeline;
     std::unique_ptr<GraphicsPipeline> mUnlitMeshPipeline;

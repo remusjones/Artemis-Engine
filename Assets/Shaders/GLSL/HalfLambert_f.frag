@@ -33,6 +33,8 @@ layout(location = 1) in vec2 inUV;
 layout(location = 2) in vec3 inFragPos;
 layout(location = 3) in vec3 inNormal;
 layout(location = 4) in vec3 inTangent;
+layout(location = 5) in vec3 inBiTangent;
+
 layout(location = 0) out vec4 outColor;
 
 layout(set = 0, binding = 2) uniform sampler2DArray textureArray;
@@ -49,7 +51,7 @@ void main() {
     vec3 texNormal = texture(textureArray, vec3(inUV, normalTextureIndex)).xyz * 2.0 - 1.0;
     vec3 T = normalize(inTangent);
     vec3 N = normalize(inNormal);
-    vec3 B = cross(N, T);
+    vec3 B = normalize(inBiTangent);
     mat3 TBN = mat3(T, B, N);
     vec3 modelNormal = TBN * texNormal;
 
@@ -63,7 +65,8 @@ void main() {
     // Lighting
     vec3 ambientColor = sceneData.light.ambientStrength * materialProperties.color.rgb;
     float distanceToLight = length(sceneData.light.position - inFragPos);
-    float attenuation = 1.0 / (1.0 + 0.09 * distanceToLight + 0.032 * distanceToLight * distanceToLight);
+    float attenuation = sceneData.light.lightIntensity / (1.0 + 0.09 * distanceToLight + 0.032 * distanceToLight *
+    distanceToLight);
     vec3 diffuseColor = attenuation * materialProperties.color.rgb * sceneData.light.color * diffuse;
     vec3 specularColor = attenuation * materialProperties.specularStrength * specular * sceneData.light.color;
 
