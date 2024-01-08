@@ -45,8 +45,7 @@ void Cubemap::Create(MaterialBase *aBaseMaterial, const char *aMaterialName) {
     samplerCreateInfo.maxLod = static_cast<float>(mipLevel);
     samplerCreateInfo.maxAnisotropy = 4.0;
     samplerCreateInfo.anisotropyEnable = VK_TRUE;
-    samplerCreateInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_WHITE;
-    {
+    samplerCreateInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_WHITE; {
         auto result = vkCreateSampler(gGraphics->mLogicalDevice, &samplerCreateInfo, nullptr, &mSampler);
         if (result != VK_SUCCESS) {
             Logger::Log(spdlog::level::critical, "failed to create Sampler!");
@@ -63,8 +62,7 @@ void Cubemap::Create(MaterialBase *aBaseMaterial, const char *aMaterialName) {
     view.subresourceRange.baseArrayLayer = 0;
     view.subresourceRange.layerCount = 6;
     view.subresourceRange.levelCount = mipLevel;
-    view.image = image.mImage;
-    {
+    view.image = image.mImage; {
         auto result = vkCreateImageView(gGraphics->mLogicalDevice, &view, nullptr, &mImageView);
         if (result != VK_SUCCESS) {
             Logger::Log(spdlog::level::critical, "failed to create image view!");
@@ -89,6 +87,7 @@ void Cubemap::Create(MaterialBase *aBaseMaterial, const char *aMaterialName) {
 }
 
 void Cubemap::Destroy() {
+    Material::Destroy();
     vkDestroyImageView(gGraphics->mLogicalDevice, mImageView, nullptr);
     vkDestroySampler(gGraphics->mLogicalDevice, mSampler, nullptr);
     vmaDestroyImage(gGraphics->mAllocator, mAllocatedImage.mImage, mAllocatedImage.mAllocation);

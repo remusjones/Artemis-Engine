@@ -4,6 +4,7 @@
 //
 #pragma once
 #include <functional>
+#include <memory>
 #include <vector>
 #include <SDL_video.h>
 
@@ -121,7 +122,7 @@ public:
     VkSurfaceKHR mSurface;
     VmaAllocator mAllocator;
     InputManager mInputManager;
-    Scene *mActiveScene;
+    std::unique_ptr<Scene> mActiveScene;
 
 private:
     QueueFamilyIndices mFamilyIndices;

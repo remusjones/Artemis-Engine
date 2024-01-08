@@ -20,6 +20,7 @@ public:
 
 private:
     std::unordered_map<std::string, Texture *> mLoadedTextures;
+    PipelineConfigInfo mDefaultPipelineConfig;
 
     VkSampler mBlockySampler;
     MeshObject *mMonkey;
@@ -28,8 +29,13 @@ private:
     MeshObject *mLight;
     MeshObject *mSphere;
     MeshObject *mCube;
+    MeshObject *mCubemapMesh;
 
-    MeshObject *cubemapCube;
-    CubemapRenderSystem* cubemapRenderPipeline;
-    PipelineConfigInfo mDefaultPipelineConfig;
+    Cubemap* mCubemap;
+    std::unique_ptr<CubemapRenderSystem> mCubemapPipeline;
+
+    std::unique_ptr<GraphicsPipeline> mTexturedMeshPipeline;
+    std::unique_ptr<GraphicsPipeline> mHalfLambertMeshPipeline;
+    std::unique_ptr<GraphicsPipeline> mUnlitMeshPipeline;
+    std::unique_ptr<GraphicsPipeline> mVertexLitPipeline;
 };

@@ -59,9 +59,7 @@ public:
     static void DefaultPipelineConfigInfo(PipelineConfigInfo &aConfigInfo);
 
     void BindDescriptor();
-
     void BindPushConstant(VkPushConstantRange aPushConstant);
-
     void CreateUniformBufferLayouts();
 
     const char *mPipelineName;

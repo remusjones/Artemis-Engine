@@ -50,7 +50,6 @@ void MeshObject::CreateRenderer(
 
 void MeshObject::DestroyRenderer() {
     delete mMesh;
-    mMaterial->Destroy();
 }
 
 void MeshObject::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {

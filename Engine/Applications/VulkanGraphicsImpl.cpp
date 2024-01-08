@@ -310,14 +310,13 @@ void VulkanGraphicsImpl::DestroySurface() const
 
 void VulkanGraphicsImpl::CreateScenes()
 {
-    mActiveScene = new SandboxScene();
+    mActiveScene = std::make_unique<SandboxScene>();
     mActiveScene->Construct("Sandbox");
 }
 
 void VulkanGraphicsImpl::DestroyScenes() const
 {
     mActiveScene->Cleanup();
-    delete mActiveScene;
 }
 
 void VulkanGraphicsImpl::CreateGraphicsPipeline()

@@ -128,7 +128,7 @@ void GraphicsPipeline::Destroy() const {
     vkDestroyPipeline(gGraphics->mLogicalDevice, mGraphicsPipeline, nullptr);
 }
 
-std::vector<std::shared_ptr<Material> > GraphicsPipeline::MakeMaterials(
+std::vector<std::shared_ptr<Material>> GraphicsPipeline::MakeMaterials(
     uint8_t aBinding) {
     // TODO: Use aBinding
     for (auto material: mMaterials) {

@@ -17,7 +17,6 @@ public:
 
 private:
     void CreatePipelineLayout();
-
     void CreatePipeline();
 
     VkPipelineLayout mPipelineLayout;
