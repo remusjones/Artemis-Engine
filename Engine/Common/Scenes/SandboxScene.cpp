@@ -115,7 +115,7 @@ void SandboxScene::Construct(const char *aSceneName) {
     //
     // Skybox TODO: Skybox Constructor Required
     //
-    mCubemapMesh = new Primative();
+    mCubemapMesh = new Primative("Skybox");
     SkyboxRenderer *mSkyboxRenderer = new SkyboxRenderer();
     mCubemapMesh->mRenderer = mSkyboxRenderer;
     mSkyboxRenderer->mMaterial = mCubemap.get();
