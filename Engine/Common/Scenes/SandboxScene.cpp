@@ -17,73 +17,42 @@
 
 void SandboxScene::Construct(const char *aSceneName) {
     GraphicsPipeline::DefaultPipelineConfigInfo(mDefaultPipelineConfig);
-    mVertexLitPipeline = std::make_unique<GraphicsPipeline>("Vertex Lit Mesh", mDefaultPipelineConfig);
-    mUnlitMeshPipeline = std::make_unique<GraphicsPipeline>("Unlit Mesh", mDefaultPipelineConfig);
-    mTexturedMeshPipeline = std::make_shared<RenderSystemBase>();
+
+    mPBRPipeline = std::make_shared<PBRRenderSystem>();
+    mUnlitPipeline = std::make_shared<UnlitRenderSystem>();
     mCubemapPipeline = std::make_unique<CubemapRenderSystem>();
 
-    mHalfLambertMeshPipeline = std::make_unique<GraphicsPipeline>("Half Lambert", mDefaultPipelineConfig);
 
-    mVertexLitPipeline->CreateShaderModule("/Assets/Shaders/3DVertexLit_v.spv",
-                                           VK_SHADER_STAGE_VERTEX_BIT);
-    mVertexLitPipeline->CreateShaderModule("/Assets/Shaders/Lit_f.spv",
-                                           VK_SHADER_STAGE_FRAGMENT_BIT);
-
-    mUnlitMeshPipeline->CreateShaderModule("/Assets/Shaders/3DUnlit_v.spv",
-                                           VK_SHADER_STAGE_VERTEX_BIT);
-    mUnlitMeshPipeline->CreateShaderModule("/Assets/Shaders/Lit_f.spv",
-                                           VK_SHADER_STAGE_FRAGMENT_BIT);
-
-    //mTexturedMeshPipeline->CreateShaderModule("/Assets/Shaders/3DObject_v.spv",
-    //                                          VK_SHADER_STAGE_VERTEX_BIT);
-    //mTexturedMeshPipeline->CreateShaderModule("/Assets/Shaders/TexturedLit_f.spv",
-    //                                          VK_SHADER_STAGE_FRAGMENT_BIT);
-
-    mHalfLambertMeshPipeline->CreateShaderModule("/Assets/Shaders/3DObject_v.spv",
-                                                 VK_SHADER_STAGE_VERTEX_BIT);
-    mHalfLambertMeshPipeline->CreateShaderModule("/Assets/Shaders/HalfLambert_f.spv",
-                                                 VK_SHADER_STAGE_FRAGMENT_BIT);
-
-
-    Material *monkeyMaterial = mVertexLitPipeline->CreateMaterialInstance<DefaultMaterial>().get();
-    Material *monkeyTexturedMaterial = mTexturedMaterialFactory.CreateMaterialInstance<DefaultMaterial>().get();
-    Material *teapotMaterial = mTexturedMaterialFactory.CreateMaterialInstance<DefaultMaterial>().get();
-    Material *lightMaterial = mUnlitMeshPipeline->CreateMaterialInstance<DefaultMaterial>().get();
-    Material *sphereMaterial = mTexturedMaterialFactory.CreateMaterialInstance<DefaultMaterial>().get();
-    Material *halfLambertMaterial = mHalfLambertMeshPipeline->CreateMaterialInstance<DefaultMaterial>().get();
+    Material *monkeyTexturedMaterial = mMaterialPBRFactory.CreateMaterialInstance<DefaultMaterial>().get();
+    Material *teapotMaterial = mMaterialPBRFactory.CreateMaterialInstance<DefaultMaterial>().get();
+    Material *lightMaterial = mMaterialUnlitFactory.CreateMaterialInstance<DefaultMaterial>().get();
+    Material *sphereMaterial = mMaterialPBRFactory.CreateMaterialInstance<DefaultMaterial>().get();
+    Material *cubeMaterial = mMaterialPBRFactory.CreateMaterialInstance<DefaultMaterial>().get();
     mCubemap = mGenericMaterialFactory.CreateMaterialInstance<Cubemap>();
 
-    mVertexLitPipeline->MakeMaterials(0);
-    mUnlitMeshPipeline->MakeMaterials(0);
-    mTexturedMaterialFactory.MakeMaterials();
+    mMaterialUnlitFactory.MakeMaterials();
+    mMaterialPBRFactory.MakeMaterials();
     mGenericMaterialFactory.MakeMaterials();
-    mHalfLambertMeshPipeline->MakeMaterials(0);
 
-    mTexturedMeshPipeline->Create(mTexturedMaterialFactory.GetDescriptorLayouts());
+    mUnlitPipeline->Create(mMaterialUnlitFactory.GetDescriptorLayouts());
+    mPBRPipeline->Create(mMaterialPBRFactory.GetDescriptorLayouts());
 
     std::vector<VkDescriptorSetLayout> mCubemapLayouts;
     mCubemapLayouts.push_back(mCubemap->GetDescriptorLayout());
     mCubemapPipeline->Create(mCubemapLayouts);
 
+
     mMonkey = new MeshObject();
-    mMonkey->CreateObject(*monkeyMaterial, "Monkey Vert");
-    mMonkey->BindRenderer(*mVertexLitPipeline);
-
+    mMonkey->CreateObject(*monkeyTexturedMaterial, "Monkey Lit");
+    mMonkey->BindRenderer(*mPBRPipeline->mPipeline);
     mMonkey->LoadMesh(
-        (FileManagement::GetWorkingDirectory() +
-         std::string("/Assets/Models/monkey_smooth.obj")).c_str());
-
-    mMonkey2 = new MeshObject();
-    mMonkey2->CreateObject(*monkeyTexturedMaterial, "Monkey Lit");
-    mMonkey2->BindRenderer(*mTexturedMeshPipeline->mPipeline);
-    mMonkey2->LoadMesh(
         (FileManagement::GetWorkingDirectory() +
          std::string("/Assets/Models/monkey_smooth.obj")).c_str());
 
     mTeapot = new MeshObject();
     mTeapot->CreateObject(*teapotMaterial,
                           "Teapot");
-    mTeapot->BindRenderer(*mTexturedMeshPipeline->mPipeline);
+    mTeapot->BindRenderer(*mPBRPipeline->mPipeline);
 
     mTeapot->LoadMesh(
         (FileManagement::GetWorkingDirectory() +
@@ -92,7 +61,7 @@ void SandboxScene::Construct(const char *aSceneName) {
 
     mLight = new MeshObject();
     mLight->CreateObject(*lightMaterial, "Light");
-    mLight->BindRenderer(*mUnlitMeshPipeline);
+    mLight->BindRenderer(*mUnlitPipeline->mPipeline);
     mLight->LoadMesh(
         (FileManagement::GetWorkingDirectory() +
          std::string("/Assets/Models/sphere.obj")).c_str());
@@ -100,23 +69,22 @@ void SandboxScene::Construct(const char *aSceneName) {
     mSphere = new MeshObject();
     mSphere->CreateObject(*sphereMaterial,
                           "Sphere");
-    mSphere->BindRenderer(*mTexturedMeshPipeline->mPipeline);
+    mSphere->BindRenderer(*mPBRPipeline->mPipeline);
     mSphere->LoadMesh((FileManagement::GetWorkingDirectory() +
                        std::string("/Assets/Models/sphere.obj")).c_str());
 
     mCube = new MeshObject();
-    mCube->CreateObject(*halfLambertMaterial,
+    mCube->CreateObject(*cubeMaterial,
                         "Cube Half Lambert");
-    mCube->BindRenderer(*mHalfLambertMeshPipeline);
+    mCube->BindRenderer(*mPBRPipeline->mPipeline);
 
     mCube->LoadMesh((FileManagement::GetWorkingDirectory() +
-    std::string("/Assets/Models/cube.obj")).c_str(),
-    (FileManagement::GetWorkingDirectory() + std::string("/Assets/Models/")).c_str());
+                     std::string("/Assets/Models/cube.obj")).c_str(),
+                    (FileManagement::GetWorkingDirectory() + std::string("/Assets/Models/")).c_str());
 
 
     // Init positions
-    mMonkey->mTransform.SetPosition({-2, 0, -20.0f});
-    mMonkey2->mTransform.SetPosition({2, 0, -5.0f});
+    mMonkey->mTransform.SetPosition({2, 0, -5.0f});
     mTeapot->mTransform.SetPosition({2, 0, -20.0f});
     mTeapot->mTransform.SetScale({0.1f, 0.1f, 0.1f});
     mSphere->mTransform.SetPosition({-5, 0, -5});
@@ -149,7 +117,6 @@ void SandboxScene::Construct(const char *aSceneName) {
 
     // Register to scene TODO: Review if we auto-register these
     mObjects.push_back(mMonkey);
-    mObjects.push_back(mMonkey2);
     mObjects.push_back(mTeapot);
     mObjects.push_back(mLight);
     mObjects.push_back(mSphere);
@@ -157,11 +124,10 @@ void SandboxScene::Construct(const char *aSceneName) {
     mObjects.push_back(mCubemapMesh);
 
 
-    AddGraphicsPipeline(mVertexLitPipeline.get());
-    AddGraphicsPipeline(mUnlitMeshPipeline.get());
     AddGraphicsPipeline(mCubemapPipeline->mPipeline.get());
-    AddGraphicsPipeline(mTexturedMeshPipeline->mPipeline.get());
-    AddGraphicsPipeline(mHalfLambertMeshPipeline.get());
+    AddGraphicsPipeline(mUnlitPipeline->mPipeline.get());
+    AddGraphicsPipeline(mPBRPipeline->mPipeline.get());
+
     Scene::Construct(aSceneName);
 }
 
@@ -178,7 +144,6 @@ void SandboxScene::Tick(float aDeltaTime) {
     mSceneData.mViewProjectionMatrix = mActiveSceneCamera->GetPerspectiveMatrix();
 
     mMonkey->mTransform.RotateAxis(aDeltaTime / 5, glm::vec3(0.0f, 1, 0));
-    mMonkey2->mTransform.RotateAxis(aDeltaTime / 5, glm::vec3(0.0f, 1, 0));
     Scene::Tick(aDeltaTime);
 
     // Late Tick ..
@@ -190,7 +155,9 @@ void SandboxScene::Cleanup() {
         loadedTextures.second->Destroy();
         delete loadedTextures.second;
     }
-    mTexturedMaterialFactory.DestroyMaterials();
+
+    mMaterialUnlitFactory.DestroyMaterials();
+    mMaterialPBRFactory.DestroyMaterials();
     mGenericMaterialFactory.DestroyMaterials();
     Scene::Cleanup();
 }

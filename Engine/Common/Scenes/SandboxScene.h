@@ -8,7 +8,9 @@
 #include "Scene.h"
 #include "Vulkan/Common/MaterialFactory.h"
 #include "Vulkan/Systems/CubemapRenderSystem.h"
+#include "Vulkan/Systems/PBRRenderSystem.h"
 #include "Vulkan/Systems/RenderSystemBase.h"
+#include "Vulkan/Systems/UnlitRenderSystem.h"
 
 class Texture;
 
@@ -26,7 +28,6 @@ private:
 
     VkSampler mBlockySampler;
     MeshObject *mMonkey;
-    MeshObject *mMonkey2;
     MeshObject *mTeapot;
     MeshObject *mLight;
     MeshObject *mSphere;
@@ -35,15 +36,10 @@ private:
 
     std::shared_ptr<Cubemap> mCubemap;
     std::unique_ptr<CubemapRenderSystem> mCubemapPipeline;
-    std::shared_ptr<RenderSystemBase> mTexturedMeshPipeline;
+    std::shared_ptr<PBRRenderSystem> mPBRPipeline;
+    std::shared_ptr<UnlitRenderSystem> mUnlitPipeline;
 
-    std::unique_ptr<GraphicsPipeline> mHalfLambertMeshPipeline;
-    std::unique_ptr<GraphicsPipeline> mUnlitMeshPipeline;
-    std::unique_ptr<GraphicsPipeline> mVertexLitPipeline;
-
-
-
-    MaterialFactory mTexturedMaterialFactory;
-
+    MaterialFactory mMaterialUnlitFactory;
+    MaterialFactory mMaterialPBRFactory;
     MaterialFactory mGenericMaterialFactory;
 };

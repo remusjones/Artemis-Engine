@@ -15,8 +15,6 @@ layout(set = 0, binding = 0) uniform SceneBuffer {
     mat4 proj;
 } sceneData;
 
-
-
 layout(set = 0, binding = 1) uniform MaterialProperties{
     vec4 color;
     float specularStrength;
