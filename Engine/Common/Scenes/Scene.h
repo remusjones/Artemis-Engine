@@ -36,7 +36,7 @@ public:
     std::vector<GraphicsPipeline *> mGraphicsPipelines;
     GPUSceneData mSceneData;
     const char *mSceneName; //
-    std::vector<MeshObject *> mObjects;
+    std::vector<Entity *> mObjects;
 
 
 };

@@ -6,13 +6,11 @@
 #include <SDL_events.h>
 
 #include "Camera.h"
-#include "ImGuiLayer.h"
-#include "Super.h"
 
 
 struct KeyboardEvent;
 
-class FlyCamera : public Camera, ImGuiLayer, Super {
+class FlyCamera : public Camera{
 public:
     void Construct() override;
 
@@ -39,8 +37,6 @@ public:
 private:
     glm::vec3 mMoveVector = {};
     bool mInput[6] = {};
-
-
     float_t mSpeed = 10;
     bool mMouseRPressed = false;
 };

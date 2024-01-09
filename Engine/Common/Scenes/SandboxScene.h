@@ -6,7 +6,7 @@
 
 #include <memory>
 #include "Scene.h"
-#include "Vulkan/Common/MaterialFactory.h"
+#include "../../Graphics/API/Vulkan/Common/MaterialFactory.h"
 #include "Vulkan/Systems/CubemapRenderSystem.h"
 #include "Vulkan/Systems/PBRRenderSystem.h"
 #include "Vulkan/Systems/RenderSystemBase.h"

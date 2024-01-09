@@ -7,7 +7,7 @@
 #include "Base/Common/Data/Mesh.h"
 
 
-class MeshRenderer : public Renderer{
+class MeshRenderer final : public Renderer{
 public:
     void LoadMesh(const char *aPath, const char *aMtlPath = "");
     void DestroyRenderer() override;

@@ -6,6 +6,8 @@
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+#include "imgui.h"
+
 Transform::Transform(): mRotation(glm::identity<glm::quat>()), mPosition(0), mScale(1) {
 }
 
@@ -96,4 +98,16 @@ glm::mat4 Transform::GetWorldMatrix() const {
     worldMatrix *= glm::scale(glm::mat4(1.0f), mScale);
 
     return worldMatrix;
+}
+
+void Transform::OnImGuiRender() {
+    ImGui::SeparatorText("Transform");
+    glm::vec3 rot = Euler();
+    if (ImGui::DragFloat3(GetUniqueLabel("Position"), &mPosition[0], 0.1f)) {
+    }
+    if (ImGui::DragFloat3(GetUniqueLabel("Rotation"), &rot[0], 0.1f)) {
+        SetRotation(rot);
+    }
+    if (ImGui::DragFloat3(GetUniqueLabel("Scale"), &mScale[0], 0.1f)) {
+    }
 }

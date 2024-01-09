@@ -6,7 +6,6 @@
 
 #include <glm/detail/type_quat.hpp>
 #include <glm/ext/quaternion_trigonometric.hpp>
-#include <glm/gtc/quaternion.hpp>
 
 #include "imgui.h"
 #include "InputManager.h"
@@ -40,27 +39,12 @@ void FlyCamera::Construct() {
 
     gInputManager->RegisterMouseInput([&](SDL_MouseMotionEvent motion) { MouseMovement(motion); }, "Camera Mouse");
     gInputManager->RegisterMouseInput([&](SDL_MouseButtonEvent input) { MouseInput(input); }, "Camera Click");
-    Super::Construct();
+    Entity::Construct();
 }
 
 void FlyCamera::OnImGuiRender() {
     ImGui::Indent();
-
-    ImGui::SeparatorText("Transform");
-    glm::vec3 pos = mTransform.Position();
-    glm::vec3 rot = mTransform.Euler();
-    glm::vec3 scale = mTransform.Scale();
-
-    if (ImGui::DragFloat3(GetUniqueLabel("Position"), &pos[0], 0.1f)) {
-        mTransform.SetPosition(pos);
-    }
-    if (ImGui::DragFloat3(GetUniqueLabel("Rotation"), &rot[0], 0.1f)) {
-        mTransform.SetRotation(rot);
-    }
-    if (ImGui::DragFloat3(GetUniqueLabel("Scale"), &scale[0], 0.1f)) {
-        mTransform.SetScale(scale);
-    }
-
+    Entity::OnImGuiRender();
     ImGui::SeparatorText("Settings");
     if (ImGui::DragFloat(GetUniqueLabel("FOV"), &mFOV, 0.1f)) {
     }
@@ -76,7 +60,6 @@ void FlyCamera::OnImGuiRender() {
     }
     if (ImGui::DragFloat3(GetUniqueLabel("Up"), &mTransform.Up()[0], 0.1f)) {
     }
-
     ImGui::Unindent();
 }
 
@@ -141,7 +124,7 @@ void FlyCamera::Tick(float aDeltaTime) {
     mMoveVector.y += mInput[4] ? -mSpeed : 0;
     mMoveVector.y += mInput[5] ? mSpeed : 0;
 
-    Super::Tick(aDeltaTime);
+    Entity::Tick(aDeltaTime);
     mTransform.TranslateLocal(mMoveVector * aDeltaTime);
     mMoveVector = glm::vec3();
 }

@@ -7,9 +7,10 @@
 #include <glm/detail/type_quat.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include "Objects/ImGuiLayer.h"
 
 
-class Transform {
+class Transform : public ImGuiLayer{
 public:
     Transform();
 
@@ -44,6 +45,7 @@ public:
     glm::mat4 GetTranslationMatrix() const { return glm::translate(glm::identity<glm::mat4>(), mPosition); }
     glm::mat4 GetScaleMatrix() const { return glm::scale(glm::identity<glm::mat4>(), mScale); }
 
+    void OnImGuiRender() override;
 private:
     glm::vec3 mPosition;
     glm::quat mRotation;
