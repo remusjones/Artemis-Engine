@@ -6,5 +6,9 @@
 
 void Primative::Cleanup() {
     Entity::Cleanup();
-    mRenderer.DestroyRenderer();
+    if (mRenderer) {
+        mRenderer->DestroyRenderer();
+        delete mRenderer;
+    }
+
 }

@@ -7,8 +7,7 @@
 #include <vulkan/vulkan_core.h>
 #include "glm/glm.hpp"
 
-class Vertex {
-public:
+struct Vertex {
     glm::vec3 mPosition;
     glm::vec3 mNormal;
     glm::vec3 mColor;
@@ -48,4 +47,3 @@ public:
         return attributeDescriptions;
     }
 };
-

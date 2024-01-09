@@ -8,6 +8,7 @@
 
 /* Represents a position and a undefined renderer component */
 class Primative : public Entity{
+public:
     void Cleanup() override;
-    Renderer mRenderer;
+    Renderer* mRenderer;
 };

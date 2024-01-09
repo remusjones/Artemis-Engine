@@ -6,6 +6,7 @@
 #include "Renderer.h"
 
 
+class PrimativeMesh;
 class Mesh;
 
 class SkyboxRenderer final : public Renderer {
@@ -14,8 +15,8 @@ public:
     void BindRenderer(GraphicsPipeline &aBoundGraphicsPipeline) override;
     void DestroyRenderer() override;
 
-    void LoadMesh(const char *aPath, const char *aMtlPath);
+    void LoadMesh(const char *aPath, const char *aMtlPath = "");
 
     Transform *mTransform;
-    Mesh *mMesh;
+    PrimativeMesh *mMesh;
 };

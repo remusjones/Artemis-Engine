@@ -383,7 +383,8 @@ bool LoadUtilities::CreateImage(const int aWidth, const int aHeight,
     return true;
 }
 
-bool LoadUtilities::LoadMeshFromDisk(const char *aFilePath, AllocatedVertexBuffer **aResult,
+
+bool LoadUtilities::LoadMeshFromDisk(const char *aFilePath,
                                      std::vector<Vertex> &aResultVertices, std::vector<int32_t> &aResultIndices,
                                      const char *aMtlDirectory = "") {
     //attrib will contain the vertex arrays of the file
@@ -454,16 +455,6 @@ bool LoadUtilities::LoadMeshFromDisk(const char *aFilePath, AllocatedVertexBuffe
             index_offset += fv;
         }
     }
-    *aResult = new AllocatedVertexBuffer(aResultVertices, aResultIndices);
 
-    std::string bufferName;
-    bufferName.append(aFilePath);
-    vmaSetAllocationName(gGraphics->mAllocator, (
-                             *aResult)->mVerticesBuffer->mAllocation,
-                         (bufferName + " Vertice Buffer").c_str());
-
-    vmaSetAllocationName(gGraphics->mAllocator, (
-                             *aResult)->mIndicesBuffer->mAllocation,
-                         (bufferName + " Indice Buffer").c_str());
     return true;
 }

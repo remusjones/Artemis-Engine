@@ -12,17 +12,24 @@
 #include "Objects/Camera.h"
 #include "Objects/FlyCamera.h"
 #include "Vulkan/Common/MeshObject.h"
+#include "Vulkan/Common/Primative.h"
+#include "Vulkan/Renderers/SkyboxRenderer.h"
 #include "Vulkan/Systems/CubemapRenderSystem.h"
 #include "Vulkan/Systems/GraphicsPipeline.h"
 
 void SandboxScene::Construct(const char *aSceneName) {
     GraphicsPipeline::DefaultPipelineConfigInfo(mDefaultPipelineConfig);
 
+    //
+    // Create Pipelines
+    //
     mPBRPipeline = std::make_shared<PBRRenderSystem>();
     mUnlitPipeline = std::make_shared<UnlitRenderSystem>();
     mCubemapPipeline = std::make_unique<CubemapRenderSystem>();
 
-
+    //
+    // Define Material Usages
+    //
     Material *monkeyTexturedMaterial = mMaterialPBRFactory.CreateMaterialInstance<DefaultMaterial>().get();
     Material *teapotMaterial = mMaterialPBRFactory.CreateMaterialInstance<DefaultMaterial>().get();
     Material *lightMaterial = mMaterialUnlitFactory.CreateMaterialInstance<DefaultMaterial>().get();
@@ -30,10 +37,16 @@ void SandboxScene::Construct(const char *aSceneName) {
     Material *cubeMaterial = mMaterialPBRFactory.CreateMaterialInstance<DefaultMaterial>().get();
     mCubemap = mGenericMaterialFactory.CreateMaterialInstance<Cubemap>();
 
+    //
+    // Make Materials
+    //
     mMaterialUnlitFactory.MakeMaterials();
     mMaterialPBRFactory.MakeMaterials();
     mGenericMaterialFactory.MakeMaterials();
 
+    //
+    // Bind Materials
+    //
     mUnlitPipeline->Create(mMaterialUnlitFactory.GetDescriptorLayouts());
     mPBRPipeline->Create(mMaterialPBRFactory.GetDescriptorLayouts());
 
@@ -41,7 +54,10 @@ void SandboxScene::Construct(const char *aSceneName) {
     mCubemapLayouts.push_back(mCubemap->GetDescriptorLayout());
     mCubemapPipeline->Create(mCubemapLayouts);
 
-
+    //
+    // Create Objects
+    // TODO: Create constructor helper to make this smaller?
+    //
     mMonkey = new MeshObject();
     mMonkey->CreateObject(*monkeyTexturedMaterial, "Monkey Lit");
     mMonkey->mMeshRenderer.BindRenderer(*mPBRPipeline->mPipeline);
@@ -71,7 +87,7 @@ void SandboxScene::Construct(const char *aSceneName) {
                           "Sphere");
     mSphere->mMeshRenderer.BindRenderer(*mPBRPipeline->mPipeline);
     mSphere->mMeshRenderer.LoadMesh((FileManagement::GetWorkingDirectory() +
-                       std::string("/Assets/Models/sphere.obj")).c_str());
+                                     std::string("/Assets/Models/sphere.obj")).c_str());
 
     mCube = new MeshObject();
     mCube->CreateObject(*cubeMaterial,
@@ -79,20 +95,13 @@ void SandboxScene::Construct(const char *aSceneName) {
     mCube->mMeshRenderer.BindRenderer(*mPBRPipeline->mPipeline);
 
     mCube->mMeshRenderer.LoadMesh((FileManagement::GetWorkingDirectory() +
-                     std::string("/Assets/Models/cube.obj")).c_str(),
-                    (FileManagement::GetWorkingDirectory() + std::string("/Assets/Models/")).c_str());
+                                   std::string("/Assets/Models/cube.obj")).c_str(),
+                                  (FileManagement::GetWorkingDirectory() + std::string("/Assets/Models/")).c_str());
 
-
-    // Init positions
-    mMonkey->mTransform.SetPosition({2, 0, -5.0f});
-    mTeapot->mTransform.SetPosition({2, 0, -20.0f});
-    mTeapot->mTransform.SetScale({0.1f, 0.1f, 0.1f});
-    mSphere->mTransform.SetPosition({-5, 0, -5});
-    mCube->mTransform.SetPosition({-2, 0, -5});
-    mLight->mTransform.SetScale({0.1f, 0.1f, 0.1f});
-    mLight->mTransform.SetScale({0.2f, 0.2f, 0.2f});
-
-
+    //
+    // Create Teapot Textures
+    // TODO: Create Texture factory?
+    //
     auto *stoneTexture = new Texture();
     mLoadedTextures["stoneTexture"] = stoneTexture;
     std::vector<std::string> stoneSet;
@@ -103,19 +112,30 @@ void SandboxScene::Construct(const char *aSceneName) {
 
     teapotMaterial->BindTexture(stoneTexture->mImageBufferInfo, DefaultMaterial::TEXTURE);
 
+    //
+    // Skybox TODO: Skybox Constructor Required
+    //
+    mCubemapMesh = new Primative();
+    SkyboxRenderer *mSkyboxRenderer = new SkyboxRenderer();
+    mCubemapMesh->mRenderer = mSkyboxRenderer;
+    mSkyboxRenderer->mMaterial = mCubemap.get();
+    mSkyboxRenderer->mTransform = &mCubemapMesh->mTransform;
+    mSkyboxRenderer->BindRenderer(*mCubemapPipeline->mPipeline);
+    mSkyboxRenderer->LoadMesh((FileManagement::GetWorkingDirectory() +
+                               std::string("/Assets/Models/cube.obj")).c_str());
 
-    mCubemapMesh = new MeshObject();
-    mCubemapMesh->CreateObject(*mCubemap, "Skybox");
-    mCubemapMesh->mMeshRenderer.BindRenderer(*mCubemapPipeline->mPipeline);
-    mCubemapMesh->mMeshRenderer.LoadMesh((FileManagement::GetWorkingDirectory() +
-                            std::string("/Assets/Models/cube.obj")).c_str());
-
+    //
+    // Scene Camera
+    //
     mActiveSceneCamera = new FlyCamera();
     mActiveSceneCamera->Construct();
     mActiveSceneCamera->mTransform.SetPosition({0, 0, -5.0f});
 
 
+    //
+    // Setup Scene Dependencies
     // Register to scene TODO: Review if we auto-register these
+    //
     mObjects.push_back(mMonkey);
     mObjects.push_back(mTeapot);
     mObjects.push_back(mLight);
@@ -123,11 +143,27 @@ void SandboxScene::Construct(const char *aSceneName) {
     mObjects.push_back(mCube);
     mObjects.push_back(mCubemapMesh);
 
+    //
+    // Set Default Positions
+    //
+    mMonkey->mTransform.SetPosition({2, 0, -5.0f});
+    mTeapot->mTransform.SetPosition({2, 0, -20.0f});
+    mTeapot->mTransform.SetScale({0.1f, 0.1f, 0.1f});
+    mSphere->mTransform.SetPosition({-5, 0, -5});
+    mCube->mTransform.SetPosition({-2, 0, -5});
+    mLight->mTransform.SetScale({0.1f, 0.1f, 0.1f});
+    mLight->mTransform.SetScale({0.2f, 0.2f, 0.2f});
 
+    //
+    // Setup Draw Order
+    //
     AddGraphicsPipeline(mCubemapPipeline->mPipeline.get());
     AddGraphicsPipeline(mUnlitPipeline->mPipeline.get());
     AddGraphicsPipeline(mPBRPipeline->mPipeline.get());
 
+    //
+    // Construct Scene
+    //
     Scene::Construct(aSceneName);
 }
 
@@ -146,7 +182,6 @@ void SandboxScene::Tick(float aDeltaTime) {
     mMonkey->mTransform.RotateAxis(aDeltaTime / 5, glm::vec3(0.0f, 1, 0));
     Scene::Tick(aDeltaTime);
 
-    // Late Tick ..
     mActiveSceneCamera->Tick(aDeltaTime);
 }
 

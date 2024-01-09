@@ -11,12 +11,7 @@
 class Cubemap;
 
 class CubemapRenderSystem : public RenderSystemBase {
-public:
- //   void Create(const std::vector<VkDescriptorSetLayout> &aDescriptorLayouts) override;
-
 protected:
     void CreatePipelineLayout() override;
-
     void CreatePipeline() override;
-
 };

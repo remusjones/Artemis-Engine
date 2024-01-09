@@ -26,7 +26,7 @@ void MeshRenderer::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
     vkCmdPushConstants(aCommandBuffer, mGraphicsPipeline->mPipelineConfig.pipelineLayout,
                        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
                        sizeof(PushConstants), &mPushConstants);
-    vkCmdDraw(aCommandBuffer, mMesh->GetVertices().size(), 1, 0, 0);
+    vkCmdDraw(aCommandBuffer, mMesh->GetVerticesSize(), 1, 0, 0);
     mPushConstants.model = mTransform->GetWorldMatrix();
     Renderer::Render(aCommandBuffer, aScene);
 }

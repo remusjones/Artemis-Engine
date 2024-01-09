@@ -17,8 +17,11 @@ public:
     void Bind(VkCommandBuffer aCommandBuffer) const;
     bool LoadFromObject(const char *aFileName, const char *aMtlDirectory);
 
-    std::vector<Vertex> GetVertices() { return mVertices; }
-    std::vector<int32_t> GetIndices() { return mIndices; }
+    [[nodiscard]] std::vector<Vertex> GetVertices() const { return mVertices; }
+    [[nodiscard]] std::vector<int32_t> GetIndices() const { return mIndices; }
+
+    [[nodiscard]] int32_t GetVerticesSize() const { return mVertices.size(); }
+    [[nodiscard]] int32_t GetIndicesSize() const { return mIndices.size(); }
 
 private:
     std::vector<Vertex> mVertices;

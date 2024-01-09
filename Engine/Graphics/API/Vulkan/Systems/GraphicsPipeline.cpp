@@ -52,7 +52,6 @@ void GraphicsPipeline::Create() {
         mPipelineConfig.renderPass = gGraphics->mSwapChain->mRenderPass;
     }
 
-    // TODO: bind these dynamically
     // Vertex Information
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType =

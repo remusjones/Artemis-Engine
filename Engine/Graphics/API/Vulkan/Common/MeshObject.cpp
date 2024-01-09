@@ -2,14 +2,10 @@
 // Created by Remus on 17/12/2023.
 //
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include "MeshObject.h"
-#include "imgui.h"
 #include "Logger.h"
 #include "Base/Common/Material.h"
 #include "Scenes/Scene.h"
-#include <glm/gtc/type_ptr.hpp>
 
 void MeshObject::Construct() {
     Entity::Construct();

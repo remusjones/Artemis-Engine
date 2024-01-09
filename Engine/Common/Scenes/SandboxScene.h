@@ -6,12 +6,13 @@
 
 #include <memory>
 #include "Scene.h"
-#include "../../Graphics/API/Vulkan/Common/MaterialFactory.h"
+#include "Vulkan/Common/MaterialFactory.h"
 #include "Vulkan/Systems/CubemapRenderSystem.h"
 #include "Vulkan/Systems/PBRRenderSystem.h"
 #include "Vulkan/Systems/RenderSystemBase.h"
 #include "Vulkan/Systems/UnlitRenderSystem.h"
 
+class Primative;
 class Texture;
 
 class SandboxScene final : public Scene {
@@ -32,7 +33,7 @@ private:
     MeshObject *mLight;
     MeshObject *mSphere;
     MeshObject *mCube;
-    MeshObject *mCubemapMesh;
+    Primative *mCubemapMesh;
 
     std::shared_ptr<Cubemap> mCubemap;
     std::unique_ptr<CubemapRenderSystem> mCubemapPipeline;
