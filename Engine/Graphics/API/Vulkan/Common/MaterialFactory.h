@@ -11,9 +11,9 @@
 class MaterialFactory {
 public:
     template<typename T>
-    std::shared_ptr<Material> CreateMaterialInstance(const char* aMaterialName = "Default") {
+    std::shared_ptr<T> CreateMaterialInstance(const char* aMaterialName = "Default") {
         static_assert(std::is_base_of_v<Material, T>, "T must derive from Material");
-        std::shared_ptr<Material> material = std::make_shared<T>(aMaterialName);
+        std::shared_ptr<T> material = std::make_shared<T>(aMaterialName);
         mMaterials.push_back(material);
         return material;
     }

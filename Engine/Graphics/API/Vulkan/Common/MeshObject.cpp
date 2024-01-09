@@ -31,21 +31,18 @@ void MeshObject::Cleanup() {
 }
 
 void MeshObject::CreateObject(
-    GraphicsPipeline &aBoundGraphicsPipeline,
     Material &aMaterial,
     const char *aName) {
     mName = aName;
     Logger::Log(spdlog::level::info, (std::string("Creating object ") + mName).c_str());
     mMaterial = &aMaterial;
-    CreateRenderer(aBoundGraphicsPipeline);
+    mMesh = new Mesh();
 }
 
-void MeshObject::CreateRenderer(
+void MeshObject::BindRenderer(
     GraphicsPipeline &aBoundGraphicsPipeline) {
     mGraphicsPipeline = &aBoundGraphicsPipeline;
     mGraphicsPipeline->AddRenderer(this);
-
-    mMesh = new Mesh();
 }
 
 void MeshObject::DestroyRenderer() {
@@ -56,8 +53,8 @@ void MeshObject::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
     mPushConstants.model = mTransform.GetWorldMatrix();
     Renderer::Render(aCommandBuffer, aScene);
 }
-void MeshObject::OnImGuiRender() {
 
+void MeshObject::OnImGuiRender() {
     ImGui::SeparatorText("Transform");
     glm::vec3 pos = mTransform.Position();
     glm::vec3 rot = mTransform.Euler();

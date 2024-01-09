@@ -6,6 +6,7 @@
 
 class DefaultMaterial : public Material {
 public:
+
     enum BindingLocation {
         SCENE_INFORMATION = 0,
         PROPERTIES = 1,
@@ -16,6 +17,11 @@ public:
         NORMAL = 1
     };
 
+
+    DefaultMaterial(const char* aMaterialName);
+    DefaultMaterial() = default;
+
+
     void Create(MaterialBase *aBaseMaterial = nullptr) override;
 
     void OnImGuiRender() override;
@@ -25,6 +31,7 @@ public:
     void Destroy() override;
 
     std::unique_ptr<Texture> mTextures;
+
     std::vector<const char *> mDebugColors{
         "Default",
         "normal",

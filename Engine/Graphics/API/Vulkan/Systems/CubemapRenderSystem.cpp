@@ -10,12 +10,11 @@
 #include "Base/Common/Cubemap.h"
 #include "Base/Common/Buffers/PushConstants.h"
 
-CubemapRenderSystem::CubemapRenderSystem(std::vector<VkDescriptorSetLayout> aDescriptorLayouts) {
-    mBoundDescriptorLayouts = aDescriptorLayouts;
-
-    CreatePipelineLayout();
-    CreatePipeline();
-}
+//void CubemapRenderSystem::Create(const std::vector<VkDescriptorSetLayout> &aDescriptorLayouts) {
+//    mBoundDescriptorLayouts = aDescriptorLayouts;
+//    CreatePipelineLayout();
+//    CreatePipeline();
+//}
 
 void CubemapRenderSystem::CreatePipelineLayout() {
     VkPushConstantRange pushConstantRange{};

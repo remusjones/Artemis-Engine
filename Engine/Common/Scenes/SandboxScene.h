@@ -6,7 +6,9 @@
 
 #include <memory>
 #include "Scene.h"
+#include "Vulkan/Common/MaterialFactory.h"
 #include "Vulkan/Systems/CubemapRenderSystem.h"
+#include "Vulkan/Systems/RenderSystemBase.h"
 
 class Texture;
 
@@ -33,8 +35,15 @@ private:
 
     std::shared_ptr<Cubemap> mCubemap;
     std::unique_ptr<CubemapRenderSystem> mCubemapPipeline;
-    std::unique_ptr<GraphicsPipeline> mTexturedMeshPipeline;
+    std::shared_ptr<RenderSystemBase> mTexturedMeshPipeline;
+
     std::unique_ptr<GraphicsPipeline> mHalfLambertMeshPipeline;
     std::unique_ptr<GraphicsPipeline> mUnlitMeshPipeline;
     std::unique_ptr<GraphicsPipeline> mVertexLitPipeline;
+
+
+
+    MaterialFactory mTexturedMaterialFactory;
+
+    MaterialFactory mGenericMaterialFactory;
 };

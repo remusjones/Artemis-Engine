@@ -6,6 +6,10 @@
 #include "File Management/FileManagement.h"
 #include "Vulkan/VulkanEngine.h"
 
+DefaultMaterial::DefaultMaterial(const char *aMaterialName) {
+    mMaterialName = aMaterialName;
+}
+
 void DefaultMaterial::Create(MaterialBase *aBaseMaterial) {
 
     AddBinding(SCENE_INFORMATION, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL);

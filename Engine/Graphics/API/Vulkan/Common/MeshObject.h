@@ -31,7 +31,7 @@ public:
 
     void LoadMesh(const char *aPath, const char* aMtlPath = "") const { mMesh->LoadFromObject(aPath, aMtlPath); }
 
-    virtual void CreateRenderer(GraphicsPipeline &aBoundGraphicsPipeline) = 0;
+    virtual void BindRenderer(GraphicsPipeline &aBoundGraphicsPipeline) = 0;
 
     virtual void DestroyRenderer() = 0;
 
@@ -54,11 +54,10 @@ public:
 
     void OnImGuiRender() override;
 
-    void CreateObject(GraphicsPipeline &aBoundGraphicsPipeline,
-                      Material &aMaterial, const char *aName = "Default");
+    void CreateObject(Material &aMaterial, const char *aName = "Default");
 
 
-    void CreateRenderer(GraphicsPipeline &aBoundGraphicsPipeline) override;
+    void BindRenderer(GraphicsPipeline &aBoundGraphicsPipeline) override;
 
     void DestroyRenderer() override;
 

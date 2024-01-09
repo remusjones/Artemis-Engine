@@ -17,6 +17,6 @@ public:
 
     void Destroy();
 
-    VkBuffer mBuffer;
-    VmaAllocation mAllocation;
+    VkBuffer mBuffer = nullptr;
+    VmaAllocation mAllocation = nullptr;
 };
