@@ -14,7 +14,7 @@
 #include "Vulkan/Common/MeshObject.h"
 #include "Vulkan/Common/Primative.h"
 #include "Vulkan/Renderers/SkyboxRenderer.h"
-#include "Vulkan/Systems/CubemapRenderSystem.h"
+#include "..\..\Graphics\API\Vulkan\Systems\SkyboxRenderSystem.h"
 #include "Vulkan/Systems/GraphicsPipeline.h"
 
 void SandboxScene::Construct(const char *aSceneName) {
@@ -25,17 +25,17 @@ void SandboxScene::Construct(const char *aSceneName) {
     //
     mPBRPipeline = std::make_shared<PBRRenderSystem>();
     mUnlitPipeline = std::make_shared<UnlitRenderSystem>();
-    mCubemapPipeline = std::make_unique<CubemapRenderSystem>();
+    mCubemapPipeline = std::make_unique<SkyboxRenderSystem>();
 
     //
     // Define Material Usages
     //
-    Material *monkeyTexturedMaterial = mMaterialPBRFactory.CreateMaterialInstance<DefaultMaterial>().get();
-    Material *teapotMaterial = mMaterialPBRFactory.CreateMaterialInstance<DefaultMaterial>().get();
-    Material *lightMaterial = mMaterialUnlitFactory.CreateMaterialInstance<DefaultMaterial>().get();
-    Material *sphereMaterial = mMaterialPBRFactory.CreateMaterialInstance<DefaultMaterial>().get();
-    Material *cubeMaterial = mMaterialPBRFactory.CreateMaterialInstance<DefaultMaterial>().get();
-    mCubemap = mGenericMaterialFactory.CreateMaterialInstance<Cubemap>();
+    Material *monkeyTexturedMaterial = mMaterialPBRFactory.CreateMaterialInstance<DefaultMaterial>("Monkey PBR").get();
+    Material *teapotMaterial = mMaterialPBRFactory.CreateMaterialInstance<DefaultMaterial>("Teapot PBR").get();
+    Material *lightMaterial = mMaterialUnlitFactory.CreateMaterialInstance<DefaultMaterial>("Light Unlit").get();
+    Material *sphereMaterial = mMaterialPBRFactory.CreateMaterialInstance<DefaultMaterial>("Sphere PBR").get();
+    Material *cubeMaterial = mMaterialPBRFactory.CreateMaterialInstance<DefaultMaterial>("Cube PBR").get();
+    mCubemap = mGenericMaterialFactory.CreateMaterialInstance<Cubemap>("Skybox Cubemap");
 
     //
     // Make Materials

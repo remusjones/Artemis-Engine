@@ -41,9 +41,8 @@ void Scene::OnImGuiRender() {
     // Draw Gizmo Controls TODO: Add KB Control shortcuts 
     ImGui::SeparatorText("Controls");
     ImGui::BeginChild(GetUniqueLabel("Controls"),
-                          ImVec2(0.0f, 0.0f),
-                          ImGuiChildFlags_Border | ImGuiChildFlags_AutoResizeY);
-    {
+                      ImVec2(0.0f, 0.0f),
+                      ImGuiChildFlags_Border | ImGuiChildFlags_AutoResizeY); {
         if (ImGui::RadioButton(GetUniqueLabel("Translate"), mCurrentGizmoOperation == ImGuizmo::TRANSLATE))
             mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
 
@@ -55,8 +54,7 @@ void Scene::OnImGuiRender() {
         if (ImGui::RadioButton(GetUniqueLabel("Scale"), mCurrentGizmoOperation == ImGuizmo::SCALE))
             mCurrentGizmoOperation = ImGuizmo::SCALE;
 
-        if (mCurrentGizmoOperation != ImGuizmo::SCALE)
-        {
+        if (mCurrentGizmoOperation != ImGuizmo::SCALE) {
             if (ImGui::RadioButton(GetUniqueLabel("Local"), mCurrentGizmoMode == ImGuizmo::LOCAL))
                 mCurrentGizmoMode = ImGuizmo::LOCAL;
             ImGui::SameLine();
@@ -83,8 +81,7 @@ void Scene::OnImGuiRender() {
     if (ImGui::CollapsingHeader("Objects")) {
         for (const auto obj: mObjects) {
             ImGui::BeginGroup();
-            ImGui::Indent();
-            {
+            ImGui::Indent(); {
                 if (ImGui::CollapsingHeader(obj->GetUniqueLabel(obj->mName))) {
                     ImGui::Indent();
 
@@ -95,10 +92,11 @@ void Scene::OnImGuiRender() {
                     ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
 
                     if (ImGuizmo::Manipulate(glm::value_ptr(mActiveSceneCamera->GetViewMatrix()),
-                                             glm::value_ptr( mActiveSceneCamera->GetPerspectiveMatrix()), mCurrentGizmoOperation, mCurrentGizmoMode,
+                                             glm::value_ptr(mActiveSceneCamera->GetPerspectiveMatrix()),
+                                             mCurrentGizmoOperation, mCurrentGizmoMode,
                                              glm::value_ptr(matrix),NULL)) {
                         obj->mTransform.SetMatrix(matrix);
-                                             }
+                    }
                     // Draw Object UI
                     obj->OnImGuiRender();
 
@@ -114,8 +112,7 @@ void Scene::OnImGuiRender() {
     ImGui::SeparatorText("Statistics");
     ImGui::BeginChild(GetUniqueLabel("Statistics"),
                       ImVec2(0.0f, 0.0f),
-                      ImGuiChildFlags_Border | ImGuiChildFlags_AutoResizeY);
-    {
+                      ImGuiChildFlags_Border | ImGuiChildFlags_AutoResizeY); {
         ImGui::Text("FPS: ");
         ImGui::SameLine();
         ImGui::Text(std::to_string(static_cast<int32_t>(gGraphics->GetFps())).c_str());
@@ -132,6 +129,21 @@ void Scene::OnImGuiRender() {
         ImGui::Text("Graphic Systems: ");
         ImGui::SameLine();
         ImGui::Text(std::to_string(static_cast<int32_t>(mGraphicsPipelines.size())).c_str());
+        if (ImGui::CollapsingHeader("Graphic Systems Info")) {
+            ImGui::Indent();
+            for (const auto pipeline: mGraphicsPipelines) {
+                if (ImGui::CollapsingHeader(pipeline->mPipelineName)) {
+                    ImGui::Indent();
+                    ImGui::Text("Material Count: ");
+                    ImGui::SameLine(); ImGui::Text(std::to_string(pipeline->mRenderers.size()).c_str());
+                    for (const auto renderer: pipeline->mRenderers) {
+                        ImGui::Text(renderer->mMaterial->mMaterialName);
+                    }
+                    ImGui::Unindent();
+                }
+            }
+            ImGui::Unindent();
+        }
     }
     ImGui::EndChild();
 

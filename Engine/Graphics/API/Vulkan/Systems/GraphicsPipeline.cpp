@@ -120,24 +120,12 @@ void GraphicsPipeline::Destroy() const {
     for (const auto &i: mShadersInPipeline) {
         vkDestroyShaderModule(gGraphics->mLogicalDevice, i.module, nullptr);
     }
-    for (const auto &i : mMaterials) {
-        Logger::Log(spdlog::level::debug, (std::string("Destroying Material: ") + i->mMaterialName).c_str());
-        i->Destroy();
-    }
 
     vkDestroyPipelineLayout(gGraphics->mLogicalDevice, mPipelineConfig.pipelineLayout,
                             nullptr);
     vkDestroyPipeline(gGraphics->mLogicalDevice, mGraphicsPipeline, nullptr);
 }
 
-std::vector<std::shared_ptr<Material>> GraphicsPipeline::MakeMaterials(
-    uint8_t aBinding) {
-    // TODO: Use aBinding
-    for (const auto& material: mMaterials) {
-        material->Create(material.get());
-    }
-    return mMaterials;
-}
 
 void GraphicsPipeline::DefaultPipelineConfigInfo(PipelineConfigInfo &aConfigInfo) {
     aConfigInfo.inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;

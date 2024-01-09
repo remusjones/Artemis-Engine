@@ -2,7 +2,7 @@
 // Created by Remus on 7/01/2024.
 //
 
-#include "CubemapRenderSystem.h"
+#include "SkyboxRenderSystem.h"
 
 #include "Logger.h"
 #include "PipelineConfigInfo.h"
@@ -11,7 +11,7 @@
 #include "Base/Common/Buffers/PushConstants.h"
 #include "Base/Common/Data/VertexPosition.h"
 
-void CubemapRenderSystem::CreatePipelineLayout() {
+void SkyboxRenderSystem::CreatePipelineLayout() {
     VkPushConstantRange pushConstantRange{};
     pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
     pushConstantRange.offset = 0;
@@ -25,11 +25,11 @@ void CubemapRenderSystem::CreatePipelineLayout() {
     pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
     if (vkCreatePipelineLayout(gGraphics->mLogicalDevice, &pipelineLayoutInfo, nullptr, &mPipelineLayout) !=
         VK_SUCCESS) {
-        Logger::Log(spdlog::level::critical, "Failed to create Cubemap render pipeline layout");
+        Logger::Log(spdlog::level::critical, "Failed to create SkyboxRenderSystem layout");
     }
 }
 
-void CubemapRenderSystem::CreatePipeline() {
+void SkyboxRenderSystem::CreatePipeline() {
     assert(mPipelineLayout != nullptr);
 
 
@@ -43,13 +43,13 @@ void CubemapRenderSystem::CreatePipeline() {
     mPipelineConfig.depthStencilInfo.depthCompareOp = VK_COMPARE_OP_NEVER;
 
     mPipelineConfig.mAttributeDescriptions = VertexPosition::GetAttributeDescriptions();
-//
+
     std::vector<VkVertexInputBindingDescription> bindingDescriptions;
     bindingDescriptions.push_back(VertexPosition::GetBindingDescription());
     mPipelineConfig.mBindingDescriptions = bindingDescriptions;
-
-    // create a pipeline
-    mPipeline = std::make_unique<GraphicsPipeline>("Cubemap Pipeline", mPipelineConfig);
+d
+    // create a pipelined
+    mPipeline = std::make_unique<GraphicsPipeline>("SkyboxRenderSystem", mPipelineConfig);
     mPipeline->CreateShaderModule("/Assets/Shaders/Skybox_v.spv", VK_SHADER_STAGE_VERTEX_BIT);
     mPipeline->CreateShaderModule("/Assets/Shaders/Skybox_f.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 }

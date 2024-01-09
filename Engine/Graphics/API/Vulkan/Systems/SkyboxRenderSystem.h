@@ -10,7 +10,7 @@
 
 class Cubemap;
 
-class CubemapRenderSystem : public RenderSystemBase {
+class SkyboxRenderSystem : public RenderSystemBase {
 protected:
     void CreatePipelineLayout() override;
     void CreatePipeline() override;

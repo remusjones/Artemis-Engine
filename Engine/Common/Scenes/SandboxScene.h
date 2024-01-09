@@ -7,7 +7,7 @@
 #include <memory>
 #include "Scene.h"
 #include "Vulkan/Common/MaterialFactory.h"
-#include "Vulkan/Systems/CubemapRenderSystem.h"
+#include "..\..\Graphics\API\Vulkan\Systems\SkyboxRenderSystem.h"
 #include "Vulkan/Systems/PBRRenderSystem.h"
 #include "Vulkan/Systems/RenderSystemBase.h"
 #include "Vulkan/Systems/UnlitRenderSystem.h"
@@ -36,7 +36,7 @@ private:
     Primative *mCubemapMesh;
 
     std::shared_ptr<Cubemap> mCubemap;
-    std::unique_ptr<CubemapRenderSystem> mCubemapPipeline;
+    std::unique_ptr<SkyboxRenderSystem> mCubemapPipeline;
     std::shared_ptr<PBRRenderSystem> mPBRPipeline;
     std::shared_ptr<UnlitRenderSystem> mUnlitPipeline;
 
