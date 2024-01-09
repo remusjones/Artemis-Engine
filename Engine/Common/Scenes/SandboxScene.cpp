@@ -44,41 +44,41 @@ void SandboxScene::Construct(const char *aSceneName) {
 
     mMonkey = new MeshObject();
     mMonkey->CreateObject(*monkeyTexturedMaterial, "Monkey Lit");
-    mMonkey->BindRenderer(*mPBRPipeline->mPipeline);
-    mMonkey->LoadMesh(
+    mMonkey->mMeshRenderer.BindRenderer(*mPBRPipeline->mPipeline);
+    mMonkey->mMeshRenderer.LoadMesh(
         (FileManagement::GetWorkingDirectory() +
          std::string("/Assets/Models/monkey_smooth.obj")).c_str());
 
     mTeapot = new MeshObject();
     mTeapot->CreateObject(*teapotMaterial,
                           "Teapot");
-    mTeapot->BindRenderer(*mPBRPipeline->mPipeline);
+    mTeapot->mMeshRenderer.BindRenderer(*mPBRPipeline->mPipeline);
 
-    mTeapot->LoadMesh(
+    mTeapot->mMeshRenderer.LoadMesh(
         (FileManagement::GetWorkingDirectory() +
          std::string("/Assets/Models/teapot.obj")).c_str());
 
 
     mLight = new MeshObject();
     mLight->CreateObject(*lightMaterial, "Light");
-    mLight->BindRenderer(*mUnlitPipeline->mPipeline);
-    mLight->LoadMesh(
+    mLight->mMeshRenderer.BindRenderer(*mUnlitPipeline->mPipeline);
+    mLight->mMeshRenderer.LoadMesh(
         (FileManagement::GetWorkingDirectory() +
          std::string("/Assets/Models/sphere.obj")).c_str());
 
     mSphere = new MeshObject();
     mSphere->CreateObject(*sphereMaterial,
                           "Sphere");
-    mSphere->BindRenderer(*mPBRPipeline->mPipeline);
-    mSphere->LoadMesh((FileManagement::GetWorkingDirectory() +
+    mSphere->mMeshRenderer.BindRenderer(*mPBRPipeline->mPipeline);
+    mSphere->mMeshRenderer.LoadMesh((FileManagement::GetWorkingDirectory() +
                        std::string("/Assets/Models/sphere.obj")).c_str());
 
     mCube = new MeshObject();
     mCube->CreateObject(*cubeMaterial,
                         "Cube Half Lambert");
-    mCube->BindRenderer(*mPBRPipeline->mPipeline);
+    mCube->mMeshRenderer.BindRenderer(*mPBRPipeline->mPipeline);
 
-    mCube->LoadMesh((FileManagement::GetWorkingDirectory() +
+    mCube->mMeshRenderer.LoadMesh((FileManagement::GetWorkingDirectory() +
                      std::string("/Assets/Models/cube.obj")).c_str(),
                     (FileManagement::GetWorkingDirectory() + std::string("/Assets/Models/")).c_str());
 
@@ -106,8 +106,8 @@ void SandboxScene::Construct(const char *aSceneName) {
 
     mCubemapMesh = new MeshObject();
     mCubemapMesh->CreateObject(*mCubemap, "Skybox");
-    mCubemapMesh->BindRenderer(*mCubemapPipeline->mPipeline);
-    mCubemapMesh->LoadMesh((FileManagement::GetWorkingDirectory() +
+    mCubemapMesh->mMeshRenderer.BindRenderer(*mCubemapPipeline->mPipeline);
+    mCubemapMesh->mMeshRenderer.LoadMesh((FileManagement::GetWorkingDirectory() +
                             std::string("/Assets/Models/cube.obj")).c_str());
 
     mActiveSceneCamera = new FlyCamera();
@@ -135,7 +135,7 @@ float deltaAccumulated;
 
 void SandboxScene::Tick(float aDeltaTime) {
     deltaAccumulated += aDeltaTime / 5;
-    mLight->mMaterial->mMaterialProperties.mColor =
+    mLight->mMeshRenderer.mMaterial->mMaterialProperties.mColor =
             glm::vec4(mSceneData.color.x, mSceneData.color.y, mSceneData.color.z, 1);
 
     mSceneData.position = mLight->mTransform.Position();

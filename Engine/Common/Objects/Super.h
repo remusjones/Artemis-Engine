@@ -10,6 +10,10 @@ public:
     virtual ~Super() = default;
 
     virtual void Construct();
+
     virtual void Tick(float aDeltaTime);
+
     virtual void Cleanup();
+
+    const char *mName;
 };

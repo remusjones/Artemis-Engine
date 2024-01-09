@@ -26,7 +26,7 @@ void MeshObject::Tick(float aDeltaTime) {
 }
 
 void MeshObject::Cleanup() {
-    DestroyRenderer();
+    mMeshRenderer.DestroyRenderer();
     Super::Cleanup();
 }
 
@@ -35,23 +35,8 @@ void MeshObject::CreateObject(
     const char *aName) {
     mName = aName;
     Logger::Log(spdlog::level::info, (std::string("Creating object ") + mName).c_str());
-    mMaterial = &aMaterial;
-    mMesh = new Mesh();
-}
-
-void MeshObject::BindRenderer(
-    GraphicsPipeline &aBoundGraphicsPipeline) {
-    mGraphicsPipeline = &aBoundGraphicsPipeline;
-    mGraphicsPipeline->AddRenderer(this);
-}
-
-void MeshObject::DestroyRenderer() {
-    delete mMesh;
-}
-
-void MeshObject::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
-    mPushConstants.model = mTransform.GetWorldMatrix();
-    Renderer::Render(aCommandBuffer, aScene);
+    mMeshRenderer.mMaterial = &aMaterial;
+    mMeshRenderer.mTransform = &mTransform;
 }
 
 void MeshObject::OnImGuiRender() {
@@ -69,21 +54,5 @@ void MeshObject::OnImGuiRender() {
     if (ImGui::DragFloat3(GetUniqueLabel("Scale"), &scale[0], 0.1f)) {
         mTransform.SetScale(scale);
     }
-    mMaterial->OnImGuiRender();
-}
-
-void Renderer::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
-    void *data;
-    // TODO: Move the properties binding out of here? lol
-    if (mMaterial->mPropertiesBuffer.mAllocation != nullptr) {
-        vmaMapMemory(gGraphics->mAllocator, mMaterial->mPropertiesBuffer.mAllocation, &data);
-        memcpy(data, &mMaterial->mMaterialProperties, sizeof(MaterialProperties));
-        vmaUnmapMemory(gGraphics->mAllocator, mMaterial->mPropertiesBuffer.mAllocation);
-    }
-
-    mMesh->Bind(aCommandBuffer);
-    vkCmdPushConstants(aCommandBuffer, mGraphicsPipeline->mPipelineConfig.pipelineLayout,
-                       VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
-                       sizeof(PushConstants), &mPushConstants);
-    vkCmdDraw(aCommandBuffer, mMesh->GetVertices().size(), 1, 0, 0);
+    mMeshRenderer.mMaterial->OnImGuiRender();
 }

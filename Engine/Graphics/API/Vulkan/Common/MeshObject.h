@@ -11,6 +11,8 @@
 #include "Math/Transform.h"
 #include "Objects/ImGuiLayer.h"
 #include "Objects/Super.h"
+#include "Vulkan/Renderers/MeshRenderer.h"
+#include "Vulkan/Renderers/Renderer.h"
 
 class Scene;
 class Mesh;
@@ -21,50 +23,18 @@ class Buffer;
 class CameraInformationBuffer;
 class AllocatedVertexBuffer;
 
-class Renderer {
-public:
-    Renderer() = default;
-
-    virtual ~Renderer() = default;
-
-    virtual void Render(VkCommandBuffer aCommandBuffer, const Scene& aScene);
-
-    void LoadMesh(const char *aPath, const char* aMtlPath = "") const { mMesh->LoadFromObject(aPath, aMtlPath); }
-
-    virtual void BindRenderer(GraphicsPipeline &aBoundGraphicsPipeline) = 0;
-
-    virtual void DestroyRenderer() = 0;
-
-    GraphicsPipeline *mGraphicsPipeline;
-
-    Mesh *mMesh;
-    Material *mMaterial;
-    PushConstants mPushConstants{};
-};
 
 /*Attempts to abstract the required components for rendering to
  * identify what can be seperated from render pipeline */
-class MeshObject : public Renderer, public Super, public ImGuiLayer {
+class MeshObject : public Super, public ImGuiLayer {
 public:
     void Construct() override;
-
     void Tick(float aDeltaTime) override;
-
     void Cleanup() override;
-
     void OnImGuiRender() override;
-
     void CreateObject(Material &aMaterial, const char *aName = "Default");
 
 
-    void BindRenderer(GraphicsPipeline &aBoundGraphicsPipeline) override;
-
-    void DestroyRenderer() override;
-
-    void Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) override;
-
-    // TODO: Move name to a metadata tag instead
-    const char *mName;
-
+    MeshRenderer mMeshRenderer;
     Transform mTransform;
 };
