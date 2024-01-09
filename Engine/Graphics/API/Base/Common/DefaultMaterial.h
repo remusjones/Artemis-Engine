@@ -16,8 +16,7 @@ public:
         NORMAL = 1
     };
 
-    void Create(MaterialBase *aBaseMaterial = nullptr,
-                const char *aMaterialName = "Unknown") override;
+    void Create(MaterialBase *aBaseMaterial = nullptr) override;
 
     void OnImGuiRender() override;
 

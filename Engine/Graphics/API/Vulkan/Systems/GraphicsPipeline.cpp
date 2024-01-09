@@ -135,7 +135,7 @@ std::vector<std::shared_ptr<Material>> GraphicsPipeline::MakeMaterials(
     uint8_t aBinding) {
     // TODO: Use aBinding
     for (const auto& material: mMaterials) {
-        material->Create(material.get(), "default");
+        material->Create(material.get());
     }
     return mMaterials;
 }

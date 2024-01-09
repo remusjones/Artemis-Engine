@@ -14,6 +14,7 @@ class Cubemap;
 class LightingRenderSystem {
 public:
     LightingRenderSystem(std::vector<VkDescriptorSetLayout> aDescriptorLayouts);
+
 private:
     void CreatePipelineLayout();
     void CreatePipeline();
@@ -24,7 +25,4 @@ private:
 
 public:
     std::unique_ptr<GraphicsPipeline> mPipeline;
-
-    Cubemap* mIrradanceCubemap;
-
 };

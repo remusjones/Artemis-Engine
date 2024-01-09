@@ -25,9 +25,8 @@ struct MaterialProperties {
 
 class Material : public MaterialBase {
 public:
-
-    virtual void Create(MaterialBase *aBaseMaterial,
-                        const char *aMaterialName = "");
+    Material(const char* aMaterialName = "Default") : mMaterialName(aMaterialName){}
+    virtual void Create(MaterialBase *aBaseMaterial);
 
     void CreateProperties(const uint32_t aBinding, const MaterialProperties &aMaterialProperties);
 

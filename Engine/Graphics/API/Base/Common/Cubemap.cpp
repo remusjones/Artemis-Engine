@@ -9,7 +9,7 @@
 #include "File Management/FileManagement.h"
 #include "Vulkan/Helpers/VulkanInitialization.h"
 
-void Cubemap::Create(MaterialBase *aBaseMaterial, const char *aMaterialName) {
+void Cubemap::Create(MaterialBase *aBaseMaterial) {
 
     const int mipLevel = 1;
     VkFormat format = VK_FORMAT_R8G8B8A8_SRGB;
@@ -75,7 +75,7 @@ void Cubemap::Create(MaterialBase *aBaseMaterial, const char *aMaterialName) {
     AddBinding(0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL);
     AddBinding(1, 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
 
-    Material::Create(this, aMaterialName);
+    Material::Create(this);
 
     for (int i = 0; i < VulkanEngine::MAX_FRAMES_IN_FLIGHT; i++)
         SetBuffers(gGraphics->mVulkanEngine.GetFrame(i).mSceneBuffer, 0, 0);

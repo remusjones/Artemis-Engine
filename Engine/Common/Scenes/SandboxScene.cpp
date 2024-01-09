@@ -178,7 +178,7 @@ void SandboxScene::Construct(const char *aSceneName) {
     // constriants where some dependants on others eee
 
     mCubemap = std::make_shared<Cubemap>();
-    mCubemap->Create(nullptr, "Cubemap Material");
+    mCubemap->Create(nullptr);
     mCubemapMesh = new MeshObject();
     mCubemapMesh->mName = "Skybox";
     mObjects.push_back(mCubemapMesh);

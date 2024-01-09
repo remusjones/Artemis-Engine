@@ -6,13 +6,13 @@
 #include "File Management/FileManagement.h"
 #include "Vulkan/VulkanEngine.h"
 
-void DefaultMaterial::Create(MaterialBase *aBaseMaterial, const char *aMaterialName) {
+void DefaultMaterial::Create(MaterialBase *aBaseMaterial) {
 
     AddBinding(SCENE_INFORMATION, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL);
     AddBinding(PROPERTIES, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL);
     AddBinding(TEXTURE, 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT);
 
-    Material::Create(this, aMaterialName);
+    Material::Create(this);
 
     for (int i = 0; i < VulkanEngine::MAX_FRAMES_IN_FLIGHT; i++)
         SetBuffers(gGraphics->mVulkanEngine.GetFrame(i).mSceneBuffer, SCENE_INFORMATION, 0);

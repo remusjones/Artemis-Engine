@@ -7,7 +7,7 @@
 class Cubemap : public Material {
 public:
     Cubemap() = default;
-    void Create(MaterialBase *aBaseMaterial, const char *aMaterialName) override;
+    void Create(MaterialBase *aBaseMaterial) override;
     void Destroy() override;
 
     VkSampler mSampler;
