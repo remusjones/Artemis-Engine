@@ -50,7 +50,19 @@ void Material::BindTexture(const std::vector<VkDescriptorImageInfo>& textureInfo
 
     vkUpdateDescriptorSets(gGraphics->mLogicalDevice, 1, &writeDescriptorSet, 0, nullptr);
 }
+void Material::BindStorageImage(const VkDescriptorImageInfo& imageInfo, const uint8_t aBinding) const
+{
+    VkWriteDescriptorSet writeDescriptorSet{};
+    writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    writeDescriptorSet.dstSet = mDescriptorSet;
+    writeDescriptorSet.dstBinding = aBinding;
+    writeDescriptorSet.dstArrayElement = 0;
+    writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    writeDescriptorSet.descriptorCount = 1;
+    writeDescriptorSet.pImageInfo = &imageInfo;
 
+    vkUpdateDescriptorSets(gGraphics->mLogicalDevice, 1, &writeDescriptorSet, 0, nullptr);
+}
 void Material::AddBinding(const uint32_t aBinding, const uint32_t aCount,
                           const VkDescriptorType aType, VkShaderStageFlagBits aShaderStage) {
     VkDescriptorSetLayoutBinding binding{};

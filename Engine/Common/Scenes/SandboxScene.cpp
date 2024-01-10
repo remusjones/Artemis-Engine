@@ -6,8 +6,6 @@
 
 #include "imgui.h"
 #include "VulkanGraphicsImpl.h"
-#include "Base/Common/Cubemap.h"
-#include "Base/Common/DefaultMaterial.h"
 #include "Base/Common/Material.h"
 #include "File Management/FileManagement.h"
 #include "Objects/Camera.h"
@@ -15,7 +13,8 @@
 #include "Vulkan/Common/MeshObject.h"
 #include "Vulkan/Common/Primative.h"
 #include "Vulkan/Renderers/SkyboxRenderer.h"
-#include "..\..\Graphics\API\Vulkan\Systems\SkyboxRenderSystem.h"
+#include "Vulkan/Materials/Cubemap.h"
+#include "Vulkan/Materials/DefaultMaterial.h"
 #include "Vulkan/Systems/GraphicsPipeline.h"
 
 void SandboxScene::Construct(const char *aSceneName) {

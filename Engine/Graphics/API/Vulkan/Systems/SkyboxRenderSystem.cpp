@@ -7,7 +7,6 @@
 #include "Logger.h"
 #include "PipelineConfigInfo.h"
 #include "VulkanGraphicsImpl.h"
-#include "Base/Common/Cubemap.h"
 #include "Base/Common/Buffers/PushConstants.h"
 #include "Base/Common/Data/VertexPosition.h"
 

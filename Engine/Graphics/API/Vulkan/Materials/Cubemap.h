@@ -1,8 +1,8 @@
 #pragma once
 #include <vulkan/vulkan_core.h>
 
-#include "Material.h"
-#include "Buffers/AllocatedImage.h"
+#include "Base/Common/Material.h"
+#include "Base/Common/Buffers/AllocatedImage.h"
 
 class Cubemap : public Material {
 public:
