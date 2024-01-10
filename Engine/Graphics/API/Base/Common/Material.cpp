@@ -50,7 +50,7 @@ void Material::BindTexture(const std::vector<VkDescriptorImageInfo>& textureInfo
 
     vkUpdateDescriptorSets(gGraphics->mLogicalDevice, 1, &writeDescriptorSet, 0, nullptr);
 }
-void Material::BindStorageImage(const VkDescriptorImageInfo& imageInfo, const uint8_t aBinding) const
+void Material::BindTexture(const VkDescriptorImageInfo& imageInfo, const uint8_t aBinding) const
 {
     VkWriteDescriptorSet writeDescriptorSet{};
     writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

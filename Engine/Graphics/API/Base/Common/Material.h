@@ -30,7 +30,7 @@ public:
     virtual void CreateProperties(uint32_t aBinding, const MaterialProperties &aMaterialProperties);
     virtual void BindTexture(const std::vector<VkDescriptorImageInfo> &textureInfo, const uint8_t aBinding) const;
 
-    void BindStorageImage(const VkDescriptorImageInfo &imageInfo, uint8_t aBinding) const;
+    void BindTexture(const VkDescriptorImageInfo &imageInfo, uint8_t aBinding) const;
 
     virtual void AddBinding(uint32_t aBinding, uint32_t aCount,
                             VkDescriptorType aType, VkShaderStageFlagBits aShaderStage);
