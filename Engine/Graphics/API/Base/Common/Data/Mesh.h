@@ -16,6 +16,7 @@ public:
 
     void Bind(VkCommandBuffer aCommandBuffer) const;
     bool LoadFromObject(const char *aFileName, const char *aMtlDirectory);
+    void CalculateTangents(std::vector<Vertex>& vertices, const std::vector<int32_t>& indices);
 
     [[nodiscard]] std::vector<Vertex> GetVertices() const { return mVertices; }
     [[nodiscard]] std::vector<int32_t> GetIndices() const { return mIndices; }

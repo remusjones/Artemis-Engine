@@ -12,7 +12,18 @@
 
 #include "Logger.h"
 #include "Vulkan/Helpers/VulkanInitialization.h"
-
+struct IndexComparator
+{
+    bool operator()(const tinyobj::index_t& a, const tinyobj::index_t& b) const
+    {
+        // define your order here. For example:
+        if (a.vertex_index != b.vertex_index)
+            return a.vertex_index < b.vertex_index;
+        if (a.normal_index != b.normal_index)
+            return a.normal_index < b.normal_index;
+        return a.texcoord_index < b.texcoord_index;
+    }
+};
 bool LoadUtilities::LoadImageFromDisk(const VulkanGraphics *aEngine, const char *aFilePath, AllocatedImage &aResult) {
     int texWidth, texHeight, texChannels;
 
@@ -411,46 +422,41 @@ bool LoadUtilities::LoadMeshFromDisk(const char *aFilePath,
         return false;
     }
 
+    std::map<tinyobj::index_t, int, IndexComparator> uniqueVertices = {};
 
     for (size_t s = 0; s < shapes.size(); s++) {
-        // Loop over faces(polygon)
         size_t index_offset = 0;
         for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++) {
-            //hardcode loading to triangles
             int fv = 3;
 
-            // Loop over vertices in the face.
             for (size_t v = 0; v < fv; v++) {
-                // access to vertex
                 tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
 
-                //vertex position
-                tinyobj::real_t vx = attrib.vertices[3 * idx.vertex_index + 0];
-                tinyobj::real_t vy = attrib.vertices[3 * idx.vertex_index + 1];
-                tinyobj::real_t vz = attrib.vertices[3 * idx.vertex_index + 2];
-                //vertex normal
-                tinyobj::real_t nx = attrib.normals[3 * idx.normal_index + 0];
-                tinyobj::real_t ny = attrib.normals[3 * idx.normal_index + 1];
-                tinyobj::real_t nz = attrib.normals[3 * idx.normal_index + 2];
+                // Check if vertex with these attributes was already processed
+                if (uniqueVertices.count(idx) == 0) {     // If not found
+                    // New unique Vertex
+                    Vertex newVertex;
 
-                tinyobj::real_t cx = attrib.colors[3 * idx.vertex_index + 0];
-                tinyobj::real_t cy = attrib.colors[3 * idx.vertex_index + 1];
-                tinyobj::real_t cz = attrib.colors[3 * idx.vertex_index + 2];
+                    newVertex.mPosition.x = attrib.vertices[3 * idx.vertex_index + 0];
+                    newVertex.mPosition.y = attrib.vertices[3 * idx.vertex_index + 1];
+                    newVertex.mPosition.z = attrib.vertices[3 * idx.vertex_index + 2];
 
-                Vertex newVertex;
-                newVertex.mPosition.x = vx;
-                newVertex.mPosition.y = vy;
-                newVertex.mPosition.z = vz;
+                    newVertex.mNormal.x = attrib.normals[3 * idx.normal_index + 0];
+                    newVertex.mNormal.y = attrib.normals[3 * idx.normal_index + 1];
+                    newVertex.mNormal.z = attrib.normals[3 * idx.normal_index + 2];
 
-                newVertex.mNormal.x = nx;
-                newVertex.mNormal.y = ny;
-                newVertex.mNormal.z = nz;;
-                newVertex.mColor = glm::vec3(cx, cy, cz);
-                newVertex.mUV.x = attrib.texcoords[2 * idx.texcoord_index + 0];
-                newVertex.mUV.y = attrib.texcoords[2 * idx.texcoord_index + 1];
+                    newVertex.mColor = glm::vec3(attrib.colors[3 * idx.vertex_index + 0], attrib.colors[3 * idx.vertex_index + 1], attrib.colors[3 * idx.vertex_index + 2]);
 
-                aResultIndices.push_back(idx.vertex_index);
-                aResultVertices.push_back(newVertex);
+                    newVertex.mUV.x = attrib.texcoords[2 * idx.texcoord_index + 0];
+                    newVertex.mUV.y = attrib.texcoords[2 * idx.texcoord_index + 1];
+
+                    // Save it to the vector and store the index in our map
+                    aResultVertices.push_back(newVertex);
+                    uniqueVertices[idx] = static_cast<int>(aResultVertices.size()) - 1;
+                }
+
+                // The vertex already exists in our vector, simply use the index
+                aResultIndices.push_back(uniqueVertices[idx]);
             }
             index_offset += fv;
         }

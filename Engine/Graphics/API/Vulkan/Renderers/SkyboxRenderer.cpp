@@ -13,7 +13,7 @@ void SkyboxRenderer::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene)
                        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
                        sizeof(PushConstants), &mPushConstants);
 
-    vkCmdDraw(aCommandBuffer, mMesh->GetVerticesSize(), 1, 0, 0);
+    vkCmdDrawIndexed(aCommandBuffer, mMesh->GetIndicesSize(), 1, 0, 0, 0);
     mPushConstants.model = mTransform->GetWorldMatrix();
 }
 

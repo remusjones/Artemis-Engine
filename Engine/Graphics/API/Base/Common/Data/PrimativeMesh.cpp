@@ -23,11 +23,11 @@ bool PrimativeMesh::LoadFromObject(const char *aFileName, const char *mtlDirecto
         for (int i = 0; i < vertices.size(); i++) {
             mVertices[i] = vertices[i];
         }
-        mVerticesBuffer = new AllocatedBuffer(mVertices.data(), sizeof(mVertices[0]) * mVertices.size(),
+        mVerticesBuffer = new AllocatedBuffer(mVertices.data(), (sizeof(mVertices[0]) + 1) * mVertices.size(),
                                               VK_BUFFER_USAGE_TRANSFER_DST_BIT |
                                               VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 
-        mIndicesBuffer = new AllocatedBuffer(mIndices.data(), sizeof(mIndices[0]) *mIndices.size(),
+        mIndicesBuffer = new AllocatedBuffer(mIndices.data(), (sizeof(mIndices[0]) + 1) *mIndices.size(),
                                              VK_BUFFER_USAGE_TRANSFER_DST_BIT |
                                              VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 

@@ -6,7 +6,8 @@
 #include "Vertex.h"
 #include "glm/vec3.hpp"
 
-struct VertexPosition {
+// TODO: Merge this with Vertex, and have dynamic descriptors based on assigned components
+struct alignas(16) VertexPosition {
     glm::vec3 mPosition;
 
     VertexPosition() : mPosition(){}

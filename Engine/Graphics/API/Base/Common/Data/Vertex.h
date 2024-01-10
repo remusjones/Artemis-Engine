@@ -7,11 +7,13 @@
 #include <vulkan/vulkan_core.h>
 #include "glm/glm.hpp"
 
-struct Vertex {
+
+struct alignas(16) Vertex {
     glm::vec3 mPosition;
     glm::vec3 mNormal;
     glm::vec3 mColor;
     glm::vec2 mUV;
+    glm::vec4 mTangent;
 
     static VkVertexInputBindingDescription GetBindingDescription() {
         VkVertexInputBindingDescription bindingDescription{};
@@ -23,7 +25,7 @@ struct Vertex {
 
     static std::vector<VkVertexInputAttributeDescription>
     GetAttributeDescriptions() {
-        std::vector<VkVertexInputAttributeDescription> attributeDescriptions(4);
+        std::vector<VkVertexInputAttributeDescription> attributeDescriptions(5);
         attributeDescriptions[0].binding = 0;
         attributeDescriptions[0].location = 0;
         attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
@@ -44,6 +46,10 @@ struct Vertex {
         attributeDescriptions[3].format = VK_FORMAT_R32G32B32_SFLOAT;
         attributeDescriptions[3].offset = offsetof(Vertex, mUV);
 
+        attributeDescriptions[4].binding = 0;
+        attributeDescriptions[4].location = 4;
+        attributeDescriptions[4].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[4].offset = offsetof(Vertex, mTangent);
         return attributeDescriptions;
     }
 };
