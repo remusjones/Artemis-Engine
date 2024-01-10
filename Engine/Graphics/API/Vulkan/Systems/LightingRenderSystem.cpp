@@ -8,8 +8,8 @@
 #include "VulkanGraphicsImpl.h"
 #include "Base/Common/Buffers/PushConstants.h"
 
-LightingRenderSystem::LightingRenderSystem(std::vector<VkDescriptorSetLayout> aDescriptorLayouts):
-    mBoundDescriptorLayouts(std::move(aDescriptorLayouts)) {
+LightingRenderSystem::LightingRenderSystem(const std::vector<VkDescriptorSetLayout> &aDescriptorLayouts){
+    mBoundDescriptorLayouts = aDescriptorLayouts;
 }
 
 void LightingRenderSystem::CreatePipelineLayout() {
@@ -41,8 +41,8 @@ void LightingRenderSystem::CreatePipeline() {
     mPipelineConfig.depthStencilInfo.depthTestEnable = false;
     mPipelineConfig.depthStencilInfo.depthCompareOp = VK_COMPARE_OP_NEVER;
 
-    // create a pipeline
-    mPipeline = std::make_unique<GraphicsPipeline>("Lighting Pipeline", mPipelineConfig);
+    // create a pipelin
+    CreatePipelineObject("LightingRenderSystem");
     mPipeline->CreateShaderModule("/Assets/Shaders/Skybox_v.spv", VK_SHADER_STAGE_VERTEX_BIT);
     mPipeline->CreateShaderModule("/Assets/Shaders/Skybox_f.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 }

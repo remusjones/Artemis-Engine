@@ -81,6 +81,9 @@ void VulkanEngine::SubmitBufferCommand(std::function<void(VkCommandBuffer cmd)>&
     vkResetFences(mLogicalDevice, 1, &mUploadContext.mUploadFence);
     vkResetCommandPool(mLogicalDevice, mUploadContext.mCommandPool, 0);
 }
+void VulkanEngine::SubmitEndOfFrameTask(std::function<void()> && aTask){
+    mEndOfFrameTasks.emplace(std::move(aTask));
+}
 
 void VulkanEngine::CreateUploadContext()
 {
@@ -177,7 +180,6 @@ AllocatedBuffer VulkanEngine::CreateBuffer(size_t aAllocSize, VkBufferUsageFlags
 
     return newBuffer;
 }
-
 
 void VulkanEngine::CreateDescriptorPool()
 {
@@ -369,7 +371,11 @@ void VulkanEngine::DrawFrame(Scene& aActiveScene)
         CreateSyncObjects();
         semaphoresNeedToBeRecreated = false;
     }
-
+    while(!mEndOfFrameTasks.empty()) {
+        auto task = std::move(mEndOfFrameTasks.front());
+        task();
+        mEndOfFrameTasks.pop();
+    }
     mCurrentFrame = (mCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 

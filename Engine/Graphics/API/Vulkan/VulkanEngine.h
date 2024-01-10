@@ -4,6 +4,7 @@
 #pragma once
 
 #include <functional>
+#include <queue>
 #include <vector>
 #include "VulkanSwapChain.h"
 #include "Base/Common/Data/Vertex.h"
@@ -32,6 +33,8 @@ public:
     const FrameData &GetFrame(int32_t aIndex) { return mFrameData[aIndex]; }
 
     void SubmitBufferCommand(std::function<void(VkCommandBuffer cmd)> &&function) const;
+
+    void SubmitEndOfFrameTask(std::function<void()> &&aTask);
 
     void QueueFrameBufferRebuild() { mRebuildFrameBuffer = true; }
 
@@ -81,5 +84,6 @@ private:
     std::vector<VkSemaphore> mImageAvailableSemaphoresToDestroy;
     std::vector<VkSemaphore> mRenderFinishedSemaphoresToDestroy;
 
+     std::queue<std::function<void()>> mEndOfFrameTasks;
     size_t mCurrentFrame = 0;
 };

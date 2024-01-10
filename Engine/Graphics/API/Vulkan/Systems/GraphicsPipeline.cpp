@@ -115,7 +115,7 @@ void GraphicsPipeline::CreateShaderModule(const char *aPath,
     mShadersInPipeline.push_back(shaderStageInfo);
 }
 
-void GraphicsPipeline::Destroy() const {
+void GraphicsPipeline::Destroy() {
     Logger::Log(spdlog::level::info, (std::string("Destroying Pipeline ") + mPipelineName).c_str());
     for (const auto &i: mShadersInPipeline) {
         vkDestroyShaderModule(gGraphics->mLogicalDevice, i.module, nullptr);
@@ -124,6 +124,9 @@ void GraphicsPipeline::Destroy() const {
     vkDestroyPipelineLayout(gGraphics->mLogicalDevice, mPipelineConfig.pipelineLayout,
                             nullptr);
     vkDestroyPipeline(gGraphics->mLogicalDevice, mGraphicsPipeline, nullptr);
+    mGraphicsPipeline = VK_NULL_HANDLE;
+    mPipelineConfig.pipelineLayout = VK_NULL_HANDLE;
+    mShadersInPipeline.resize(0);
 }
 
 
@@ -214,6 +217,10 @@ void GraphicsPipeline::AddRenderer(Renderer *aRenderer) {
 }
 
 void GraphicsPipeline::Draw(VkCommandBuffer aCommandBuffer, const Scene &aScene) const {
+
+    if (mGraphicsPipeline == nullptr)
+        return;
+
     vkCmdBindPipeline(aCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                       mGraphicsPipeline);
 

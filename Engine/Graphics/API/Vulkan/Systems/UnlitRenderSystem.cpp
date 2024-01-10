@@ -39,7 +39,7 @@ void UnlitRenderSystem::CreatePipeline() {
     mPipelineConfig.depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS;
 
     // create a pipeline
-    mPipeline = std::make_unique<GraphicsPipeline>("UnlitRenderSystem", mPipelineConfig);
+    CreatePipelineObject("UnlitRenderSystem");
     mPipeline->CreateShaderModule("/Assets/Shaders/Unlit_v.spv", VK_SHADER_STAGE_VERTEX_BIT);
     mPipeline->CreateShaderModule("/Assets/Shaders/Unlit_f.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 }

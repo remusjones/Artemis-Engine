@@ -8,22 +8,16 @@
 #include <vulkan/vulkan_core.h>
 
 #include "GraphicsPipeline.h"
+#include "RenderSystemBase.h"
 
 
 class Cubemap;
 
-class LightingRenderSystem {
+class LightingRenderSystem : public RenderSystemBase {
 public:
-    LightingRenderSystem(std::vector<VkDescriptorSetLayout> aDescriptorLayouts);
+    LightingRenderSystem(const std::vector<VkDescriptorSetLayout> &aDescriptorLayouts);
+protected:
+    void CreatePipelineLayout() override;
+    void CreatePipeline() override;
 
-private:
-    void CreatePipelineLayout();
-    void CreatePipeline();
-
-    VkPipelineLayout mPipelineLayout;
-    std::vector<VkDescriptorSetLayout> mBoundDescriptorLayouts;
-    PipelineConfigInfo mPipelineConfig;
-
-public:
-    std::unique_ptr<GraphicsPipeline> mPipeline;
 };

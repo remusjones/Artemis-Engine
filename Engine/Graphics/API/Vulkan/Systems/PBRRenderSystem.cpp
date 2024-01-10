@@ -39,7 +39,8 @@ void PBRRenderSystem::CreatePipeline() {
     mPipelineConfig.depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS;
 
     // create a pipeline
-    mPipeline = std::make_unique<GraphicsPipeline>("PBRRenderSystem", mPipelineConfig);
+    CreatePipelineObject("PBRRenderSystem");
+
     mPipeline->CreateShaderModule("/Assets/Shaders/3DObject_v.spv", VK_SHADER_STAGE_VERTEX_BIT);
     mPipeline->CreateShaderModule("/Assets/Shaders/TexturedLit_f.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 }

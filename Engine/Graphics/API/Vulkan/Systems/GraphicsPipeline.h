@@ -33,8 +33,7 @@ public:
     void AddRenderer(Renderer *aRenderer);
     void Draw(VkCommandBuffer aCommandBuffer, const Scene &aScene) const;
     void Create();
-    void Destroy() const;
-
+    void Destroy();
     static void DefaultPipelineConfigInfo(PipelineConfigInfo &aConfigInfo);
 
     const char *mPipelineName;

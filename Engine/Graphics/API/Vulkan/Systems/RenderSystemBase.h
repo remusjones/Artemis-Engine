@@ -17,10 +17,12 @@ public:
 protected:
     virtual void CreatePipelineLayout();
     virtual void CreatePipeline();
+    void CreatePipelineObject(const char* pipelineName, bool aDestructive = false);
+
 
 public:
     std::unique_ptr<GraphicsPipeline> mPipeline;
-
+    std::vector<VkDescriptorSetLayout> GetBoundDescriptors() {return mBoundDescriptorLayouts;}
 protected:
     VkPipelineLayout mPipelineLayout = nullptr;
     std::vector<VkDescriptorSetLayout> mBoundDescriptorLayouts;

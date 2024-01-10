@@ -14,7 +14,7 @@ class GraphicsPipeline;
 class Camera;
 class MeshObject;
 
-class Scene : ImGuiLayer {
+class Scene : public ImGuiLayer {
 public:
     virtual ~Scene() = default;
 

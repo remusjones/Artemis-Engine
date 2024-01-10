@@ -49,8 +49,7 @@ void SkyboxRenderSystem::CreatePipeline() {
     mPipelineConfig.mBindingDescriptions = bindingDescriptions;
 
     // create a pipelined
-    mPipeline = std::make_unique<GraphicsPipeline>("SkyboxRenderSystem", mPipelineConfig);
+    CreatePipelineObject("SkyboxRenderSystem");
     mPipeline->CreateShaderModule("/Assets/Shaders/Skybox_v.spv", VK_SHADER_STAGE_VERTEX_BIT);
     mPipeline->CreateShaderModule("/Assets/Shaders/Skybox_f.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 }
-

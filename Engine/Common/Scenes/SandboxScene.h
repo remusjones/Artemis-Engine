@@ -22,6 +22,7 @@ public:
     void Tick(float aDeltaTime) override;
 
     void Cleanup() override;
+    void OnImGuiRender() override;
 
 private:
     std::unordered_map<std::string, Texture *> mLoadedTextures;

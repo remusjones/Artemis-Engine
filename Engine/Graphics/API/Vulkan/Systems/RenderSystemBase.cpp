@@ -48,7 +48,13 @@ void RenderSystemBase::CreatePipeline() {
     mPipelineConfig.depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS;
 
     // create a pipeline
-    mPipeline = std::make_unique<GraphicsPipeline>("RenderSystemBase", mPipelineConfig);
+    CreatePipelineObject("RenderSystemBase");
     mPipeline->CreateShaderModule("/Assets/Shaders/3DObject_v.spv", VK_SHADER_STAGE_VERTEX_BIT);
     mPipeline->CreateShaderModule("/Assets/Shaders/TexturedLit_f.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+}
+
+void RenderSystemBase::CreatePipelineObject(const char *pipelineName, bool aDestructive) {
+    if (mPipeline == nullptr || aDestructive)
+        mPipeline = std::make_unique<GraphicsPipeline>(pipelineName, mPipelineConfig);
+    else mPipeline->mPipelineConfig = mPipelineConfig;
 }

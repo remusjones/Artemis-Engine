@@ -4,6 +4,7 @@
 
 #include "SandboxScene.h"
 
+#include "imgui.h"
 #include "VulkanGraphicsImpl.h"
 #include "Base/Common/Cubemap.h"
 #include "Base/Common/DefaultMaterial.h"
@@ -195,4 +196,21 @@ void SandboxScene::Cleanup() {
     mMaterialPBRFactory.DestroyMaterials();
     mGenericMaterialFactory.DestroyMaterials();
     Scene::Cleanup();
+}
+
+void SandboxScene::OnImGuiRender() {
+    if (ImGui::Button(GetUniqueLabel("Rebuild PBR Pipeline"))) {
+        gGraphics->mVulkanEngine.SubmitEndOfFrameTask([&] {
+
+            vkDeviceWaitIdle(gGraphics->mLogicalDevice);
+            // Find iter of our Render System
+            // Destroy it
+            mPBRPipeline->mPipeline->Destroy();
+            // Recreate it
+            mPBRPipeline->Create(mPBRPipeline->GetBoundDescriptors());
+            mPBRPipeline->mPipeline->Create();
+
+        });
+    }
+    Scene::OnImGuiRender();
 }
