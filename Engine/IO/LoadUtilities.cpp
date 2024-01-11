@@ -11,11 +11,11 @@
 #include <stb_image.h>
 
 #include "Logger.h"
+#include "File Management/FileManagement.h"
 #include "Vulkan/Helpers/VulkanInitialization.h"
-struct IndexComparator
-{
-    bool operator()(const tinyobj::index_t& a, const tinyobj::index_t& b) const
-    {
+
+struct IndexComparator {
+    bool operator()(const tinyobj::index_t &a, const tinyobj::index_t &b) const {
         // define your order here. For example:
         if (a.vertex_index != b.vertex_index)
             return a.vertex_index < b.vertex_index;
@@ -24,8 +24,13 @@ struct IndexComparator
         return a.texcoord_index < b.texcoord_index;
     }
 };
+
 bool LoadUtilities::LoadImageFromDisk(const VulkanGraphics *aEngine, const char *aFilePath, AllocatedImage &aResult) {
     int texWidth, texHeight, texChannels;
+
+    if (!FileManagement::FileExists(aFilePath)) {
+        Logger::Log(spdlog::level::critical, (std::string("File Path does not exist: ") + aFilePath).c_str());
+    }
 
     stbi_uc *pixels = stbi_load(aFilePath, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 
@@ -132,6 +137,9 @@ bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics *aEngine, const std:
 
     // Find maximum dimensions.
     for (const auto &path: aPaths) {
+        if (!FileManagement::FileExists(path))
+            Logger::Log(spdlog::level::critical, (std::string("File Path does not exist: ") + path).c_str());
+
         stbi_info(path.c_str(), &texWidth, &texHeight, &texChannels);
         maxTexWidth = std::max(maxTexWidth, texWidth);
         maxTexHeight = std::max(maxTexHeight, texHeight);
@@ -409,6 +417,9 @@ bool LoadUtilities::LoadMeshFromDisk(const char *aFilePath,
     std::string warn;
     std::string err;
 
+    if (!FileManagement::FileExists(aFilePath))
+        Logger::Log(spdlog::level::critical, (std::string("File Path does not exist: ") + aFilePath).c_str());
+
     //load the OBJ file
     LoadObj(&attrib, &shapes, &materials, &warn, &err, aFilePath, aMtlDirectory);
 
@@ -433,7 +444,8 @@ bool LoadUtilities::LoadMeshFromDisk(const char *aFilePath,
                 tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
 
                 // Check if vertex with these attributes was already processed
-                if (uniqueVertices.count(idx) == 0) {     // If not found
+                if (uniqueVertices.count(idx) == 0) {
+                    // If not found
                     // New unique Vertex
                     Vertex newVertex;
 
@@ -445,7 +457,9 @@ bool LoadUtilities::LoadMeshFromDisk(const char *aFilePath,
                     newVertex.mNormal.y = attrib.normals[3 * idx.normal_index + 1];
                     newVertex.mNormal.z = attrib.normals[3 * idx.normal_index + 2];
 
-                    newVertex.mColor = glm::vec3(attrib.colors[3 * idx.vertex_index + 0], attrib.colors[3 * idx.vertex_index + 1], attrib.colors[3 * idx.vertex_index + 2]);
+                    newVertex.mColor = glm::vec3(attrib.colors[3 * idx.vertex_index + 0],
+                                                 attrib.colors[3 * idx.vertex_index + 1],
+                                                 attrib.colors[3 * idx.vertex_index + 2]);
 
                     newVertex.mUV.x = attrib.texcoords[2 * idx.texcoord_index + 0];
                     newVertex.mUV.y = attrib.texcoords[2 * idx.texcoord_index + 1];

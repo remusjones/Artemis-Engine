@@ -20,6 +20,8 @@
 #include "Vulkan/Helpers/VulkanInitialization.h"
 
 void GraphicsPipeline::Create() {
+    Logger::Log(spdlog::level::info,
+                (std::string("Creating Graphics Pipeline ") + mPipelineName).c_str());
     if (mPipelineConfig.pipelineLayout == VK_NULL_HANDLE) {
         VkPushConstantRange pushConstant;
         pushConstant.offset = 0;
@@ -91,7 +93,7 @@ void GraphicsPipeline::Create() {
 
 void GraphicsPipeline::CreateShaderModule(const char *aPath,
                                           const VkShaderStageFlagBits aStage) {
-    const char *entryName = "main";
+    const constexpr char *entryName = "main";
 
     const std::vector<char> file = FileManagement::GetShaderFileDataPath(aPath);
 
@@ -116,7 +118,7 @@ void GraphicsPipeline::CreateShaderModule(const char *aPath,
 }
 
 void GraphicsPipeline::Destroy() {
-    Logger::Log(spdlog::level::info, (std::string("Destroying Pipeline ") + mPipelineName).c_str());
+    Logger::Log(spdlog::level::info, (std::string("Graphics Destroying Pipeline ") + mPipelineName).c_str());
     for (const auto &i: mShadersInPipeline) {
         vkDestroyShaderModule(gGraphics->mLogicalDevice, i.module, nullptr);
     }
@@ -217,7 +219,6 @@ void GraphicsPipeline::AddRenderer(Renderer *aRenderer) {
 }
 
 void GraphicsPipeline::Draw(VkCommandBuffer aCommandBuffer, const Scene &aScene) const {
-
     if (mGraphicsPipeline == nullptr)
         return;
 

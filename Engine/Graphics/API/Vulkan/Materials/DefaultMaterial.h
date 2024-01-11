@@ -46,7 +46,7 @@ public:
     };
 
     static constexpr const char* DefaultAssetPaths[] = {
-        "/Assets/Textures/albedo_4096.png",
-        "/Assets/Textures/normal_4096.png",
+        "/Assets/Textures/Defaults/albedo_4096.png",
+        "/Assets/Textures/Defaults/normal_4096.png",
     };
 };

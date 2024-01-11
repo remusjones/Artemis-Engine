@@ -8,21 +8,27 @@
 #include <string>
 #include "FileManagementInfo.h"
 
-// TODO: Make less specific to Vulkan
 class FileManagement {
-private:
-    FileManagement() = default;
 public:
+    FileManagement() = delete;
 
-    static std::vector<char> GetShaderFileData(const std::string& filename);
-    static std::vector<char> GetShaderFileDataPath(const char* aRelativeDirectory);
-    static void SetShaderInfoSettings(const FileManagementShaderInfo&
-    shaderInfo);
-    static const FileManagementShaderInfo& GetShaderInfoSettings();
+    static std::vector<char> GetShaderFileData(const std::string &filename);
+
+    static std::vector<char> GetShaderFileDataPath(const char *aRelativeDirectory);
+
+    static void SetFileInformationSettings(const FileManagementSettings &
+        shaderInfo);
+
+    static const FileManagementSettings &GetInfoSettings();
 
     static std::string GetWorkingDirectory();
+
+    static std::string MakeAssetPath(const std::string &aRelativeFilePath);
+
+    static std::string GetAssetPath();
+
+    static bool FileExists(const std::string &aAbsolutePath);
+
 private:
-    static inline FileManagementShaderInfo ShaderFileSettings;
+    static inline FileManagementSettings sFileInformationSettings;
 };
-
-

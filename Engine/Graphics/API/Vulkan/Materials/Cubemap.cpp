@@ -11,22 +11,24 @@
 
 void Cubemap::Create(MaterialBase *aBaseMaterial) {
 
-    const int mipLevel = 1;
-    VkFormat format = VK_FORMAT_R8G8B8A8_SRGB;
+    // TODO: make these configurable
+    constexpr int mipLevel = 1;
+    constexpr VkFormat format = VK_FORMAT_R8G8B8A8_SRGB;
 
-    // Load n sides of cubemap here ..
-
-    // TODO: Pass these into the constructor
     std::vector<std::string> cubemapImagePaths;
 
-    cubemapImagePaths.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/MegaSunRight.png");
-    cubemapImagePaths.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/MegaSunLeft.png");
-    cubemapImagePaths.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/MegaSunTop.png");
-    cubemapImagePaths.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/MegaSunBottom.png");
-    cubemapImagePaths.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/MegaSunFront.png");
-    cubemapImagePaths.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/MegaSunBack.png");
+    cubemapImagePaths.push_back(FileManagement::MakeAssetPath( "Textures/Skybox/MegaSunRight.png"));
+    cubemapImagePaths.push_back(FileManagement::MakeAssetPath( "Textures/Skybox/MegaSunLeft.png"));
+    cubemapImagePaths.push_back(FileManagement::MakeAssetPath( "Textures/Skybox/MegaSunTop.png"));
+    cubemapImagePaths.push_back(FileManagement::MakeAssetPath( "Textures/Skybox/MegaSunBottom.png"));
+    cubemapImagePaths.push_back(FileManagement::MakeAssetPath( "Textures/Skybox/MegaSunFront.png"));
+    cubemapImagePaths.push_back(FileManagement::MakeAssetPath( "Textures/Skybox/MegaSunBack.png"));
 
-    LoadUtilities::LoadImagesFromDisk(gGraphics, cubemapImagePaths, mAllocatedImage, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT);
+    const bool loadSuccess = LoadUtilities::LoadImagesFromDisk(gGraphics, cubemapImagePaths, mAllocatedImage,
+                                                               VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT);
+    if (!loadSuccess) {
+        throw std::runtime_error("Failed to load cubemap image(s)");
+    }
 
     VkSamplerCreateInfo samplerCreateInfo{};
     samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -44,11 +46,11 @@ void Cubemap::Create(MaterialBase *aBaseMaterial) {
     samplerCreateInfo.maxLod = static_cast<float>(mipLevel);
     samplerCreateInfo.maxAnisotropy = 4.0;
     samplerCreateInfo.anisotropyEnable = VK_TRUE;
-    samplerCreateInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_WHITE; {
-        auto result = vkCreateSampler(gGraphics->mLogicalDevice, &samplerCreateInfo, nullptr, &mSampler);
-        if (result != VK_SUCCESS) {
-            Logger::Log(spdlog::level::critical, "failed to create Sampler!");
-        }
+    samplerCreateInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_WHITE;
+
+    const VkResult samplerCreateResult = vkCreateSampler(gGraphics->mLogicalDevice, &samplerCreateInfo, nullptr, &mSampler);
+    if (samplerCreateResult != VK_SUCCESS) {
+        Logger::Log(spdlog::level::critical, "failed to create Sampler!");
     }
 
     VkImageViewCreateInfo view{};
@@ -61,12 +63,13 @@ void Cubemap::Create(MaterialBase *aBaseMaterial) {
     view.subresourceRange.baseArrayLayer = 0;
     view.subresourceRange.layerCount = 6;
     view.subresourceRange.levelCount = mipLevel;
-    view.image = mAllocatedImage.mImage; {
-        auto result = vkCreateImageView(gGraphics->mLogicalDevice, &view, nullptr, &mImageView);
-        if (result != VK_SUCCESS) {
-            Logger::Log(spdlog::level::critical, "failed to create image view!");
-        }
+    view.image = mAllocatedImage.mImage;
+
+    const VkResult imageCreateResult = vkCreateImageView(gGraphics->mLogicalDevice, &view, nullptr, &mImageView);
+    if (imageCreateResult != VK_SUCCESS) {
+        Logger::Log(spdlog::level::critical, "failed to create image view!");
     }
+
 
     mDescriptorImageInfo.sampler = mSampler;
     mDescriptorImageInfo.imageView = mImageView;
@@ -82,6 +85,7 @@ void Cubemap::Create(MaterialBase *aBaseMaterial) {
 
     std::vector<VkDescriptorImageInfo> descriptorInfos;
     descriptorInfos.push_back(mDescriptorImageInfo);
+
     BindTexture(descriptorInfos, 1);
 }
 

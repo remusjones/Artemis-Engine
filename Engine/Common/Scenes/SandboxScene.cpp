@@ -105,8 +105,8 @@ void SandboxScene::Construct(const char *aSceneName) {
     auto *stoneTexture = new Texture();
     mLoadedTextures["stoneTexture"] = stoneTexture;
     std::vector<std::string> stoneSet;
-    stoneSet.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/Stone Wall.png");
-    stoneSet.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/Stone Wall_NRM.png");
+    stoneSet.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/Stone/Stone Wall.png");
+    stoneSet.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/Stone/Stone Wall_NRM.png");
     stoneTexture->LoadImagesFromDisk(stoneSet);
     stoneTexture->Create();
 

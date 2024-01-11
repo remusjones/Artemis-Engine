@@ -172,8 +172,7 @@ void Scene::Cleanup() {
 }
 
 void Scene::AddGraphicsPipeline(GraphicsPipeline *aGraphicsPipeline) {
-    Logger::Log(spdlog::level::info,
-                (std::string("Creating Graphics Pipeline ") + aGraphicsPipeline->mPipelineName).c_str());
+
     mGraphicsPipelines.push_back(aGraphicsPipeline);
     aGraphicsPipeline->Create();
 }
