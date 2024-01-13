@@ -16,6 +16,7 @@
 #include "Vulkan/Materials/Cubemap.h"
 #include "Vulkan/Materials/DefaultMaterial.h"
 #include "Vulkan/Systems/GraphicsPipeline.h"
+#include <btBulletDynamicsCommon.h>
 
 void SandboxScene::Construct(const char *aSceneName) {
     GraphicsPipeline::DefaultPipelineConfigInfo(mDefaultPipelineConfig);
