@@ -10,6 +10,7 @@
 #include "Objects/FlyCamera.h"
 #include "Objects/ImGuiLayer.h"
 
+class PhysicsSystem;
 class GraphicsPipeline;
 class Camera;
 class MeshObject;
@@ -37,6 +38,7 @@ public:
     GPUSceneData mSceneData;
     const char *mSceneName; //
     std::vector<Entity *> mObjects;
+    PhysicsSystem* mPhysicsSystem;
 
 
 };

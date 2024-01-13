@@ -10,12 +10,17 @@
 #include "Logger.h"
 
 #include "VulkanGraphicsImpl.h"
+#include "Physics/PhysicsSystem.h"
 #include "Vulkan/Common/MeshObject.h"
 #include "Vulkan/Systems/GraphicsPipeline.h"
 
 
 void Scene::Construct(const char *aSceneName) {
     mSceneName = aSceneName;
+
+    mPhysicsSystem = new PhysicsSystem();
+    mPhysicsSystem->Create();
+
     for (const auto obj: mObjects) {
         obj->Construct();
     }
@@ -151,7 +156,9 @@ void Scene::OnImGuiRender() {
 }
 
 
-void Scene::Tick(float aDeltaTime) {
+void Scene::Tick(const float aDeltaTime) {
+
+    mPhysicsSystem->Tick(aDeltaTime);
     for (const auto obj: mObjects) {
         obj->Tick(aDeltaTime);
     }
@@ -169,6 +176,9 @@ void Scene::Cleanup() {
         pipeline->Destroy();
         delete pipeline;
     }
+    mPhysicsSystem->Destroy();
+    delete mPhysicsSystem;
+    mPhysicsSystem = nullptr;
 }
 
 void Scene::AddGraphicsPipeline(GraphicsPipeline *aGraphicsPipeline) {

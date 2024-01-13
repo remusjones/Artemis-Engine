@@ -7,19 +7,21 @@
 #include "imgui.h"
 #include "VulkanGraphicsImpl.h"
 #include "Base/Common/Material.h"
+#include "BulletCollision/CollisionShapes/btSphereShape.h"
 #include "File Management/FileManagement.h"
 #include "Objects/Camera.h"
 #include "Objects/FlyCamera.h"
+#include "Physics/PhysicsSystem.h"
 #include "Vulkan/Common/MeshObject.h"
 #include "Vulkan/Common/Primative.h"
 #include "Vulkan/Renderers/SkyboxRenderer.h"
 #include "Vulkan/Materials/Cubemap.h"
 #include "Vulkan/Materials/DefaultMaterial.h"
 #include "Vulkan/Systems/GraphicsPipeline.h"
-#include <btBulletDynamicsCommon.h>
 
 void SandboxScene::Construct(const char *aSceneName) {
     GraphicsPipeline::DefaultPipelineConfigInfo(mDefaultPipelineConfig);
+
 
     //
     // Create Pipelines
@@ -89,6 +91,9 @@ void SandboxScene::Construct(const char *aSceneName) {
     mSphere->mMeshRenderer.BindRenderer(*mPBRPipeline->mPipeline);
     mSphere->mMeshRenderer.LoadMesh((FileManagement::GetWorkingDirectory() +
                                      std::string("/Assets/Models/sphere.obj")).c_str());
+
+   // btCollisionShape* colShape = new btSphereShape(static_cast<btScalar>(1.));
+   // mPhysicsSystem->mCollisionShapes.push_back(colShape);
 
     mCube = new MeshObject();
     mCube->CreateObject(*cubeMaterial,
