@@ -3,11 +3,18 @@
 //
 
 #pragma once
-#include "Objects/Component.h"
+#include "Components/Component.h"
 
+class PhysicsSystem;
 class btCollisionShape;
 
 class ColliderComponent : public Component{
-private:
+public:
+    virtual void Create(PhysicsSystem* aPhysicsSystem);
+    void Tick(float aDeltaTime) override;
+    void Initialize() override;
+protected:
     btCollisionShape* mCollisionShape;
+    PhysicsSystem* mPhysicsSystem;
+
 };

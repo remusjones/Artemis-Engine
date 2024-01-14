@@ -4,7 +4,7 @@
 
 #include "Entity.h"
 
-#include "Component.h"
+#include "../Components/Component.h"
 
 void Entity::Construct() {
     for (const auto &component: mComponentMap) {

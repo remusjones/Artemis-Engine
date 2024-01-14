@@ -2,9 +2,9 @@
 // Created by Remus on 13/01/2024.
 //
 
-#include "Component.h"
 
-#include "Entity.h"
+#include "Component.h"
+#include "Objects/Entity.h"
 
 void Component::SetEntity(Entity *aEntity) {
     mAttachedEntity = aEntity;
