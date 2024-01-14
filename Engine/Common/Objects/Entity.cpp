@@ -4,16 +4,35 @@
 
 #include "Entity.h"
 
+#include "Component.h"
+
 void Entity::Construct() {
+    for (const auto &component: mComponentMap) {
+        component.second->Initialize();
+    }
 }
 
 void Entity::Tick(float aDeltaTime) {
+    for (const auto &component: mComponentMap) {
+        component.second->Tick(aDeltaTime);
+    }
 }
 
 void Entity::Cleanup() {
+    for (const auto &component: mComponentMap) {
+        component.second->Destroy();
+    }
 }
 
 void Entity::AddComponent(Component *aComponent) {
+    aComponent->SetEntity(this);
+    mComponentMap[aComponent->GetName()] = aComponent;
+}
+
+void Entity::RemoveComponent(Component *aComponent) {
+    if (const auto it = mComponentMap.find(aComponent->GetName()); it != mComponentMap.end()) {
+        mComponentMap.erase(it);
+    }
 }
 
 template<typename T>

@@ -13,6 +13,7 @@ public:
     virtual void Tick(float aDeltaTime);
     virtual void Cleanup();
     virtual void AddComponent(Component* aComponent);
+    virtual void RemoveComponent(Component* aComponent);
 
     template<class T>
     bool GetComponent(T &aResult);
