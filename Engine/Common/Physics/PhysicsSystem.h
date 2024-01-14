@@ -19,7 +19,7 @@ public:
 
     void RemoveCollisionShape(btCollisionShape *aCollisionShape);
 
-    void Tick(float aDeltaTime);
+    void Tick(float aDeltaTime) const;
 
     void Destroy();
 

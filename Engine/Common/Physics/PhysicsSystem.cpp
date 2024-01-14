@@ -23,15 +23,23 @@ void PhysicsSystem::Create() {
     mDynamicsWorld->setGravity(btVector3(0, mGravity, 0));
 }
 
-void PhysicsSystem::Tick(const float aDeltaTime) {
+void PhysicsSystem::Tick(const float aDeltaTime) const {
     if (mDynamicsWorld) {
         mDynamicsWorld->stepSimulation(aDeltaTime);
     }
 }
 
 void PhysicsSystem::Destroy() {
+
+    for (int i = 0; i < mAllocatedRigidBodies.size(); i++) {
+        if (mDynamicsWorld)
+            mDynamicsWorld->removeRigidBody(mAllocatedRigidBodies[i]);
+        delete mAllocatedRigidBodies[i];
+    }
+
     if (mDynamicsWorld) {
         int i;
+
         for (i = mDynamicsWorld->getNumConstraints() - 1; i >= 0; i--) {
             mDynamicsWorld->removeConstraint(mDynamicsWorld->getConstraint(i));
         }
@@ -49,11 +57,7 @@ void PhysicsSystem::Destroy() {
         delete mCollisionShapes[j];
     }
 
-    for (int k = 0; k < mAllocatedRigidBodies.size(); k++) {
-        if (mDynamicsWorld)
-            mDynamicsWorld->removeRigidBody(mAllocatedRigidBodies[k]);
-        delete mAllocatedRigidBodies[k];
-    }
+
     mCollisionShapes.clear();
 
     delete mDynamicsWorld;

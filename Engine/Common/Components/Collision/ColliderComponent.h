@@ -4,6 +4,7 @@
 
 #pragma once
 #include "Components/Component.h"
+#include "glm/mat4x4.hpp"
 #include "LinearMath/btScalar.h"
 
 class btRigidBody;
@@ -20,9 +21,13 @@ public:
     virtual void Create(PhysicsSystem *aPhysicsSystem, ColliderCreateInfo &aCreateInfo);
     void Tick(float aDeltaTime) override;
     void Initialize() override;
+
 protected:
     btCollisionShape* mCollisionShape;
     btRigidBody* mRigidBody;
     PhysicsSystem* mPhysicsSystem;
+
+    // Cached Frame to detect external input
+    glm::mat4 mWorldMatrixLastFrame;
 
 };

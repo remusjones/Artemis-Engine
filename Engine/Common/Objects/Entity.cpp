@@ -4,6 +4,8 @@
 
 #include "Entity.h"
 
+#include <vector>
+
 #include "../Components/Component.h"
 
 void Entity::Construct() {
@@ -19,7 +21,9 @@ void Entity::Tick(const float aDeltaTime) {
 }
 
 void Entity::Cleanup() {
-    for (const auto &component: mComponentMap) {
+
+    const std::vector<std::pair<std::string, Component*>> copy(mComponentMap.begin(), mComponentMap.end());
+    for (const auto &component: copy) {
         component.second->Destroy();
     }
 }

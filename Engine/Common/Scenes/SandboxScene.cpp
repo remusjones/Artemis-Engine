@@ -101,7 +101,7 @@ void SandboxScene::Construct() {
     // TODO: Destroy Component
     auto *sphereCollider = new ColliderComponent();
     ColliderCreateInfo colliderInfo{};
-    colliderInfo.collisionShape = new btSphereShape(1.f);
+    colliderInfo.collisionShape = new btSphereShape(1.5f);
     colliderInfo.mass = 1.f;
     sphereCollider->Create(mPhysicsSystem, colliderInfo);
     mSphere->AddComponent(sphereCollider);
@@ -112,20 +112,20 @@ void SandboxScene::Construct() {
 
     mCube = new MeshObject();
     mCube->CreateObject(*cubeMaterial,
-                        "Cube Half Lambert");
+                        "Floor");
     mCube->mMeshRenderer.BindRenderer(*mPBRPipeline->mPipeline);
 
     mCube->mMeshRenderer.LoadMesh((FileManagement::GetWorkingDirectory() +
                                    std::string("/Assets/Models/cube.obj")).c_str(),
                                   (FileManagement::GetWorkingDirectory() + std::string("/Assets/Models/")).c_str());
 
-    const glm::vec3 floorScale(25, 0.5, 25);
+    glm::vec3 floorScale(25, 0.5f, 25);
     mCube->mTransform.SetScale(floorScale);
-    mCube->mTransform.SetPosition(glm::vec3(0, -5.f, 0));
+    mCube->mTransform.SetPosition(glm::vec3(0, -10.f, 0));
 
     auto *floorCollider = new ColliderComponent();
     ColliderCreateInfo floorColliderInfo{};
-    floorColliderInfo.collisionShape = new btBoxShape(btVector3(floorScale.x / 2, floorScale.y / 2, floorScale.z / 2));
+    floorColliderInfo.collisionShape = new btBoxShape(btVector3(floorScale.x/2.f, floorScale.y/2.f, floorScale.z/2.f));
     floorColliderInfo.mass = 0.f;
     floorCollider->Create(mPhysicsSystem, floorColliderInfo);
     mCube->AddComponent(floorCollider);
@@ -181,8 +181,7 @@ void SandboxScene::Construct() {
     mMonkey->mTransform.SetPosition({2, 0, -5.0f});
     mTeapot->mTransform.SetPosition({2, 0, -20.0f});
     mTeapot->mTransform.SetScale({0.1f, 0.1f, 0.1f});
-    mSphere->mTransform.SetPosition({-5, 0, -5});
-    mCube->mTransform.SetPosition({-2, 0, -5});
+    mSphere->mTransform.SetPosition({0, 25, 0});
     mLight->mTransform.SetScale({0.1f, 0.1f, 0.1f});
     mLight->mTransform.SetScale({0.2f, 0.2f, 0.2f});
 
