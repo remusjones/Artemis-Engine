@@ -17,7 +17,8 @@ class Texture;
 
 class SandboxScene final : public Scene {
 public:
-    void Construct(const char *aSceneName) override;
+    void PreConstruct(const char *aSceneName) override;
+    void Construct() override;
 
     void Tick(float aDeltaTime) override;
 

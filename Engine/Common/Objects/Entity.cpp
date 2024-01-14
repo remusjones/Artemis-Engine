@@ -12,7 +12,7 @@ void Entity::Construct() {
     }
 }
 
-void Entity::Tick(float aDeltaTime) {
+void Entity::Tick(const float aDeltaTime) {
     for (const auto &component: mComponentMap) {
         component.second->Tick(aDeltaTime);
     }

@@ -15,12 +15,14 @@
 #include "Vulkan/Systems/GraphicsPipeline.h"
 
 
-void Scene::Construct(const char *aSceneName) {
+void Scene::PreConstruct(const char *aSceneName) {
     mSceneName = aSceneName;
 
     mPhysicsSystem = new PhysicsSystem();
     mPhysicsSystem->Create();
+}
 
+void Scene::Construct() {
     for (const auto obj: mObjects) {
         obj->Construct();
     }
@@ -140,7 +142,8 @@ void Scene::OnImGuiRender() {
                 if (ImGui::CollapsingHeader(pipeline->mPipelineName)) {
                     ImGui::Indent();
                     ImGui::Text("Material Count: ");
-                    ImGui::SameLine(); ImGui::Text(std::to_string(pipeline->mRenderers.size()).c_str());
+                    ImGui::SameLine();
+                    ImGui::Text(std::to_string(pipeline->mRenderers.size()).c_str());
                     for (const auto renderer: pipeline->mRenderers) {
                         ImGui::Text(renderer->mMaterial->mMaterialName);
                     }
@@ -157,7 +160,6 @@ void Scene::OnImGuiRender() {
 
 
 void Scene::Tick(const float aDeltaTime) {
-
     mPhysicsSystem->Tick(aDeltaTime);
     for (const auto obj: mObjects) {
         obj->Tick(aDeltaTime);
@@ -182,7 +184,6 @@ void Scene::Cleanup() {
 }
 
 void Scene::AddGraphicsPipeline(GraphicsPipeline *aGraphicsPipeline) {
-
     mGraphicsPipelines.push_back(aGraphicsPipeline);
     aGraphicsPipeline->Create();
 }

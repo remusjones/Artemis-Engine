@@ -7,7 +7,10 @@
 #include "imgui.h"
 #include "VulkanGraphicsImpl.h"
 #include "Base/Common/Material.h"
+#include "BulletCollision/CollisionDispatch/btCollisionWorldImporter.h"
+#include "BulletCollision/CollisionShapes/btBoxShape.h"
 #include "BulletCollision/CollisionShapes/btSphereShape.h"
+#include "Components/Collision/ColliderComponent.h"
 #include "File Management/FileManagement.h"
 #include "Objects/Camera.h"
 #include "Objects/FlyCamera.h"
@@ -19,13 +22,16 @@
 #include "Vulkan/Materials/DefaultMaterial.h"
 #include "Vulkan/Systems/GraphicsPipeline.h"
 
-void SandboxScene::Construct(const char *aSceneName) {
+void SandboxScene::PreConstruct(const char *aSceneName) {
+    Scene::PreConstruct(aSceneName);
+}
+
+void SandboxScene::Construct() {
+    //
+    // Create Render Pipelines
+    //
+
     GraphicsPipeline::DefaultPipelineConfigInfo(mDefaultPipelineConfig);
-
-
-    //
-    // Create Pipelines
-    //
     mPBRPipeline = std::make_shared<PBRRenderSystem>();
     mUnlitPipeline = std::make_shared<UnlitRenderSystem>();
     mCubemapPipeline = std::make_unique<SkyboxRenderSystem>();
@@ -92,8 +98,17 @@ void SandboxScene::Construct(const char *aSceneName) {
     mSphere->mMeshRenderer.LoadMesh((FileManagement::GetWorkingDirectory() +
                                      std::string("/Assets/Models/sphere.obj")).c_str());
 
-   // btCollisionShape* colShape = new btSphereShape(static_cast<btScalar>(1.));
-   // mPhysicsSystem->mCollisionShapes.push_back(colShape);
+    // TODO: Destroy Component
+    auto *sphereCollider = new ColliderComponent();
+    ColliderCreateInfo colliderInfo{};
+    colliderInfo.collisionShape = new btSphereShape(1.f);
+    colliderInfo.mass = 1.f;
+    sphereCollider->Create(mPhysicsSystem, colliderInfo);
+    mSphere->AddComponent(sphereCollider);
+
+
+    // btCollisionShape* colShape = new btSphereShape(static_cast<btScalar>(1.));
+    // mPhysicsSystem->mCollisionShapes.push_back(colShape);
 
     mCube = new MeshObject();
     mCube->CreateObject(*cubeMaterial,
@@ -103,6 +118,17 @@ void SandboxScene::Construct(const char *aSceneName) {
     mCube->mMeshRenderer.LoadMesh((FileManagement::GetWorkingDirectory() +
                                    std::string("/Assets/Models/cube.obj")).c_str(),
                                   (FileManagement::GetWorkingDirectory() + std::string("/Assets/Models/")).c_str());
+
+    const glm::vec3 floorScale(25, 0.5, 25);
+    mCube->mTransform.SetScale(floorScale);
+    mCube->mTransform.SetPosition(glm::vec3(0, -5.f, 0));
+
+    auto *floorCollider = new ColliderComponent();
+    ColliderCreateInfo floorColliderInfo{};
+    floorColliderInfo.collisionShape = new btBoxShape(btVector3(floorScale.x / 2, floorScale.y / 2, floorScale.z / 2));
+    floorColliderInfo.mass = 0.f;
+    floorCollider->Create(mPhysicsSystem, floorColliderInfo);
+    mCube->AddComponent(floorCollider);
 
     //
     // Create Teapot Textures
@@ -170,7 +196,7 @@ void SandboxScene::Construct(const char *aSceneName) {
     //
     // Construct Scene
     //
-    Scene::Construct(aSceneName);
+    Scene::Construct();
 }
 
 float deltaAccumulated;
@@ -206,7 +232,6 @@ void SandboxScene::Cleanup() {
 void SandboxScene::OnImGuiRender() {
     if (ImGui::Button(GetUniqueLabel("Rebuild PBR Pipeline"))) {
         gGraphics->mVulkanEngine.SubmitEndOfFrameTask([&] {
-
             vkDeviceWaitIdle(gGraphics->mLogicalDevice);
             // Find iter of our Render System
             // Destroy it
@@ -214,7 +239,6 @@ void SandboxScene::OnImGuiRender() {
             // Recreate it
             mPBRPipeline->Create(mPBRPipeline->GetBoundDescriptors());
             mPBRPipeline->mPipeline->Create();
-
         });
     }
     Scene::OnImGuiRender();

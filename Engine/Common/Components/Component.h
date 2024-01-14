@@ -23,7 +23,7 @@ public:
     virtual void Initialize();
 
 
-private:
+protected:
     Entity* mAttachedEntity;
 
     // TODO: Replace with Hash

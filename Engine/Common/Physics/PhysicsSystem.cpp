@@ -35,6 +35,7 @@ void PhysicsSystem::Destroy() {
         for (i = mDynamicsWorld->getNumConstraints() - 1; i >= 0; i--) {
             mDynamicsWorld->removeConstraint(mDynamicsWorld->getConstraint(i));
         }
+
         for (i = mDynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--) {
             btCollisionObject *obj = mDynamicsWorld->getCollisionObjectArray()[i];
             if (btRigidBody *body = btRigidBody::upcast(obj); body && body->getMotionState()) {
@@ -46,6 +47,12 @@ void PhysicsSystem::Destroy() {
     }
     for (int j = 0; j < mCollisionShapes.size(); j++) {
         delete mCollisionShapes[j];
+    }
+
+    for (int k = 0; k < mAllocatedRigidBodies.size(); k++) {
+        if (mDynamicsWorld)
+            mDynamicsWorld->removeRigidBody(mAllocatedRigidBodies[k]);
+        delete mAllocatedRigidBodies[k];
     }
     mCollisionShapes.clear();
 

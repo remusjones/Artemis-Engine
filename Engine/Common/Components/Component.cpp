@@ -22,6 +22,12 @@ std::string Component::GetName() {
     return mName;
 }
 
+void Component::Tick(float aDeltaTime) {
+}
+
 void Component::Destroy() {
     mAttachedEntity->RemoveComponent(this);
+}
+
+void Component::Initialize() {
 }

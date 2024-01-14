@@ -311,7 +311,8 @@ void VulkanGraphicsImpl::DestroySurface() const
 void VulkanGraphicsImpl::CreateScenes()
 {
     mActiveScene = std::make_unique<SandboxScene>();
-    mActiveScene->Construct("Sandbox");
+    mActiveScene->PreConstruct("Sandbox Scene");
+    mActiveScene->Construct();
 }
 
 void VulkanGraphicsImpl::DestroyScenes() const

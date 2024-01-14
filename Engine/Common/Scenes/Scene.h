@@ -19,7 +19,8 @@ class Scene : public ImGuiLayer {
 public:
     virtual ~Scene() = default;
 
-    virtual void Construct(const char *aSceneName);
+    virtual void PreConstruct(const char *aSceneName);
+    virtual void Construct();
 
     virtual void Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
                         uint32_t aCurrentFrame);
@@ -38,7 +39,5 @@ public:
     GPUSceneData mSceneData;
     const char *mSceneName; //
     std::vector<Entity *> mObjects;
-    PhysicsSystem* mPhysicsSystem;
-
-
+    PhysicsSystem *mPhysicsSystem;
 };
