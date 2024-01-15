@@ -13,6 +13,8 @@
 #include "Components/Collision/ColliderComponent.h"
 #include "File Management/FileManagement.h"
 #include "Objects/Camera.h"
+#include "Objects/Camera.h"
+#include "Objects/Camera.h"
 #include "Objects/FlyCamera.h"
 #include "Physics/PhysicsSystem.h"
 #include "Vulkan/Common/MeshObject.h"
@@ -67,64 +69,52 @@ void SandboxScene::Construct() {
     // Create Objects
     // TODO: Create constructor helper to make this smaller?
     //
-    mMonkey = new MeshObject();
-    mMonkey->CreateObject(*monkeyTexturedMaterial, "Monkey Lit");
-    mMonkey->mMeshRenderer.BindRenderer(*mPBRPipeline->mPipeline);
-    mMonkey->mMeshRenderer.LoadMesh(
-        (FileManagement::GetWorkingDirectory() +
-         std::string("/Assets/Models/monkey_smooth.obj")).c_str());
+    mMonkey = MakeObject("Monkey",
+                        "/Assets/Models/monkey_smooth.obj", *monkeyTexturedMaterial,
+                        *mPBRPipeline->mPipeline,
+                        glm::vec3(2, 0, -5),
+                        glm::vec3(0),
+                        glm::vec3(1.f));
 
-    mTeapot = new MeshObject();
-    mTeapot->CreateObject(*teapotMaterial,
-                          "Teapot");
-    mTeapot->mMeshRenderer.BindRenderer(*mPBRPipeline->mPipeline);
+    mTeapot = MakeObject("Teapot",
+                        "/Assets/Models/teapot.obj", *teapotMaterial,
+                        *mPBRPipeline->mPipeline,
+                        glm::vec3(2, 0, -20),
+                        glm::vec3(0),
+                        glm::vec3(0.1f));
 
-    mTeapot->mMeshRenderer.LoadMesh(
-        (FileManagement::GetWorkingDirectory() +
-         std::string("/Assets/Models/teapot.obj")).c_str());
+    mLight = MakeObject("Light",
+                        "/Assets/Models/sphere.obj", *lightMaterial,
+                        *mUnlitPipeline->mPipeline,
+                        glm::vec3(0, 0, 0),
+                        glm::vec3(0),
+                        glm::vec3(0.2));
 
+    constexpr int uniformSphereCount = 3;
+    for(int i = 0; i < uniformSphereCount; i++) {
+        for (int j = 0; j < uniformSphereCount; j++) {
+            for (int k = 0; k < uniformSphereCount; k++) {
+                constexpr float sphereRadius = 0.5f;
+                MeshObject *sphere = MakeObject("Physics Sphere",
+                                                "/Assets/Models/sphere.obj", *sphereMaterial,
+                                                *mPBRPipeline->mPipeline,
+                                                glm::vec3(i, j, k),
+                                                glm::vec3(0),
+                                                glm::vec3(sphereRadius));
 
-    mLight = new MeshObject();
-    mLight->CreateObject(*lightMaterial, "Light");
-    mLight->mMeshRenderer.BindRenderer(*mUnlitPipeline->mPipeline);
-    mLight->mMeshRenderer.LoadMesh(
-        (FileManagement::GetWorkingDirectory() +
-         std::string("/Assets/Models/sphere.obj")).c_str());
-
-
-    for(int i = 0; i < 10; i++) {
-        for(int j = 0; j < 10; j++) {
-            constexpr float sphereRadius = 0.5f;
-            MeshObject* sphere = MakeObject("Physics Sphere",
-                                            "/Assets/Models/sphere.obj", *sphereMaterial,
-                                            *mPBRPipeline->mPipeline, glm::vec3(i, 0, j), glm::vec3(0),
-                                            glm::vec3(sphereRadius));
-
-            AttachSphereCollider(*sphere, sphereRadius, 0.25f);
+                AttachSphereCollider(*sphere, sphereRadius, 0.25f, 10);
+            }
         }
     }
 
 
-    // btCollisionShape* colShape = new btSphereShape(static_cast<btScalar>(1.));
-    // mPhysicsSystem->mCollisionShapes.push_back(colShape);
-
-    const glm::vec3 floorScale(25, 0.5f, 25);
+    constexpr glm::vec3 floorScale(50, 0.5f, 50);
     mFloor = MakeObject("Floor", "/Assets/Models/cube.obj",
-        *cubeMaterial, *mPBRPipeline->mPipeline,
-    glm::vec3(0, -10, 0), glm::vec3(0), floorScale);
+                        *cubeMaterial, *mPBRPipeline->mPipeline,
+                        glm::vec3(0, -10, 0), glm::vec3(0), floorScale);
 
     AttachBoxCollider(*mFloor, floorScale, 0);
-    //auto *floorCollider = new ColliderComponent();
-    //ColliderCreateInfo floorColliderInfo{};
-    //floorColliderInfo.collisionShape = new btBoxShape(btVector3(floorScale.x, floorScale.y, floorScale.z));
-    //floorColliderInfo.mass = 0.f;
-    //floorCollider->Create(mPhysicsSystem, floorColliderInfo);
-    //mFloor->AddComponent(floorCollider);
 
-    //
-    // Create Teapot Textures
-    // TODO: Create Texture factory?
-    //
     auto *stoneTexture = new Texture();
     mLoadedTextures["stoneTexture"] = stoneTexture;
     std::vector<std::string> stoneSet;
@@ -159,19 +149,7 @@ void SandboxScene::Construct() {
     // Setup Scene Dependencies
     // Register to scene TODO: Review if we auto-register these
     //
-    mObjects.push_back(mMonkey);
-    mObjects.push_back(mTeapot);
-    mObjects.push_back(mLight);
     mObjects.push_back(mCubemapMesh);
-
-    //
-    // Set Default Positions
-    //
-    mMonkey->mTransform.SetPosition({2, 0, -5.0f});
-    mTeapot->mTransform.SetPosition({2, 0, -20.0f});
-    mTeapot->mTransform.SetScale({0.1f, 0.1f, 0.1f});
-    mLight->mTransform.SetScale({0.1f, 0.1f, 0.1f});
-    mLight->mTransform.SetScale({0.2f, 0.2f, 0.2f});
 
     //
     // Setup Draw Order
@@ -231,7 +209,7 @@ void SandboxScene::OnImGuiRender() {
     Scene::OnImGuiRender();
 }
 
-MeshObject *SandboxScene::MakeObject(const char* aName, const char* aMeshPath, Material &aMaterial,
+MeshObject *SandboxScene::MakeObject(const char *aName, const char *aMeshPath, Material &aMaterial,
                                      GraphicsPipeline &aPipeline, const glm::vec3 aPos, const glm::vec3 aRot,
                                      const glm::vec3 aScale) {
     auto *object = new MeshObject();
@@ -249,20 +227,22 @@ MeshObject *SandboxScene::MakeObject(const char* aName, const char* aMeshPath, M
     return object;
 }
 
-void SandboxScene::AttachSphereCollider(Entity &aEntity, const float aRadius, const float aMass) const {
-    auto* sphereCollider = new ColliderComponent();
+void SandboxScene::AttachSphereCollider(Entity &aEntity, const float aRadius, const float aMass, float aFriction) const {
+    auto *sphereCollider = new ColliderComponent();
     ColliderCreateInfo sphereColliderInfo{};
     sphereColliderInfo.collisionShape = new btSphereShape(aRadius);
     sphereColliderInfo.mass = aMass;
+    sphereColliderInfo.friction = aFriction;
     sphereCollider->Create(mPhysicsSystem, sphereColliderInfo);
     aEntity.AddComponent(sphereCollider);
 }
 
-void SandboxScene::AttachBoxCollider(Entity &aEntity, glm::vec3 aHalfExtents, float aMass) const {
-    auto* boxCollider = new ColliderComponent();
+void SandboxScene::AttachBoxCollider(Entity &aEntity, glm::vec3 aHalfExtents, float aMass, float aFriction) const {
+    auto *boxCollider = new ColliderComponent();
     ColliderCreateInfo boxColliderInfo{};
     boxColliderInfo.collisionShape = new btBoxShape(btVector3(aHalfExtents.x, aHalfExtents.y, aHalfExtents.z));
     boxColliderInfo.mass = aMass;
+    boxColliderInfo.friction = 100;
     boxCollider->Create(mPhysicsSystem, boxColliderInfo);
     aEntity.AddComponent(boxCollider);
 }

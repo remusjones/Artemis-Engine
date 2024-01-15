@@ -26,6 +26,8 @@ void ColliderComponent::Create(PhysicsSystem *aPhysicsSystem, ColliderCreateInfo
                                                          localInertia);
     mRigidBody = new btRigidBody(cInfo);
     mRigidBody->setUserIndex(-1);
+    mRigidBody->setSleepingThresholds(aCreateInfo.linearSleepThreshold, aCreateInfo.angularSleepThreshold);
+    mRigidBody->setFriction(aCreateInfo.friction);
     aPhysicsSystem->mDynamicsWorld->addRigidBody(mRigidBody);
     aPhysicsSystem->mAllocatedRigidBodies.push_back(mRigidBody);
     mCollisionShape = aCreateInfo.collisionShape;

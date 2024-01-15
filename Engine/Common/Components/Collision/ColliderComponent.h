@@ -12,8 +12,11 @@ class PhysicsSystem;
 class btCollisionShape;
 
 struct ColliderCreateInfo {
-    btCollisionShape* collisionShape;
-    btScalar mass;
+    btCollisionShape* collisionShape{};
+    float linearSleepThreshold = 0.1f;
+    float angularSleepThreshold = 0.1f;
+    float friction = 0.5f;
+    btScalar mass{};
 };
 
 class ColliderComponent : public Component{

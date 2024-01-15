@@ -37,8 +37,8 @@ private:
                            glm::vec3 aScale = glm::vec3(1)
     );
 
-    void AttachSphereCollider(Entity &aEntity, float aRadius, float aMass) const;
-    void AttachBoxCollider(Entity &aEntity, glm::vec3 aHalfExtents, float aMass) const;
+    void AttachSphereCollider(Entity &aEntity, const float aRadius, const float aMass, float aFriction = 0.5f) const;
+    void AttachBoxCollider(::Entity &aEntity, glm::vec3 aHalfExtents, float aMass, float aFriction = 0.5f) const;
 
 
     std::unordered_map<std::string, Texture *> mLoadedTextures;
