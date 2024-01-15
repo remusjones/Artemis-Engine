@@ -91,44 +91,35 @@ void SandboxScene::Construct() {
         (FileManagement::GetWorkingDirectory() +
          std::string("/Assets/Models/sphere.obj")).c_str());
 
-    mSphere = new MeshObject();
-    mSphere->CreateObject(*sphereMaterial,
-                          "Sphere");
-    mSphere->mMeshRenderer.BindRenderer(*mPBRPipeline->mPipeline);
-    mSphere->mMeshRenderer.LoadMesh((FileManagement::GetWorkingDirectory() +
-                                     std::string("/Assets/Models/sphere.obj")).c_str());
 
-    // TODO: Destroy Component
-    auto *sphereCollider = new ColliderComponent();
-    ColliderCreateInfo colliderInfo{};
-    colliderInfo.collisionShape = new btSphereShape(1.5f);
-    colliderInfo.mass = 1.f;
-    sphereCollider->Create(mPhysicsSystem, colliderInfo);
-    mSphere->AddComponent(sphereCollider);
+    for(int i = 0; i < 10; i++) {
+        for(int j = 0; j < 10; j++) {
+            constexpr float sphereRadius = 0.5f;
+            MeshObject* sphere = MakeObject("Physics Sphere",
+                                            "/Assets/Models/sphere.obj", *sphereMaterial,
+                                            *mPBRPipeline->mPipeline, glm::vec3(i, 0, j), glm::vec3(0),
+                                            glm::vec3(sphereRadius));
+
+            AttachSphereCollider(*sphere, sphereRadius, 0.25f);
+        }
+    }
 
 
     // btCollisionShape* colShape = new btSphereShape(static_cast<btScalar>(1.));
     // mPhysicsSystem->mCollisionShapes.push_back(colShape);
 
-    mCube = new MeshObject();
-    mCube->CreateObject(*cubeMaterial,
-                        "Floor");
-    mCube->mMeshRenderer.BindRenderer(*mPBRPipeline->mPipeline);
+    const glm::vec3 floorScale(25, 0.5f, 25);
+    mFloor = MakeObject("Floor", "/Assets/Models/cube.obj",
+        *cubeMaterial, *mPBRPipeline->mPipeline,
+    glm::vec3(0, -10, 0), glm::vec3(0), floorScale);
 
-    mCube->mMeshRenderer.LoadMesh((FileManagement::GetWorkingDirectory() +
-                                   std::string("/Assets/Models/cube.obj")).c_str(),
-                                  (FileManagement::GetWorkingDirectory() + std::string("/Assets/Models/")).c_str());
-
-    glm::vec3 floorScale(25, 0.5f, 25);
-    mCube->mTransform.SetScale(floorScale);
-    mCube->mTransform.SetPosition(glm::vec3(0, -10.f, 0));
-
-    auto *floorCollider = new ColliderComponent();
-    ColliderCreateInfo floorColliderInfo{};
-    floorColliderInfo.collisionShape = new btBoxShape(btVector3(floorScale.x/2.f, floorScale.y/2.f, floorScale.z/2.f));
-    floorColliderInfo.mass = 0.f;
-    floorCollider->Create(mPhysicsSystem, floorColliderInfo);
-    mCube->AddComponent(floorCollider);
+    AttachBoxCollider(*mFloor, floorScale, 0);
+    //auto *floorCollider = new ColliderComponent();
+    //ColliderCreateInfo floorColliderInfo{};
+    //floorColliderInfo.collisionShape = new btBoxShape(btVector3(floorScale.x, floorScale.y, floorScale.z));
+    //floorColliderInfo.mass = 0.f;
+    //floorCollider->Create(mPhysicsSystem, floorColliderInfo);
+    //mFloor->AddComponent(floorCollider);
 
     //
     // Create Teapot Textures
@@ -171,8 +162,6 @@ void SandboxScene::Construct() {
     mObjects.push_back(mMonkey);
     mObjects.push_back(mTeapot);
     mObjects.push_back(mLight);
-    mObjects.push_back(mSphere);
-    mObjects.push_back(mCube);
     mObjects.push_back(mCubemapMesh);
 
     //
@@ -181,7 +170,6 @@ void SandboxScene::Construct() {
     mMonkey->mTransform.SetPosition({2, 0, -5.0f});
     mTeapot->mTransform.SetPosition({2, 0, -20.0f});
     mTeapot->mTransform.SetScale({0.1f, 0.1f, 0.1f});
-    mSphere->mTransform.SetPosition({0, 25, 0});
     mLight->mTransform.SetScale({0.1f, 0.1f, 0.1f});
     mLight->mTransform.SetScale({0.2f, 0.2f, 0.2f});
 
@@ -241,4 +229,40 @@ void SandboxScene::OnImGuiRender() {
         });
     }
     Scene::OnImGuiRender();
+}
+
+MeshObject *SandboxScene::MakeObject(const char* aName, const char* aMeshPath, Material &aMaterial,
+                                     GraphicsPipeline &aPipeline, const glm::vec3 aPos, const glm::vec3 aRot,
+                                     const glm::vec3 aScale) {
+    auto *object = new MeshObject();
+
+    object->CreateObject(aMaterial, aName);
+    object->mMeshRenderer.BindRenderer(aPipeline);
+    object->mMeshRenderer.LoadMesh((FileManagement::GetWorkingDirectory() + aMeshPath).c_str());
+
+    object->mTransform.SetPosition(aPos);
+    object->mTransform.SetRotation(aRot);
+    object->mTransform.SetScale(aScale);
+
+    mObjects.push_back(object);
+
+    return object;
+}
+
+void SandboxScene::AttachSphereCollider(Entity &aEntity, const float aRadius, const float aMass) const {
+    auto* sphereCollider = new ColliderComponent();
+    ColliderCreateInfo sphereColliderInfo{};
+    sphereColliderInfo.collisionShape = new btSphereShape(aRadius);
+    sphereColliderInfo.mass = aMass;
+    sphereCollider->Create(mPhysicsSystem, sphereColliderInfo);
+    aEntity.AddComponent(sphereCollider);
+}
+
+void SandboxScene::AttachBoxCollider(Entity &aEntity, glm::vec3 aHalfExtents, float aMass) const {
+    auto* boxCollider = new ColliderComponent();
+    ColliderCreateInfo boxColliderInfo{};
+    boxColliderInfo.collisionShape = new btBoxShape(btVector3(aHalfExtents.x, aHalfExtents.y, aHalfExtents.z));
+    boxColliderInfo.mass = aMass;
+    boxCollider->Create(mPhysicsSystem, boxColliderInfo);
+    aEntity.AddComponent(boxCollider);
 }

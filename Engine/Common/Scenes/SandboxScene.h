@@ -18,14 +18,29 @@ class Texture;
 class SandboxScene final : public Scene {
 public:
     void PreConstruct(const char *aSceneName) override;
+
     void Construct() override;
 
     void Tick(float aDeltaTime) override;
 
     void Cleanup() override;
+
     void OnImGuiRender() override;
 
 private:
+    MeshObject *MakeObject(const char* aName,
+                           const char* aMeshPath,
+                           Material &aMaterial,
+                           GraphicsPipeline &aPipeline,
+                           glm::vec3 aPos = glm::vec3(0),
+                           glm::vec3 aRot = glm::vec3(0),
+                           glm::vec3 aScale = glm::vec3(1)
+    );
+
+    void AttachSphereCollider(Entity &aEntity, float aRadius, float aMass) const;
+    void AttachBoxCollider(Entity &aEntity, glm::vec3 aHalfExtents, float aMass) const;
+
+
     std::unordered_map<std::string, Texture *> mLoadedTextures;
     PipelineConfigInfo mDefaultPipelineConfig;
 
@@ -33,8 +48,7 @@ private:
     MeshObject *mMonkey;
     MeshObject *mTeapot;
     MeshObject *mLight;
-    MeshObject *mSphere;
-    MeshObject *mCube;
+    MeshObject *mFloor;
     Primative *mCubemapMesh;
 
     std::shared_ptr<Cubemap> mCubemap;

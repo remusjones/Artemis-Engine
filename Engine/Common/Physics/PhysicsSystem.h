@@ -14,7 +14,7 @@ class btCollisionShape;
 class PhysicsSystem {
 public:
     void Create();
-
+    void AwakeRigidBodies();
     void AddCollisionShape(btCollisionShape *const aCollisionShape);
 
     void RemoveCollisionShape(btCollisionShape *aCollisionShape);

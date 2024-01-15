@@ -25,6 +25,7 @@ void Entity::Cleanup() {
     const std::vector<std::pair<std::string, Component*>> copy(mComponentMap.begin(), mComponentMap.end());
     for (const auto &component: copy) {
         component.second->Destroy();
+        delete component.second;
     }
 }
 

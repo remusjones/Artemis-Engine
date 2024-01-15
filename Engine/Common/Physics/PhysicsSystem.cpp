@@ -23,6 +23,13 @@ void PhysicsSystem::Create() {
     mDynamicsWorld->setGravity(btVector3(0, mGravity, 0));
 }
 
+void PhysicsSystem::AwakeRigidBodies()
+{
+    for (int i = 0; i < mAllocatedRigidBodies.size(); i++) {
+        mAllocatedRigidBodies[i]->activate(true);
+    }
+}
+
 void PhysicsSystem::Tick(const float aDeltaTime) const {
     if (mDynamicsWorld) {
         mDynamicsWorld->stepSimulation(aDeltaTime);

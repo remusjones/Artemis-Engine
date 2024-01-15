@@ -4,7 +4,7 @@
 
 #include "ColliderComponent.h"
 
-#include "Logger.h"
+#include "CollisionHelper.h"
 #include "BulletCollision/CollisionDispatch/btCollisionWorldImporter.h"
 #include "BulletCollision/CollisionShapes/btCollisionShape.h"
 #include "BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h"
@@ -28,6 +28,7 @@ void ColliderComponent::Create(PhysicsSystem *aPhysicsSystem, ColliderCreateInfo
     mRigidBody->setUserIndex(-1);
     aPhysicsSystem->mDynamicsWorld->addRigidBody(mRigidBody);
     aPhysicsSystem->mAllocatedRigidBodies.push_back(mRigidBody);
+    mCollisionShape = aCreateInfo.collisionShape;
     aPhysicsSystem->mCollisionShapes.push_back(aCreateInfo.collisionShape); // TODO: Do collision shape instancing ..
 }
 
@@ -36,19 +37,20 @@ void ColliderComponent::Tick(const float aDeltaTime) {
 
     if (mRigidBody) {
         if (mWorldMatrixLastFrame != mAttachedEntity->mTransform.GetWorldMatrix()) {
-            mRigidBody->getWorldTransform().setFromOpenGLMatrix(
-                glm::value_ptr(mAttachedEntity->mTransform.GetWorldMatrix()));
-            mRigidBody->activate(true);
+            mRigidBody->setWorldTransform(CollisionHelper::TransformToBulletTransform(mAttachedEntity->mTransform));
+            mPhysicsSystem->AwakeRigidBodies();
         }
 
         glm::mat4 rigidBodyMatrix;
-        mRigidBody->getWorldTransform().getOpenGLMatrix(glm::value_ptr(rigidBodyMatrix));
-        mAttachedEntity->mTransform.SetMatrix(rigidBodyMatrix);
+        mRigidBody->getWorldTransform().getOpenGLMatrix(value_ptr(rigidBodyMatrix));
+        mAttachedEntity->mTransform.SetPosition(CollisionHelper::BulletToGlm(mRigidBody->getWorldTransform().getOrigin()));
+        mAttachedEntity->mTransform.SetRotation(CollisionHelper::BulletToGlm(mRigidBody->getWorldTransform().getRotation()));
     }
     mWorldMatrixLastFrame = mAttachedEntity->mTransform.GetWorldMatrix();
 }
 
 void ColliderComponent::Initialize() {
     Component::Initialize();
-    mRigidBody->getWorldTransform().setFromOpenGLMatrix(glm::value_ptr(mAttachedEntity->mTransform.GetWorldMatrix()));
+    mRigidBody->setWorldTransform(CollisionHelper::TransformToBulletTransform(mAttachedEntity->mTransform));
+    mWorldMatrixLastFrame = mAttachedEntity->mTransform.GetWorldMatrix();
 }
