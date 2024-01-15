@@ -47,7 +47,7 @@ void main() {
     vec4 fragPos =  inPushConstants.model * vec4(inPosition, 1.0f);
     outFragPos = vec3(fragPos);
     outNormal = mat3(inPushConstants.model) * inNormal;
-    outTangent =  inPushConstants.model * vec4(inTangent.xyz, 1.0f);
+    outTangent = vec4(mat3(inPushConstants.model) * inTangent.xyz, inTangent.w);
     outColor = inColor;
     outUV = inTexCoord;
     gl_Position = sceneData.proj * sceneData.view * fragPos;
