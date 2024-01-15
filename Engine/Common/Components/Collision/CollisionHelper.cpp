@@ -4,8 +4,12 @@
 
 #include "CollisionHelper.h"
 
+#include "BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h"
+#include "BulletCollision/CollisionShapes/btTriangleMesh.h"
+
+
 btTransform CollisionHelper::TransformToBulletTransform(const Transform &aOther) {
-    return btTransform(GlmToBullet(aOther.Rotation()), GlmToBullet(aOther.Position()));
+    return btTransform(GlmToBullet(aOther.GetLocalRotation()), GlmToBullet(aOther.GetLocalPosition()));
 }
 
 
@@ -23,4 +27,20 @@ glm::vec3 CollisionHelper::BulletToGlm(const btVector3 &aOther) {
 
 glm::quat CollisionHelper::BulletToGlm(const btQuaternion &aOther) {
     return glm::quat(aOther.getW(),aOther.getX(), aOther.getY(), aOther.getZ());
+}
+
+btBvhTriangleMeshShape * CollisionHelper::MakeCollisionMesh(const std::vector<Vertex>& aVertices,
+    const std::vector<int32_t>& aIndices) {
+    btTriangleMesh* triangle_mesh = new btTriangleMesh(); // Bullet Physics triangle mesh
+
+    for(int i = 0; i<aIndices.size(); i+=3)
+    {
+        btVector3 vertex0(aVertices[aIndices[i]].mPosition.x, aVertices[aIndices[i]].mPosition.x, aVertices[aIndices[i]].mPosition.z);
+        btVector3 vertex1(aVertices[aIndices[i+1]].mPosition.x, aVertices[aIndices[i+1]].mPosition.y, aVertices[aIndices[i+1]].mPosition.z);
+        btVector3 vertex2(aVertices[aIndices[i+2]].mPosition.x, aVertices[aIndices[i+2]].mPosition.y, aVertices[aIndices[i+2]].mPosition.z);
+        triangle_mesh->addTriangle(vertex0, vertex1, vertex2);
+    }
+
+    // Use the btBvhTriangleMeshShape for static triangle mesh
+    return new btBvhTriangleMeshShape(triangle_mesh, true);
 }

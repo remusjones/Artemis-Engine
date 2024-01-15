@@ -99,9 +99,9 @@ void FlyCamera::MouseMovement(const SDL_MouseMotionEvent &aMouseMotion) {
     glm::quat up = glm::angleAxis(glm::radians(yDelta * sensitivity), glm::vec3(1, 0, 0));
     glm::quat right = glm::angleAxis(glm::radians(xDelta * sensitivity), glm::vec3(0, 1, 0));
 
-    glm::quat combined = mTransform.Rotation() * right;
+    glm::quat combined = mTransform.GetLocalRotation() * right;
     combined = up * combined;
-    mTransform.SetRotation(combined);
+    mTransform.SetLocalRotation(combined);
 }
 
 void FlyCamera::MouseInput(const SDL_MouseButtonEvent &aMouseInput) {

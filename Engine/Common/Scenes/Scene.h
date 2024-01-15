@@ -10,6 +10,7 @@
 #include "Objects/FlyCamera.h"
 #include "Objects/ImGuiLayer.h"
 
+class Material;
 class PhysicsSystem;
 class GraphicsPipeline;
 class Camera;
@@ -32,6 +33,22 @@ public:
     virtual void Cleanup();
 
     void AddGraphicsPipeline(GraphicsPipeline *aGraphicsPipeline);
+    MeshObject *MakeObject(const char* aName,
+                           const char* aMeshPath,
+                           Material &aMaterial,
+                           GraphicsPipeline &aPipeline,
+                           glm::vec3 aPos = glm::vec3(0),
+                           glm::vec3 aRot = glm::vec3(0),
+                           glm::vec3 aScale = glm::vec3(1)
+    );
+
+    void AttachSphereCollider(Entity &aEntity, const float aRadius, const float aMass, float aFriction = 0.5f) const;
+    void AttachBoxCollider(Entity &aEntity, glm::vec3 aHalfExtents, float aMass, float aFriction = 0.5f) const;
+
+
+
+
+
 
     FlyCamera *mActiveSceneCamera;
     // TODO: cleanup these in scene, instead of engine
@@ -40,4 +57,5 @@ public:
     const char *mSceneName; //
     std::vector<Entity *> mObjects;
     PhysicsSystem *mPhysicsSystem;
+    PhysicsSystem *mSceneInteractionPhysicsSystem;
 };

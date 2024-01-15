@@ -3,9 +3,12 @@
 //
 
 #pragma once
+#include "Base/Common/Data/Vertex.h"
 #include "LinearMath/btTransform.h"
 #include "Math/Transform.h"
 
+
+class btBvhTriangleMeshShape;
 
 class CollisionHelper {
 public:
@@ -14,4 +17,6 @@ public:
     static btQuaternion GlmToBullet(const glm::quat& aOther);
     static glm::vec3 BulletToGlm(const btVector3& aOther);
     static glm::quat BulletToGlm(const btQuaternion& aOther);
+    static btBvhTriangleMeshShape* MakeCollisionMesh(const std::vector<Vertex>& aVertices, const std::vector<int32_t>&
+    aIndices);
 };

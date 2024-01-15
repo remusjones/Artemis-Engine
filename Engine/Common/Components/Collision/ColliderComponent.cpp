@@ -45,8 +45,8 @@ void ColliderComponent::Tick(const float aDeltaTime) {
 
         glm::mat4 rigidBodyMatrix;
         mRigidBody->getWorldTransform().getOpenGLMatrix(value_ptr(rigidBodyMatrix));
-        mAttachedEntity->mTransform.SetPosition(CollisionHelper::BulletToGlm(mRigidBody->getWorldTransform().getOrigin()));
-        mAttachedEntity->mTransform.SetRotation(CollisionHelper::BulletToGlm(mRigidBody->getWorldTransform().getRotation()));
+        mAttachedEntity->mTransform.SetLocalPosition(CollisionHelper::BulletToGlm(mRigidBody->getWorldTransform().getOrigin()));
+        mAttachedEntity->mTransform.SetLocalRotation(CollisionHelper::BulletToGlm(mRigidBody->getWorldTransform().getRotation()));
     }
     mWorldMatrixLastFrame = mAttachedEntity->mTransform.GetWorldMatrix();
 }

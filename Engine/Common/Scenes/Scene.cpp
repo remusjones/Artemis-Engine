@@ -10,6 +10,12 @@
 #include "Logger.h"
 
 #include "VulkanGraphicsImpl.h"
+#include "BulletCollision/CollisionShapes/btBoxShape.h"
+#include "BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h"
+#include "BulletCollision/CollisionShapes/btSphereShape.h"
+#include "Components/Collision/ColliderComponent.h"
+#include "Components/Collision/CollisionHelper.h"
+#include "File Management/FileManagement.h"
 #include "Physics/PhysicsSystem.h"
 #include "Vulkan/Common/MeshObject.h"
 #include "Vulkan/Systems/GraphicsPipeline.h"
@@ -19,7 +25,10 @@ void Scene::PreConstruct(const char *aSceneName) {
     mSceneName = aSceneName;
 
     mPhysicsSystem = new PhysicsSystem();
+    mSceneInteractionPhysicsSystem = new PhysicsSystem();
+
     mPhysicsSystem->Create();
+    mSceneInteractionPhysicsSystem->Create();
 }
 
 void Scene::Construct() {
@@ -181,9 +190,57 @@ void Scene::Cleanup() {
     mPhysicsSystem->Destroy();
     delete mPhysicsSystem;
     mPhysicsSystem = nullptr;
+
+    mSceneInteractionPhysicsSystem->Destroy();
+    delete mSceneInteractionPhysicsSystem;
+    mSceneInteractionPhysicsSystem = nullptr;
 }
 
 void Scene::AddGraphicsPipeline(GraphicsPipeline *aGraphicsPipeline) {
     mGraphicsPipelines.push_back(aGraphicsPipeline);
     aGraphicsPipeline->Create();
+}
+
+MeshObject *Scene::MakeObject(const char *aName, const char *aMeshPath, Material &aMaterial,
+                                     GraphicsPipeline &aPipeline, const glm::vec3 aPos, const glm::vec3 aRot,
+                                     const glm::vec3 aScale) {
+    auto *object = new MeshObject();
+
+    object->CreateObject(aMaterial, aName);
+    object->mMeshRenderer.BindRenderer(aPipeline);
+    object->mMeshRenderer.LoadMesh((FileManagement::GetWorkingDirectory() + aMeshPath).c_str());
+
+    object->mTransform.SetLocalPosition(aPos);
+    object->mTransform.SetLocalRotation(aRot);
+    object->mTransform.SetLocalScale(aScale);
+
+    auto* sceneCollider = new ColliderComponent();
+    ColliderCreateInfo colliderInfo;
+    colliderInfo.collisionShape = CollisionHelper::MakeCollisionMesh(object->mMeshRenderer.mMesh->GetVertices(), object->mMeshRenderer.mMesh->GetIndices());
+    sceneCollider->Create(mSceneInteractionPhysicsSystem, colliderInfo);
+    object->AddComponent(sceneCollider);
+    mObjects.push_back(object);
+
+    return object;
+}
+
+void Scene::AttachSphereCollider(Entity &aEntity, const float aRadius, const float aMass,
+                                        float aFriction) const {
+    auto *sphereCollider = new ColliderComponent();
+    ColliderCreateInfo sphereColliderInfo{};
+    sphereColliderInfo.collisionShape = new btSphereShape(aRadius);
+    sphereColliderInfo.mass = aMass;
+    sphereColliderInfo.friction = aFriction;
+    sphereCollider->Create(mPhysicsSystem, sphereColliderInfo);
+    aEntity.AddComponent(sphereCollider);
+}
+
+void Scene::AttachBoxCollider(Entity &aEntity, glm::vec3 aHalfExtents, float aMass, float aFriction) const {
+    auto *boxCollider = new ColliderComponent();
+    ColliderCreateInfo boxColliderInfo{};
+    boxColliderInfo.collisionShape = new btBoxShape(btVector3(aHalfExtents.x, aHalfExtents.y, aHalfExtents.z));
+    boxColliderInfo.mass = aMass;
+    boxColliderInfo.friction = aFriction;
+    boxCollider->Create(mPhysicsSystem, boxColliderInfo);
+    aEntity.AddComponent(boxCollider);
 }

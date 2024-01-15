@@ -1,5 +1,4 @@
 #pragma once
-#include "BulletCollision/CollisionDispatch/btCollisionObject.h"
 #include "LinearMath/btAlignedObjectArray.h"
 
 
@@ -13,11 +12,9 @@ class btCollisionShape;
 
 class PhysicsSystem {
 public:
+
     void Create();
     void AwakeRigidBodies();
-    void AddCollisionShape(btCollisionShape *const aCollisionShape);
-
-    void RemoveCollisionShape(btCollisionShape *aCollisionShape);
 
     void Tick(float aDeltaTime) const;
 
@@ -31,7 +28,6 @@ public:
     btConstraintSolver *mSolver;
     btDefaultCollisionConfiguration *mCollisionConfiguration;
     btDiscreteDynamicsWorld *mDynamicsWorld;
-
 
     float_t mGravity = -9.81f;
 };
