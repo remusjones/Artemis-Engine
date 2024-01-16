@@ -7,6 +7,7 @@
 
 #include "Base/Common/Buffers/AllocatedBuffer.h"
 #include "Base/Common/Data/GPUSceneData.h"
+#include "Components/Collision/Ray.h"
 #include "Objects/FlyCamera.h"
 #include "Objects/ImGuiLayer.h"
 
@@ -55,7 +56,7 @@ public:
     const btRigidBody *PickRigidBody(int x, int y);
 
     btRigidBody* PickBody(const btVector3& rayFromWorld, const btVector3& rayToWorld);
-    glm::vec3 GetRayTo(int x, int y) const;
+    Ray GetRayTo(int x, int y) const;
 
 
 

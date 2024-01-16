@@ -24,6 +24,7 @@
 #include "Vulkan/Common/MeshObject.h"
 #include "Vulkan/Systems/GraphicsPipeline.h"
 #include "Components/Component.h"
+#include "Components/Collision/Ray.h"
 #include "glm/gtx/string_cast.hpp"
 
 glm::vec3 DebugPoint;
@@ -288,14 +289,10 @@ void Scene::AttachBoxCollider(Entity &aEntity, glm::vec3 aHalfExtents, float aMa
 }
 
 const btRigidBody *Scene::PickRigidBody(int x, int y) {
-    glm::vec3 direction = GetRayTo(x, y) * 10000.f;
-    //glm::vec3 direction = mActiveSceneCamera->mTransform.Forward() * 1000.0f;
-    glm::vec3 position = mActiveSceneCamera->mTransform.GetLocalPosition();
+    Ray ray = GetRayTo(x, y);
+    btVector3 rayFrom(CollisionHelper::GlmToBullet(ray.origin));
+    btVector3 rayTo(CollisionHelper::GlmToBullet(ray.direction * 10000.f));
 
-    DebugPoint = position + direction;
-    Logger::Log(spdlog::level::info, glm::to_string(position).c_str());
-    btVector3 rayFrom(CollisionHelper::GlmToBullet(position));
-    btVector3 rayTo(CollisionHelper::GlmToBullet(position + direction));
 
     btCollisionWorld::ClosestRayResultCallback RayCallback(rayFrom, rayTo);
 
@@ -303,6 +300,7 @@ const btRigidBody *Scene::PickRigidBody(int x, int y) {
     if (RayCallback.hasHit()) {
         const btRigidBody *pickedBody = btRigidBody::upcast(RayCallback.m_collisionObject);
         if (pickedBody) {
+            DebugPoint = CollisionHelper::BulletToGlm(RayCallback.m_hitPointWorld);
             return pickedBody;
         }
     }
@@ -310,7 +308,7 @@ const btRigidBody *Scene::PickRigidBody(int x, int y) {
     return nullptr;
 }
 
-glm::vec3 Scene::GetRayTo(const int x, const int y) const {
+Ray Scene::GetRayTo(const int x, const int y) const {
     const float width = gGraphics->mSwapChain->mSwapChainExtent.width;
     const float height = gGraphics->mSwapChain->mSwapChainExtent.height;
 
@@ -320,7 +318,10 @@ glm::vec3 Scene::GetRayTo(const int x, const int y) const {
     glm::mat4 invVP = glm::inverse(mActiveSceneCamera->GetViewProjectionMatrix());
     glm::vec4 screenPos = glm::vec4(normalizedPointX, -normalizedPointY, 1.0f, 1.0f);
     glm::vec4 worldPos = invVP * screenPos;
-    glm::vec3 dir = glm::normalize(glm::vec3(worldPos));
 
-    return dir;
+    Ray ray;
+    ray.origin = mActiveSceneCamera->mTransform.GetWorldPosition();
+    ray.direction = glm::normalize(glm::vec3(worldPos));
+
+    return ray;
 }
