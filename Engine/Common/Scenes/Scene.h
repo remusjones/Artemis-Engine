@@ -53,11 +53,10 @@ public:
     void AttachSphereCollider(Entity &aEntity, const float aRadius, const float aMass, float aFriction = 0.5f) const;
     void AttachBoxCollider(Entity &aEntity, glm::vec3 aHalfExtents, float aMass, float aFriction = 0.5f) const;
 
-    const btRigidBody *PickRigidBody(int x, int y);
+    const btRigidBody *PickRigidBody(int x, int y) const;
 
     btRigidBody* PickBody(const btVector3& rayFromWorld, const btVector3& rayToWorld);
     Ray GetRayTo(int x, int y) const;
-
 
 
 
@@ -72,5 +71,7 @@ public:
 
 
     PhysicsSystem *mSceneInteractionPhysicsSystem;
+
+    Entity* mPickedEntity;
     int mMouseX, mMouseY;
 };

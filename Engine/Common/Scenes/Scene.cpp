@@ -27,7 +27,6 @@
 #include "Components/Collision/Ray.h"
 #include "glm/gtx/string_cast.hpp"
 
-glm::vec3 DebugPoint;
 
 void Scene::PreConstruct(const char *aSceneName) {
     mSceneName = aSceneName;
@@ -48,14 +47,23 @@ void Scene::MouseMovement(const SDL_MouseMotionEvent &aMouseMotion) {
 }
 
 void Scene::MouseInput(const SDL_MouseButtonEvent &aMouseInput) {
-    if (aMouseInput.button == SDL_BUTTON_LEFT) {
-        auto t = PickRigidBody(mMouseX, mMouseY);
-        for (auto object: mObjects) {
+    if (aMouseInput.button == SDL_BUTTON_LEFT
+        && aMouseInput.state == SDL_PRESSED
+        && !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow)
+        && !ImGuizmo::IsOver()) {
+        const auto pickedRigidBody = PickRigidBody(mMouseX, mMouseY);
+        bool foundObject = false;
+        for (const auto object: mObjects) {
             if (ColliderComponent comp; object->GetComponent<ColliderComponent>(comp)
-                                        && t == comp.GetRigidBody()) {
-                Logger::Log(spdlog::level::info, object->mName);
+                                        && pickedRigidBody == comp.GetRigidBody()) {
+                mPickedEntity = object;
+                foundObject = true;
+                break;
             }
         }
+
+        if (!foundObject)
+            mPickedEntity = nullptr;
     }
 }
 
@@ -82,18 +90,6 @@ static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
 void Scene::OnImGuiRender() {
     ImGui::Begin(mSceneName);
 
-    ImGuizmo::Enable(false);
-    glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), DebugPoint);
-
-    const ImGuiIO &io = ImGui::GetIO();
-    ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
-    ImGuizmo::AllowAxisFlip(false);
-    if (ImGuizmo::Manipulate(glm::value_ptr(mActiveSceneCamera->GetViewMatrix()),
-                             glm::value_ptr(mActiveSceneCamera->GetPerspectiveMatrix()),
-                             ImGuizmo::TRANSLATE, ImGuizmo::LOCAL,
-                             glm::value_ptr(translationMatrix),NULL)) {
-    }
-    ImGuizmo::Enable(true);
     // Draw Gizmo Controls TODO: Add KB Control shortcuts
     ImGui::SeparatorText("Controls");
     ImGui::BeginChild(GetUniqueLabel("Controls"),
@@ -132,7 +128,20 @@ void Scene::OnImGuiRender() {
         }
         ImGui::Unindent();
     }
+    if (mPickedEntity != nullptr) {
+        // Draw Gizmos
+        glm::mat4 matrix = mPickedEntity->mTransform.GetWorldMatrix();
+        const ImGuiIO &io = ImGui::GetIO();
 
+        ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+        ImGuizmo::AllowAxisFlip(false);
+        if (ImGuizmo::Manipulate(glm::value_ptr(mActiveSceneCamera->GetViewMatrix()),
+                                 glm::value_ptr(mActiveSceneCamera->GetPerspectiveMatrix()),
+                                 mCurrentGizmoOperation, mCurrentGizmoMode,
+                                 glm::value_ptr(matrix),NULL)) {
+            mPickedEntity->mTransform.SetMatrix(matrix);
+        }
+    }
 
     // Draw Objects in scene
     if (ImGui::CollapsingHeader("Objects")) {
@@ -142,18 +151,7 @@ void Scene::OnImGuiRender() {
                 if (ImGui::CollapsingHeader(obj->GetUniqueLabel(obj->mName))) {
                     ImGui::Indent();
 
-                    // Draw Gizmos
-                    glm::mat4 matrix = obj->mTransform.GetWorldMatrix();
-                    const ImGuiIO &io = ImGui::GetIO();
 
-                    ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
-
-                    if (ImGuizmo::Manipulate(glm::value_ptr(mActiveSceneCamera->GetViewMatrix()),
-                                             glm::value_ptr(mActiveSceneCamera->GetPerspectiveMatrix()),
-                                             mCurrentGizmoOperation, mCurrentGizmoMode,
-                                             glm::value_ptr(matrix),NULL)) {
-                        obj->mTransform.SetMatrix(matrix);
-                    }
                     // Draw Object UI
                     obj->OnImGuiRender();
 
@@ -288,7 +286,7 @@ void Scene::AttachBoxCollider(Entity &aEntity, glm::vec3 aHalfExtents, float aMa
     aEntity.AddComponent(boxCollider);
 }
 
-const btRigidBody *Scene::PickRigidBody(int x, int y) {
+const btRigidBody *Scene::PickRigidBody(int x, int y) const {
     Ray ray = GetRayTo(x, y);
     btVector3 rayFrom(CollisionHelper::GlmToBullet(ray.origin));
     btVector3 rayTo(CollisionHelper::GlmToBullet(ray.direction * 10000.f));
@@ -300,7 +298,6 @@ const btRigidBody *Scene::PickRigidBody(int x, int y) {
     if (RayCallback.hasHit()) {
         const btRigidBody *pickedBody = btRigidBody::upcast(RayCallback.m_collisionObject);
         if (pickedBody) {
-            DebugPoint = CollisionHelper::BulletToGlm(RayCallback.m_hitPointWorld);
             return pickedBody;
         }
     }
