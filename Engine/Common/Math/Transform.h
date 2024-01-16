@@ -53,7 +53,7 @@ public:
 
     void RotateAxisLocal(const glm::vec2 &aEulerAxisRotation);
 
-    void RotateAxisLocal(glm::vec3 aEulerRotation);
+    void RotateAxisLocal(glm::vec3& aEulerRotation);
 
     void RotateAxisWorld(float aAngle, glm::vec3 aRotation);
 

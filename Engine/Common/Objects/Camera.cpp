@@ -22,7 +22,7 @@ glm::mat4 Camera::GetPerspectiveMatrix() const {
 }
 
 glm::mat4 Camera::GetViewMatrix() const {
-    return mTransform.GetRotationMatrix() * mTransform.GetTranslationMatrix();
+    return glm::inverse(mTransform.GetTranslationMatrix() * mTransform.GetRotationMatrix());
 }
 
 GPUCameraData Camera::GetCameraInformation() const {

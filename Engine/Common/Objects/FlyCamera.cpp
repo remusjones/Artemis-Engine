@@ -95,13 +95,9 @@ void FlyCamera::MouseMovement(const SDL_MouseMotionEvent &aMouseMotion) {
     float yDelta = aMouseMotion.yrel;
 
     float sensitivity = 0.1f;
-    // Yaw rotation around the y-axis
-    glm::quat up = glm::angleAxis(glm::radians(yDelta * sensitivity), glm::vec3(1, 0, 0));
-    glm::quat right = glm::angleAxis(glm::radians(xDelta * sensitivity), glm::vec3(0, 1, 0));
-
-    glm::quat combined = mTransform.GetLocalRotation() * right;
-    combined = up * combined;
-    mTransform.SetLocalRotation(combined);
+    glm::vec2 delta = -glm::vec2(xDelta, yDelta) * sensitivity;
+    delta = glm::vec2(delta.y, delta.x);
+    mTransform.RotateAxisLocal(delta);
 }
 
 void FlyCamera::MouseInput(const SDL_MouseButtonEvent &aMouseInput) {
@@ -117,12 +113,12 @@ void FlyCamera::Tick(float aDeltaTime) {
     //float x, y;
     //LOG(INFO) << x << " " << y;
 
-    mMoveVector.z += mInput[0] ? mSpeed : 0;
-    mMoveVector.z += mInput[1] ? -mSpeed : 0;
-    mMoveVector.x += mInput[2] ? mSpeed : 0;
-    mMoveVector.x += mInput[3] ? -mSpeed : 0;
-    mMoveVector.y += mInput[4] ? -mSpeed : 0;
-    mMoveVector.y += mInput[5] ? mSpeed : 0;
+    mMoveVector.z += mInput[0] ? -mSpeed : 0;
+    mMoveVector.z += mInput[1] ? mSpeed : 0;
+    mMoveVector.x += mInput[2] ? -mSpeed : 0;
+    mMoveVector.x += mInput[3] ? mSpeed : 0;
+    mMoveVector.y += mInput[4] ? mSpeed : 0;
+    mMoveVector.y += mInput[5] ? -mSpeed : 0;
 
     Entity::Tick(aDeltaTime);
     mTransform.TranslateLocal(mMoveVector * aDeltaTime);
