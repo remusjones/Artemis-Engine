@@ -4,6 +4,7 @@
 
 #include "CollisionHelper.h"
 
+#include "BulletCollision/CollisionShapes/btBoxShape.h"
 #include "BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h"
 #include "BulletCollision/CollisionShapes/btTriangleMesh.h"
 
@@ -43,4 +44,29 @@ btBvhTriangleMeshShape * CollisionHelper::MakeCollisionMesh(const std::vector<Ve
 
     // Use the btBvhTriangleMeshShape for static triangle mesh
     return new btBvhTriangleMeshShape(triangle_mesh, true);
+}
+
+btBoxShape* CollisionHelper::MakeAABBCollision(const std::vector<Vertex>& aVertices)
+{
+    // Find min and max vertices along each axis
+    btVector3 minVertex(aVertices[0].mPosition.x, aVertices[0].mPosition.y, aVertices[0].mPosition.z);
+    btVector3 maxVertex(aVertices[0].mPosition.x, aVertices[0].mPosition.y, aVertices[0].mPosition.z);
+
+    for (const Vertex& vertex : aVertices)
+    {
+        minVertex.setX(std::min(minVertex.x(), vertex.mPosition.x));
+        minVertex.setY(std::min(minVertex.y(), vertex.mPosition.y));
+        minVertex.setZ(std::min(minVertex.z(), vertex.mPosition.z));
+
+        maxVertex.setX(std::max(maxVertex.x(), vertex.mPosition.x));
+        maxVertex.setY(std::max(maxVertex.y(), vertex.mPosition.y));
+        maxVertex.setZ(std::max(maxVertex.z(), vertex.mPosition.z));
+    }
+
+    // Calculate extents and half extents for the box shape
+    btVector3 extents = maxVertex - minVertex;
+    btVector3 halfExtents = extents * 0.5f;
+
+    // Create and return AABB (Axis-Aligned Bounding Box)
+    return new btBoxShape(halfExtents);
 }

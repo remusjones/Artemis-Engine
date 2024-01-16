@@ -24,7 +24,9 @@
 #include "Vulkan/Common/MeshObject.h"
 #include "Vulkan/Systems/GraphicsPipeline.h"
 #include "Components/Component.h"
+#include "glm/gtx/string_cast.hpp"
 
+glm::vec3 DebugPoint;
 
 void Scene::PreConstruct(const char *aSceneName) {
     mSceneName = aSceneName;
@@ -48,8 +50,8 @@ void Scene::MouseInput(const SDL_MouseButtonEvent &aMouseInput) {
     if (aMouseInput.button == SDL_BUTTON_LEFT) {
         auto t = PickRigidBody(mMouseX, mMouseY);
         for (auto object: mObjects) {
-            if (ColliderComponent comp; object->GetComponent<ColliderComponent>("SceneCollider", comp)
-                && t == comp.GetRigidBody()) {
+            if (ColliderComponent comp; object->GetComponent<ColliderComponent>(comp)
+                                        && t == comp.GetRigidBody()) {
                 Logger::Log(spdlog::level::info, object->mName);
             }
         }
@@ -79,7 +81,19 @@ static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
 void Scene::OnImGuiRender() {
     ImGui::Begin(mSceneName);
 
-    // Draw Gizmo Controls TODO: Add KB Control shortcuts 
+    ImGuizmo::Enable(false);
+    glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), DebugPoint);
+
+    const ImGuiIO &io = ImGui::GetIO();
+    ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+    ImGuizmo::AllowAxisFlip(false);
+    if (ImGuizmo::Manipulate(glm::value_ptr(mActiveSceneCamera->GetViewMatrix()),
+                             glm::value_ptr(mActiveSceneCamera->GetPerspectiveMatrix()),
+                             ImGuizmo::TRANSLATE, ImGuizmo::LOCAL,
+                             glm::value_ptr(translationMatrix),NULL)) {
+    }
+    ImGuizmo::Enable(true);
+    // Draw Gizmo Controls TODO: Add KB Control shortcuts
     ImGui::SeparatorText("Controls");
     ImGui::BeginChild(GetUniqueLabel("Controls"),
                       ImVec2(0.0f, 0.0f),
@@ -117,6 +131,7 @@ void Scene::OnImGuiRender() {
         }
         ImGui::Unindent();
     }
+
 
     // Draw Objects in scene
     if (ImGui::CollapsingHeader("Objects")) {
@@ -192,7 +207,6 @@ void Scene::OnImGuiRender() {
     ImGui::End();
 }
 
-
 void Scene::Tick(const float aDeltaTime) {
     mPhysicsSystem->Tick(aDeltaTime);
     for (const auto obj: mObjects) {
@@ -239,13 +253,14 @@ MeshObject *Scene::MakeObject(const char *aName, const char *aMeshPath, Material
     object->mTransform.SetLocalRotation(aRot);
     object->mTransform.SetLocalScale(aScale);
 
-    auto *sceneCollider = new ColliderComponent();
-    sceneCollider->SetName("SceneCollider");
-    ColliderCreateInfo colliderInfo;
-    colliderInfo.collisionShape = CollisionHelper::MakeCollisionMesh(object->mMeshRenderer.mMesh->GetVertices(),
-                                                                     object->mMeshRenderer.mMesh->GetIndices());
-    sceneCollider->Create(mSceneInteractionPhysicsSystem, colliderInfo);
-    object->AddComponent(sceneCollider);
+    //  auto *sceneCollider = new ColliderComponent();
+    //  sceneCollider->SetName("SceneCollider");
+    //  ColliderCreateInfo colliderInfo;
+    //  //colliderInfo.collisionShape = CollisionHelper::MakeCollisionMesh(object->mMeshRenderer.mMesh->GetVertices(),
+    //  //                                                                 object->mMeshRenderer.mMesh->GetIndices());
+    //  colliderInfo.collisionShape = CollisionHelper::MakeAABBCollision(object->mMeshRenderer.mMesh->GetVertices());
+    //  sceneCollider->Create(mSceneInteractionPhysicsSystem, colliderInfo);
+    //  object->AddComponent(sceneCollider);
     mObjects.push_back(object);
 
     return object;
@@ -272,21 +287,22 @@ void Scene::AttachBoxCollider(Entity &aEntity, glm::vec3 aHalfExtents, float aMa
     aEntity.AddComponent(boxCollider);
 }
 
-const btRigidBody *Scene::PickRigidBody(int x, int y)
-{
-    glm::vec3 rayToWorld = GetRayTo(x, y);
+const btRigidBody *Scene::PickRigidBody(int x, int y) {
+    glm::vec3 direction = GetRayTo(x, y) * 10000.f;
+    //glm::vec3 direction = mActiveSceneCamera->mTransform.Forward() * 1000.0f;
+    glm::vec3 position = mActiveSceneCamera->mTransform.GetLocalPosition();
 
-    btVector3 rayFrom(CollisionHelper::GlmToBullet(mActiveSceneCamera->mTransform.GetWorldPosition()));
-    btVector3 rayTo(rayToWorld.x, rayToWorld.y, rayToWorld.z);
+    DebugPoint = position + direction;
+    Logger::Log(spdlog::level::info, glm::to_string(position).c_str());
+    btVector3 rayFrom(CollisionHelper::GlmToBullet(position));
+    btVector3 rayTo(CollisionHelper::GlmToBullet(position + direction));
 
     btCollisionWorld::ClosestRayResultCallback RayCallback(rayFrom, rayTo);
 
-    mSceneInteractionPhysicsSystem->mDynamicsWorld->rayTest(rayFrom, rayTo, RayCallback);
-    if (RayCallback.hasHit())
-    {
+    mPhysicsSystem->mDynamicsWorld->rayTest(rayFrom, rayTo, RayCallback);
+    if (RayCallback.hasHit()) {
         const btRigidBody *pickedBody = btRigidBody::upcast(RayCallback.m_collisionObject);
-        if (pickedBody)
-        {
+        if (pickedBody) {
             return pickedBody;
         }
     }
@@ -294,18 +310,17 @@ const btRigidBody *Scene::PickRigidBody(int x, int y)
     return nullptr;
 }
 
-glm::vec3 Scene::GetRayTo(const int x, const int y) const
-{
-    const float zDepth = 10000.f;
-    float normalizedPointX = (2.0f * x) / gGraphics->mSwapChain->mSwapChainExtent.width - 1.0f;
-    float normalizedPointY = 1.0f - (2.0f * y) / gGraphics->mSwapChain->mSwapChainExtent.height;
+glm::vec3 Scene::GetRayTo(const int x, const int y) const {
+    const float width = gGraphics->mSwapChain->mSwapChainExtent.width;
+    const float height = gGraphics->mSwapChain->mSwapChainExtent.height;
 
-    glm::vec4 rayClip = glm::vec4(normalizedPointX, normalizedPointY, -1.0, 1.0);
-    glm::vec4 rayEye = glm::inverse(mActiveSceneCamera->GetPerspectiveMatrix()) * rayClip;
-    rayEye = glm::vec4(rayEye.x, rayEye.y, -1.0, 0.0);
+    const float normalizedPointX = x / (width * 0.5f) - 1.0f;
+    const float normalizedPointY = y / (height * 0.5f) - 1.0f;
 
-    glm::vec3 rayWorld = glm::vec3(inverse(mActiveSceneCamera->GetViewMatrix()) * rayEye);
-    rayWorld = glm::normalize(rayWorld);
+    glm::mat4 invVP = glm::inverse(mActiveSceneCamera->GetViewProjectionMatrix());
+    glm::vec4 screenPos = glm::vec4(normalizedPointX, -normalizedPointY, 1.0f, 1.0f);
+    glm::vec4 worldPos = invVP * screenPos;
+    glm::vec3 dir = glm::normalize(glm::vec3(worldPos));
 
-    return mActiveSceneCamera->mTransform.GetWorldPosition() + rayWorld * zDepth;
+    return dir;
 }

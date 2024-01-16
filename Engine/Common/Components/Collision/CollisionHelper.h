@@ -8,6 +8,7 @@
 #include "Math/Transform.h"
 
 
+class btBoxShape;
 class btBvhTriangleMeshShape;
 
 class CollisionHelper {
@@ -19,4 +20,5 @@ public:
     static glm::quat BulletToGlm(const btQuaternion& aOther);
     static btBvhTriangleMeshShape* MakeCollisionMesh(const std::vector<Vertex>& aVertices, const std::vector<int32_t>&
     aIndices);
+    static btBoxShape* MakeAABBCollision(const std::vector<Vertex>& aVertices);
 };

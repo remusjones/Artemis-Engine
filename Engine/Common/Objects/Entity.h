@@ -26,7 +26,7 @@ public:
     bool GetComponent(T &aResult) {
         for (auto &component: mComponentMap) {
             if (dynamic_cast<T *>(component.second)) {
-                aResult = static_cast<T *>(component.second);
+                aResult = *static_cast<T *>(component.second);
                 return true;
             }
         }
