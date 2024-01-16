@@ -15,32 +15,36 @@ void InputManager::ConsumeInput(const SDL_Event *aInputEvent) {
 }
 
 void InputManager::ProcessInput(const SDL_Event *aInputEvent) {
-    switch (aInputEvent->type) {
-        case SDL_EVENT_KEY_DOWN:
-            for (const auto &binding: mKeyboardBindings[aInputEvent->key.keysym.sym]) {
-                const KeyboardEvent kbEvent(aInputEvent->key.state, SDL_GetModState());
-                binding.mCallback(kbEvent);
-            }
-        case SDL_EVENT_KEY_UP:
-            for (const auto &binding: mKeyboardBindings[aInputEvent->key.keysym.sym]) {
-                const KeyboardEvent kbEvent(aInputEvent->key.state, SDL_GetModState());
-                binding.mCallback(kbEvent);
-            }
-        case SDL_EVENT_MOUSE_MOTION:
-            for (const auto &binding: mMouseMotionBindings) {
-                binding.mCallback(aInputEvent->motion);
-            }
-        case SDL_EVENT_MOUSE_BUTTON_UP:
-            for (const auto &binding: mMouseInputBindings) {
-                binding.mCallback(aInputEvent->button);
-            }
+    if (aInputEvent->key.repeat == 0) {
+        switch (aInputEvent->type) {
+            case SDL_EVENT_KEY_DOWN:
+                for (const auto &binding: mKeyboardBindings[aInputEvent->key.keysym.sym]) {
+                    const KeyboardEvent kbEvent(aInputEvent->key.state, SDL_GetModState());
+                    binding.mCallback(kbEvent);
+                }
+            case SDL_EVENT_KEY_UP:
+                for (const auto &binding: mKeyboardBindings[aInputEvent->key.keysym.sym]) {
+                    const KeyboardEvent kbEvent(aInputEvent->key.state, SDL_GetModState());
+                    binding.mCallback(kbEvent);
+                }
+            case SDL_EVENT_MOUSE_MOTION:
+                for (const auto &binding: mMouseMotionBindings) {
+                    binding.mCallback(aInputEvent->motion);
+                }
+
+            // Mouse events getting sent regardless of input changed state
+            case SDL_EVENT_MOUSE_BUTTON_UP:
+                for (const auto &binding: mMouseInputBindings) {
+                    binding.mCallback(aInputEvent->button);
+                }
             break;
-        case SDL_EVENT_MOUSE_BUTTON_DOWN:
-            for (const auto &binding: mMouseInputBindings) {
-                binding.mCallback(aInputEvent->button);
-            }
+            case SDL_EVENT_MOUSE_BUTTON_DOWN:
+                for (const auto &binding: mMouseInputBindings) {
+                    binding.mCallback(aInputEvent->button);
+                }
             break;
-        default: break;
+            default: break;
+        }
     }
 }
 

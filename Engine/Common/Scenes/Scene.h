@@ -10,6 +10,8 @@
 #include "Objects/FlyCamera.h"
 #include "Objects/ImGuiLayer.h"
 
+class btRigidBody;
+class btVector3;
 class Material;
 class PhysicsSystem;
 class GraphicsPipeline;
@@ -21,6 +23,11 @@ public:
     virtual ~Scene() = default;
 
     virtual void PreConstruct(const char *aSceneName);
+
+    void MouseMovement(const SDL_MouseMotionEvent &aMouseMotion);
+
+    void MouseInput(const SDL_MouseButtonEvent &aMouseInput);
+
     virtual void Construct();
 
     virtual void Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
@@ -45,6 +52,10 @@ public:
     void AttachSphereCollider(Entity &aEntity, const float aRadius, const float aMass, float aFriction = 0.5f) const;
     void AttachBoxCollider(Entity &aEntity, glm::vec3 aHalfExtents, float aMass, float aFriction = 0.5f) const;
 
+    const btRigidBody *PickRigidBody(int x, int y);
+
+    btRigidBody* PickBody(const btVector3& rayFromWorld, const btVector3& rayToWorld);
+    glm::vec3 GetRayTo(int x, int y) const;
 
 
 
@@ -57,5 +68,8 @@ public:
     const char *mSceneName; //
     std::vector<Entity *> mObjects;
     PhysicsSystem *mPhysicsSystem;
+
+
     PhysicsSystem *mSceneInteractionPhysicsSystem;
+    int mMouseX, mMouseY;
 };

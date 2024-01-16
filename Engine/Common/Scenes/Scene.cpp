@@ -10,15 +10,20 @@
 #include "Logger.h"
 
 #include "VulkanGraphicsImpl.h"
+#include "BulletCollision/CollisionDispatch/btCollisionWorld.h"
 #include "BulletCollision/CollisionShapes/btBoxShape.h"
 #include "BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h"
 #include "BulletCollision/CollisionShapes/btSphereShape.h"
+#include "BulletCollision/NarrowPhaseCollision/btRaycastCallback.h"
+#include "BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h"
+#include "BulletDynamics/Dynamics/btRigidBody.h"
 #include "Components/Collision/ColliderComponent.h"
 #include "Components/Collision/CollisionHelper.h"
 #include "File Management/FileManagement.h"
 #include "Physics/PhysicsSystem.h"
 #include "Vulkan/Common/MeshObject.h"
 #include "Vulkan/Systems/GraphicsPipeline.h"
+#include "Components/Component.h"
 
 
 void Scene::PreConstruct(const char *aSceneName) {
@@ -29,6 +34,26 @@ void Scene::PreConstruct(const char *aSceneName) {
 
     mPhysicsSystem->Create();
     mSceneInteractionPhysicsSystem->Create();
+    gInputManager->RegisterMouseInput([&](SDL_MouseMotionEvent motion) { MouseMovement(motion); },
+                                      "Scene Mouse Movement");
+    gInputManager->RegisterMouseInput([&](SDL_MouseButtonEvent input) { MouseInput(input); }, "Scene Mouse Press");
+}
+
+void Scene::MouseMovement(const SDL_MouseMotionEvent &aMouseMotion) {
+    mMouseX = aMouseMotion.x;
+    mMouseY = aMouseMotion.y;
+}
+
+void Scene::MouseInput(const SDL_MouseButtonEvent &aMouseInput) {
+    if (aMouseInput.button == SDL_BUTTON_LEFT) {
+        auto t = PickRigidBody(mMouseX, mMouseY);
+        for (auto object: mObjects) {
+            if (ColliderComponent comp; object->GetComponent<ColliderComponent>("SceneCollider", comp)
+                && t == comp.GetRigidBody()) {
+                Logger::Log(spdlog::level::info, object->mName);
+            }
+        }
+    }
 }
 
 void Scene::Construct() {
@@ -202,8 +227,8 @@ void Scene::AddGraphicsPipeline(GraphicsPipeline *aGraphicsPipeline) {
 }
 
 MeshObject *Scene::MakeObject(const char *aName, const char *aMeshPath, Material &aMaterial,
-                                     GraphicsPipeline &aPipeline, const glm::vec3 aPos, const glm::vec3 aRot,
-                                     const glm::vec3 aScale) {
+                              GraphicsPipeline &aPipeline, const glm::vec3 aPos, const glm::vec3 aRot,
+                              const glm::vec3 aScale) {
     auto *object = new MeshObject();
 
     object->CreateObject(aMaterial, aName);
@@ -214,9 +239,11 @@ MeshObject *Scene::MakeObject(const char *aName, const char *aMeshPath, Material
     object->mTransform.SetLocalRotation(aRot);
     object->mTransform.SetLocalScale(aScale);
 
-    auto* sceneCollider = new ColliderComponent();
+    auto *sceneCollider = new ColliderComponent();
+    sceneCollider->SetName("SceneCollider");
     ColliderCreateInfo colliderInfo;
-    colliderInfo.collisionShape = CollisionHelper::MakeCollisionMesh(object->mMeshRenderer.mMesh->GetVertices(), object->mMeshRenderer.mMesh->GetIndices());
+    colliderInfo.collisionShape = CollisionHelper::MakeCollisionMesh(object->mMeshRenderer.mMesh->GetVertices(),
+                                                                     object->mMeshRenderer.mMesh->GetIndices());
     sceneCollider->Create(mSceneInteractionPhysicsSystem, colliderInfo);
     object->AddComponent(sceneCollider);
     mObjects.push_back(object);
@@ -225,7 +252,7 @@ MeshObject *Scene::MakeObject(const char *aName, const char *aMeshPath, Material
 }
 
 void Scene::AttachSphereCollider(Entity &aEntity, const float aRadius, const float aMass,
-                                        float aFriction) const {
+                                 float aFriction) const {
     auto *sphereCollider = new ColliderComponent();
     ColliderCreateInfo sphereColliderInfo{};
     sphereColliderInfo.collisionShape = new btSphereShape(aRadius);
@@ -243,4 +270,42 @@ void Scene::AttachBoxCollider(Entity &aEntity, glm::vec3 aHalfExtents, float aMa
     boxColliderInfo.friction = aFriction;
     boxCollider->Create(mPhysicsSystem, boxColliderInfo);
     aEntity.AddComponent(boxCollider);
+}
+
+const btRigidBody *Scene::PickRigidBody(int x, int y)
+{
+    glm::vec3 rayToWorld = GetRayTo(x, y);
+
+    btVector3 rayFrom(CollisionHelper::GlmToBullet(mActiveSceneCamera->mTransform.GetWorldPosition()));
+    btVector3 rayTo(rayToWorld.x, rayToWorld.y, rayToWorld.z);
+
+    btCollisionWorld::ClosestRayResultCallback RayCallback(rayFrom, rayTo);
+
+    mSceneInteractionPhysicsSystem->mDynamicsWorld->rayTest(rayFrom, rayTo, RayCallback);
+    if (RayCallback.hasHit())
+    {
+        const btRigidBody *pickedBody = btRigidBody::upcast(RayCallback.m_collisionObject);
+        if (pickedBody)
+        {
+            return pickedBody;
+        }
+    }
+
+    return nullptr;
+}
+
+glm::vec3 Scene::GetRayTo(const int x, const int y) const
+{
+    const float zDepth = 10000.f;
+    float normalizedPointX = (2.0f * x) / gGraphics->mSwapChain->mSwapChainExtent.width - 1.0f;
+    float normalizedPointY = 1.0f - (2.0f * y) / gGraphics->mSwapChain->mSwapChainExtent.height;
+
+    glm::vec4 rayClip = glm::vec4(normalizedPointX, normalizedPointY, -1.0, 1.0);
+    glm::vec4 rayEye = glm::inverse(mActiveSceneCamera->GetPerspectiveMatrix()) * rayClip;
+    rayEye = glm::vec4(rayEye.x, rayEye.y, -1.0, 0.0);
+
+    glm::vec3 rayWorld = glm::vec3(inverse(mActiveSceneCamera->GetViewMatrix()) * rayEye);
+    rayWorld = glm::normalize(rayWorld);
+
+    return mActiveSceneCamera->mTransform.GetWorldPosition() + rayWorld * zDepth;
 }

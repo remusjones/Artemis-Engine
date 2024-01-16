@@ -40,26 +40,6 @@ void Entity::RemoveComponent(Component *aComponent) {
     }
 }
 
-template<typename T>
-bool Entity::GetComponent(T& aResult) {
-    for (auto &component: mComponentMap) {
-        if (dynamic_cast<T *>(component.second)) {
-            aResult = static_cast<T *>(component.second);
-            return true;
-        }
-    }
-    return false;
-}
-
-template<class T>
-bool Entity::GetComponent(std::string name, T &aResult) {
-    if (mComponentMap.find(name) != mComponentMap.end()) {
-        aResult = mComponentMap[name];
-        return true;
-    }
-    return false;
-}
-
 void Entity::OnImGuiRender() {
     mTransform.OnImGuiRender();
 }

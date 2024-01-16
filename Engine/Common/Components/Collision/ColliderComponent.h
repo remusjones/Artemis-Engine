@@ -25,6 +25,8 @@ public:
     void Tick(float aDeltaTime) override;
     void Initialize() override;
 
+    btRigidBody* GetRigidBody() const {return mRigidBody;}
+
 protected:
     btCollisionShape* mCollisionShape;
     btRigidBody* mRigidBody;
