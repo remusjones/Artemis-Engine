@@ -99,7 +99,7 @@ void SandboxScene::Construct() {
                                                 glm::vec3(0),
                                                 glm::vec3(sphereRadius));
 
-                AttachSphereCollider(*sphere, sphereRadius, 0.25f, 10);
+                AttachSphereCollider(*sphere, sphereRadius, 0.25f, 0.5);
             }
         }
     }

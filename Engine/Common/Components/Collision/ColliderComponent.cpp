@@ -28,6 +28,7 @@ void ColliderComponent::Create(PhysicsSystem *aPhysicsSystem, ColliderCreateInfo
     mRigidBody->setUserIndex(-1);
     mRigidBody->setSleepingThresholds(aCreateInfo.linearSleepThreshold, aCreateInfo.angularSleepThreshold);
     mRigidBody->setFriction(aCreateInfo.friction);
+    mRigidBody->setRollingFriction(aCreateInfo.friction);
     aPhysicsSystem->mDynamicsWorld->addRigidBody(mRigidBody);
     aPhysicsSystem->mAllocatedRigidBodies.push_back(mRigidBody);
     mCollisionShape = aCreateInfo.collisionShape;
@@ -45,8 +46,11 @@ void ColliderComponent::Tick(const float aDeltaTime) {
 
         glm::mat4 rigidBodyMatrix;
         mRigidBody->getWorldTransform().getOpenGLMatrix(value_ptr(rigidBodyMatrix));
-        mAttachedEntity->mTransform.SetLocalPosition(CollisionHelper::BulletToGlm(mRigidBody->getWorldTransform().getOrigin()));
-        mAttachedEntity->mTransform.SetLocalRotation(CollisionHelper::BulletToGlm(mRigidBody->getWorldTransform().getRotation()));
+        
+        mAttachedEntity->mTransform.SetWorldPosition(CollisionHelper::BulletToGlm(
+            mRigidBody->getWorldTransform().getOrigin()));
+        mAttachedEntity->mTransform.SetWorldRotation(CollisionHelper::BulletToGlm(
+            mRigidBody->getWorldTransform().getRotation()));
     }
     mWorldMatrixLastFrame = mAttachedEntity->mTransform.GetWorldMatrix();
 }

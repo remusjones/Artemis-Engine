@@ -27,7 +27,7 @@ glm::vec3 CollisionHelper::BulletToGlm(const btVector3 &aOther) {
 }
 
 glm::quat CollisionHelper::BulletToGlm(const btQuaternion &aOther) {
-    return glm::quat(aOther.getW(),aOther.getX(), aOther.getY(), aOther.getZ());
+    return glm::quat(aOther.w(),aOther.x(), aOther.y(), aOther.z());
 }
 
 btBvhTriangleMeshShape * CollisionHelper::MakeCollisionMesh(const std::vector<Vertex>& aVertices,
