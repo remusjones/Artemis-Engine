@@ -128,10 +128,22 @@ void Scene::OnImGuiRender() {
         }
         ImGui::Unindent();
     }
+
+    const ImGuiIO &io = ImGui::GetIO();
+    ImGuizmo::Enable(false);
+
+    ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+    //ImGuizmo::AllowAxisFlip(false);
+    //if (ImGuizmo::Manipulate(glm::value_ptr(mActiveSceneCamera->GetViewMatrix()),
+    //                         glm::value_ptr(mActiveSceneCamera->GetPerspectiveMatrix()),
+    //                         mCurrentGizmoOperation, mCurrentGizmoMode,
+    //                         glm::value_ptr(debugMatrix),NULL)) {
+    //}
+//
+    //ImGuizmo::Enable(true);
     if (mPickedEntity != nullptr) {
         // Draw Gizmos
         glm::mat4 matrix = mPickedEntity->mTransform.GetWorldMatrix();
-        const ImGuiIO &io = ImGui::GetIO();
 
         ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
         ImGuizmo::AllowAxisFlip(false);
@@ -151,8 +163,6 @@ void Scene::OnImGuiRender() {
                 if (ImGui::CollapsingHeader(obj->GetUniqueLabel(obj->mName))) {
                     ImGui::Indent();
 
-
-                    // Draw Object UI
                     obj->OnImGuiRender();
 
                     ImGui::Unindent();
@@ -289,8 +299,7 @@ void Scene::AttachBoxCollider(Entity &aEntity, glm::vec3 aHalfExtents, float aMa
 const btRigidBody *Scene::PickRigidBody(int x, int y) const {
     Ray ray = GetRayTo(x, y);
     btVector3 rayFrom(CollisionHelper::GlmToBullet(ray.origin));
-    btVector3 rayTo(CollisionHelper::GlmToBullet(ray.direction * 10000.f));
-
+    btVector3 rayTo(CollisionHelper::GlmToBullet(ray.origin + ray.direction * mActiveSceneCamera->mZFar));
 
     btCollisionWorld::ClosestRayResultCallback RayCallback(rayFrom, rayTo);
 
@@ -316,9 +325,13 @@ Ray Scene::GetRayTo(const int x, const int y) const {
     glm::vec4 screenPos = glm::vec4(normalizedPointX, -normalizedPointY, 1.0f, 1.0f);
     glm::vec4 worldPos = invVP * screenPos;
 
+    // Convert from homogeneous coordinates to 3D
+    worldPos = worldPos / worldPos.w;
+
     Ray ray;
     ray.origin = mActiveSceneCamera->mTransform.GetWorldPosition();
-    ray.direction = glm::normalize(glm::vec3(worldPos));
+    // Substract the camera position from worldPos to get the proper direction
+    ray.direction = glm::normalize(glm::vec3(worldPos) - ray.origin);
 
     return ray;
 }
