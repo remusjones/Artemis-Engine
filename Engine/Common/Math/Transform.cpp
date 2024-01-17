@@ -188,6 +188,14 @@ void Transform::SetParent(Transform *aParent) {
     SetDirty();
 }
 
+Transform *Transform::GetParent() const {
+    return mParent;
+}
+
+std::vector<Transform *> Transform::GetChildren() const {
+    return mChildren;
+}
+
 void Transform::RemoveChild(Transform *aChild) {
     if (const auto it = std::find(mChildren.begin(), mChildren.end(), aChild); it != mChildren.end())
         mChildren.erase(it);

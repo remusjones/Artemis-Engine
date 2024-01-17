@@ -3,10 +3,9 @@
 //
 
 #include "Entity.h"
-
 #include <vector>
+#include "Components/Component.h"
 
-#include "../Components/Component.h"
 
 void Entity::Construct() {
     for (const auto &component: mComponentMap) {

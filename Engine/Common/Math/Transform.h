@@ -76,6 +76,9 @@ public:
 
     void SetParent(Transform *aParent);
 
+    Transform *GetParent() const;
+    std::vector<Transform*> GetChildren() const;
+
     glm::mat4 GetWorldMatrix();
 
     glm::mat4 GetRotationMatrix() const { return glm::mat4_cast(mRotation); }

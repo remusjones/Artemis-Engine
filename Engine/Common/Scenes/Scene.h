@@ -25,24 +25,23 @@ public:
 
     virtual void PreConstruct(const char *aSceneName);
 
-    void MouseMovement(const SDL_MouseMotionEvent &aMouseMotion);
-
-    void MouseInput(const SDL_MouseButtonEvent &aMouseInput);
 
     virtual void Construct();
 
     virtual void Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
                         uint32_t aCurrentFrame);
 
-    void OnImGuiRender() override;
 
     virtual void Tick(float aDeltaTime);
 
     virtual void Cleanup();
 
+    void OnImGuiRender() override;
+
     void AddGraphicsPipeline(GraphicsPipeline *aGraphicsPipeline);
-    MeshObject *MakeObject(const char* aName,
-                           const char* aMeshPath,
+
+    MeshObject *MakeObject(const char *aName,
+                           const char *aMeshPath,
                            Material &aMaterial,
                            GraphicsPipeline &aPipeline,
                            glm::vec3 aPos = glm::vec3(0),
@@ -50,28 +49,36 @@ public:
                            glm::vec3 aScale = glm::vec3(1)
     );
 
+    void AddEntity(Entity *aEntity);
+
     void AttachSphereCollider(Entity &aEntity, const float aRadius, const float aMass, float aFriction = 0.5f) const;
+
     void AttachBoxCollider(Entity &aEntity, glm::vec3 aHalfExtents, float aMass, float aFriction = 0.5f) const;
 
+    // TODO: probably bind these to flycam instead?
+    void MouseMovement(const SDL_MouseMotionEvent &aMouseMotion);
+    void MouseInput(const SDL_MouseButtonEvent &aMouseInput);
+
+private:
     const btRigidBody *PickRigidBody(int x, int y) const;
 
-    btRigidBody* PickBody(const btVector3& rayFromWorld, const btVector3& rayToWorld);
     Ray GetRayTo(int x, int y) const;
 
+    void DrawObjectsRecursive(Entity *obj);
 
+    bool IsParentOfPickedEntity(const Entity *obj);
 
-
+public:
     FlyCamera *mActiveSceneCamera;
-    // TODO: cleanup these in scene, instead of engine
     std::vector<GraphicsPipeline *> mGraphicsPipelines;
     GPUSceneData mSceneData;
     const char *mSceneName; //
-    std::vector<Entity *> mObjects;
     PhysicsSystem *mPhysicsSystem;
 
-
+private:
+    std::vector<Entity *> mObjects;
+    std::unordered_map<Transform *, Entity *> mTransformEntityRelationships;
     PhysicsSystem *mSceneInteractionPhysicsSystem;
-
-    Entity* mPickedEntity;
-    int mMouseX, mMouseY;
+    Entity *mPickedEntity{nullptr};
+    int mMouseX{0}, mMouseY{0};
 };

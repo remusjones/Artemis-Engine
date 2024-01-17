@@ -146,7 +146,7 @@ void SandboxScene::Construct() {
     // Setup Scene Dependencies
     // Register to scene TODO: Review if we auto-register these
     //
-    mObjects.push_back(mCubemapMesh);
+    AddEntity(mCubemapMesh);
 
     //
     // Setup Draw Order

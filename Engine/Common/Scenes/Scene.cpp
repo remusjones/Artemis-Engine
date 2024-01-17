@@ -3,6 +3,8 @@
 //
 
 #include "Scene.h"
+
+#include <imgui_internal.h>
 #include <glm/gtc/type_ptr.hpp>
 
 #include "imgui.h"
@@ -42,8 +44,8 @@ void Scene::PreConstruct(const char *aSceneName) {
 }
 
 void Scene::MouseMovement(const SDL_MouseMotionEvent &aMouseMotion) {
-    mMouseX = aMouseMotion.x;
-    mMouseY = aMouseMotion.y;
+    mMouseX = static_cast<int>(aMouseMotion.x);
+    mMouseY = static_cast<int>(aMouseMotion.y);
 }
 
 void Scene::MouseInput(const SDL_MouseButtonEvent &aMouseInput) {
@@ -52,18 +54,13 @@ void Scene::MouseInput(const SDL_MouseButtonEvent &aMouseInput) {
         && !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow)
         && !ImGuizmo::IsOver()) {
         const auto pickedRigidBody = PickRigidBody(mMouseX, mMouseY);
-        bool foundObject = false;
         for (const auto object: mObjects) {
             if (ColliderComponent comp; object->GetComponent<ColliderComponent>(comp)
                                         && pickedRigidBody == comp.GetRigidBody()) {
                 mPickedEntity = object;
-                foundObject = true;
                 break;
             }
         }
-
-        if (!foundObject)
-            mPickedEntity = nullptr;
     }
 }
 
@@ -86,6 +83,50 @@ void Scene::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
 // Declaring these here due to circular deps
 static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
 static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
+
+void Scene::DrawObjectsRecursive(Entity *obj) {
+    const char *nodeLabel = obj->GetUniqueLabel(obj->mName);
+    constexpr ImGuiTreeNodeFlags nodeFlag = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
+
+    if (IsParentOfPickedEntity(obj)) {
+        ImGui::SetNextItemOpen(true, ImGuiCond_Once);
+    }
+
+    const bool nodeOpen = ImGui::TreeNodeEx(nodeLabel, nodeFlag);
+
+    if (ImGui::IsItemClicked()) {
+        mPickedEntity = obj;
+    }
+
+    if (mPickedEntity == obj) {
+        ImGui::Begin(GetUniqueLabel("Picked Object"));
+        ImGui::Text(mPickedEntity->mName);
+        obj->OnImGuiRender();
+        ImGui::End();
+    }
+
+    if (nodeOpen) {
+        for (auto childTransform: obj->mTransform.GetChildren()) {
+            Entity *childEntity = mTransformEntityRelationships[childTransform];
+            DrawObjectsRecursive(childEntity);
+        }
+        ImGui::TreePop();
+    }
+}
+
+bool Scene::IsParentOfPickedEntity(const Entity *obj) {
+    if (mPickedEntity == nullptr) {
+        return false;
+    }
+    // Iterate up through parent entities of mPickedEntity
+    for (const Entity *parentEntity = mPickedEntity; parentEntity != nullptr;
+        parentEntity = mTransformEntityRelationships[parentEntity->mTransform.GetParent()])  {
+        if (parentEntity == obj) {
+            return true;
+        }
+    }
+    return false;
+}
 
 void Scene::OnImGuiRender() {
     ImGui::Begin(mSceneName);
@@ -130,16 +171,15 @@ void Scene::OnImGuiRender() {
     }
 
     const ImGuiIO &io = ImGui::GetIO();
-    ImGuizmo::Enable(false);
-
-    ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+    //ImGuizmo::Enable(false);
+    //ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
     //ImGuizmo::AllowAxisFlip(false);
     //if (ImGuizmo::Manipulate(glm::value_ptr(mActiveSceneCamera->GetViewMatrix()),
     //                         glm::value_ptr(mActiveSceneCamera->GetPerspectiveMatrix()),
     //                         mCurrentGizmoOperation, mCurrentGizmoMode,
     //                         glm::value_ptr(debugMatrix),NULL)) {
     //}
-//
+    //
     //ImGuizmo::Enable(true);
     if (mPickedEntity != nullptr) {
         // Draw Gizmos
@@ -153,6 +193,8 @@ void Scene::OnImGuiRender() {
                                  glm::value_ptr(matrix),NULL)) {
             mPickedEntity->mTransform.SetMatrix(matrix);
         }
+
+
     }
 
     // Draw Objects in scene
@@ -160,12 +202,8 @@ void Scene::OnImGuiRender() {
         for (const auto obj: mObjects) {
             ImGui::BeginGroup();
             ImGui::Indent(); {
-                if (ImGui::CollapsingHeader(obj->GetUniqueLabel(obj->mName))) {
-                    ImGui::Indent();
-
-                    obj->OnImGuiRender();
-
-                    ImGui::Unindent();
+                if (obj->mTransform.GetParent() == nullptr) {
+                    DrawObjectsRecursive(obj);
                 }
             }
             ImGui::Unindent();
@@ -270,9 +308,14 @@ MeshObject *Scene::MakeObject(const char *aName, const char *aMeshPath, Material
     //  colliderInfo.collisionShape = CollisionHelper::MakeAABBCollision(object->mMeshRenderer.mMesh->GetVertices());
     //  sceneCollider->Create(mSceneInteractionPhysicsSystem, colliderInfo);
     //  object->AddComponent(sceneCollider);
-    mObjects.push_back(object);
+    AddEntity(object);
 
     return object;
+}
+
+void Scene::AddEntity(Entity *aEntity) {
+    mObjects.push_back(aEntity);
+    mTransformEntityRelationships[&aEntity->mTransform] = aEntity;
 }
 
 void Scene::AttachSphereCollider(Entity &aEntity, const float aRadius, const float aMass,
