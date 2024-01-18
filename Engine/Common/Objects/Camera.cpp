@@ -4,6 +4,7 @@
 
 #include "Camera.h"
 #include "VulkanGraphicsImpl.h"
+#include "Physics/Ray.h"
 
 glm::mat4 Camera::GetViewProjectionMatrix() const {
     return GetPerspectiveMatrix() * GetViewMatrix();
@@ -15,14 +16,34 @@ glm::mat4 Camera::GetPerspectiveMatrix() const {
                              static_cast<float>(gGraphics->mSwapChain->
                                  mSwapChainExtent.width) / static_cast<float>(gGraphics->mSwapChain->
                                  mSwapChainExtent.height),
-                                 mZNear,
-                                mZFar);
+                             mZNear,
+                             mZFar);
 
     return perspective;
 }
 
 glm::mat4 Camera::GetViewMatrix() const {
     return glm::inverse(mTransform.GetTranslationMatrix() * mTransform.GetRotationMatrix());
+}
+
+Ray Camera::GetRayTo(const int x, const int y) {
+    const float width = gGraphics->mSwapChain->mSwapChainExtent.width;
+    const float height = gGraphics->mSwapChain->mSwapChainExtent.height;
+
+    const float normalizedPointX = x / (width * 0.5f) - 1.0f;
+    const float normalizedPointY = y / (height * 0.5f) - 1.0f;
+
+    glm::mat4 invVP = glm::inverse(GetViewProjectionMatrix());
+    glm::vec4 screenPos = glm::vec4(normalizedPointX, -normalizedPointY, 1.0f, 1.0f);
+    glm::vec4 worldPos = invVP * screenPos;
+
+    worldPos = worldPos / worldPos.w;
+
+    Ray ray;
+    ray.origin = mTransform.GetWorldPosition();
+    ray.direction = glm::normalize(glm::vec3(worldPos) - ray.origin);
+
+    return ray;
 }
 
 GPUCameraData Camera::GetCameraInformation() const {

@@ -26,7 +26,7 @@
 #include "Vulkan/Common/MeshObject.h"
 #include "Vulkan/Systems/GraphicsPipeline.h"
 #include "Components/Component.h"
-#include "Components/Collision/Ray.h"
+#include "Physics/Ray.h"
 #include "glm/gtx/string_cast.hpp"
 
 
@@ -39,8 +39,9 @@ void Scene::PreConstruct(const char *aSceneName) {
     mPhysicsSystem->Create();
     mSceneInteractionPhysicsSystem->Create();
     gInputManager->RegisterMouseInput([&](SDL_MouseMotionEvent motion) { MouseMovement(motion); },
-                                      "Scene Mouse Movement");
-    gInputManager->RegisterMouseInput([&](SDL_MouseButtonEvent input) { MouseInput(input); }, "Scene Mouse Press");
+        "Scene Mouse Movement");
+    gInputManager->RegisterMouseInput([&](SDL_MouseButtonEvent input) { MouseInput(input); },
+        "Scene Mouse Press");
 }
 
 void Scene::MouseMovement(const SDL_MouseMotionEvent &aMouseMotion) {
@@ -300,16 +301,16 @@ MeshObject *Scene::MakeObject(const char *aName, const char *aMeshPath, Material
     object->mTransform.SetLocalRotation(aRot);
     object->mTransform.SetLocalScale(aScale);
 
-    //  auto *sceneCollider = new ColliderComponent();
-    //  sceneCollider->SetName("SceneCollider");
-    //  ColliderCreateInfo colliderInfo;
-    //  //colliderInfo.collisionShape = CollisionHelper::MakeCollisionMesh(object->mMeshRenderer.mMesh->GetVertices(),
-    //  //                                                                 object->mMeshRenderer.mMesh->GetIndices());
-    //  colliderInfo.collisionShape = CollisionHelper::MakeAABBCollision(object->mMeshRenderer.mMesh->GetVertices());
-    //  sceneCollider->Create(mSceneInteractionPhysicsSystem, colliderInfo);
-    //  object->AddComponent(sceneCollider);
-    AddEntity(object);
+    //auto *sceneCollider = new ColliderComponent();
+    //sceneCollider->SetName("SceneCollider");
+    //ColliderCreateInfo colliderInfo;
+    //colliderInfo.collisionShape = CollisionHelper::MakeCollisionMesh(object->mMeshRenderer.mMesh->GetVertices(),
+    //                                                                  object->mMeshRenderer.mMesh->GetIndices());
+   ////   colliderInfo.collisionShape = CollisionHelper::MakeAABBCollision(object->mMeshRenderer.mMesh->GetVertices());
+    //sceneCollider->Create(mSceneInteractionPhysicsSystem, colliderInfo);
+    //object->AddComponent(sceneCollider);
 
+    AddEntity(object);
     return object;
 }
 
@@ -340,7 +341,7 @@ void Scene::AttachBoxCollider(Entity &aEntity, glm::vec3 aHalfExtents, float aMa
 }
 
 const btRigidBody *Scene::PickRigidBody(int x, int y) const {
-    Ray ray = GetRayTo(x, y);
+    Ray ray = mActiveSceneCamera->GetRayTo(x, y);
     btVector3 rayFrom(CollisionHelper::GlmToBullet(ray.origin));
     btVector3 rayTo(CollisionHelper::GlmToBullet(ray.origin + ray.direction * mActiveSceneCamera->mZFar));
 
@@ -355,26 +356,4 @@ const btRigidBody *Scene::PickRigidBody(int x, int y) const {
     }
 
     return nullptr;
-}
-
-Ray Scene::GetRayTo(const int x, const int y) const {
-    const float width = gGraphics->mSwapChain->mSwapChainExtent.width;
-    const float height = gGraphics->mSwapChain->mSwapChainExtent.height;
-
-    const float normalizedPointX = x / (width * 0.5f) - 1.0f;
-    const float normalizedPointY = y / (height * 0.5f) - 1.0f;
-
-    glm::mat4 invVP = glm::inverse(mActiveSceneCamera->GetViewProjectionMatrix());
-    glm::vec4 screenPos = glm::vec4(normalizedPointX, -normalizedPointY, 1.0f, 1.0f);
-    glm::vec4 worldPos = invVP * screenPos;
-
-    // Convert from homogeneous coordinates to 3D
-    worldPos = worldPos / worldPos.w;
-
-    Ray ray;
-    ray.origin = mActiveSceneCamera->mTransform.GetWorldPosition();
-    // Substract the camera position from worldPos to get the proper direction
-    ray.direction = glm::normalize(glm::vec3(worldPos) - ray.origin);
-
-    return ray;
 }

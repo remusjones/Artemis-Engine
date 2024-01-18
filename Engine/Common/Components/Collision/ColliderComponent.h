@@ -16,6 +16,8 @@ struct ColliderCreateInfo {
     float linearSleepThreshold = 0.1f;
     float angularSleepThreshold = 0.1f;
     float friction = 0.5f;
+    float rollingFriction = 0.1f;
+    float spinningFriction = 0.1f;
     btScalar mass{};
 };
 

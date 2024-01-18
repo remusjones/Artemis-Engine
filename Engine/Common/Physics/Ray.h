@@ -1,8 +1,9 @@
 //
-// Created by Remus on 16/01/2024.
+// Created by Remus on 18/01/2024.
 //
 
 #pragma once
+#include "glm/vec3.hpp"
 
 
 struct Ray {

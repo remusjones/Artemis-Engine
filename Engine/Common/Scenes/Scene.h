@@ -7,7 +7,6 @@
 
 #include "Base/Common/Buffers/AllocatedBuffer.h"
 #include "Base/Common/Data/GPUSceneData.h"
-#include "Components/Collision/Ray.h"
 #include "Objects/FlyCamera.h"
 #include "Objects/ImGuiLayer.h"
 
@@ -62,10 +61,7 @@ public:
 private:
     const btRigidBody *PickRigidBody(int x, int y) const;
 
-    Ray GetRayTo(int x, int y) const;
-
     void DrawObjectsRecursive(Entity *obj);
-
     bool IsParentOfPickedEntity(const Entity *obj);
 
 public:

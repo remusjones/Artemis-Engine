@@ -7,12 +7,15 @@
 #include "Entity.h"
 #include "Math/Transform.h"
 
-
+struct Ray;
 class Camera : public Entity{
 public:
+    // TODO: Only update vpm when mTransform gets marked dirty
     glm::mat4 GetViewProjectionMatrix() const;
     glm::mat4 GetPerspectiveMatrix() const;
     glm::mat4 GetViewMatrix() const;
+
+    Ray GetRayTo(int x, int y);
 
     GPUCameraData GetCameraInformation() const;
 
