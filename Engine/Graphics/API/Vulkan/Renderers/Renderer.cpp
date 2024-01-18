@@ -9,7 +9,6 @@
 
 void Renderer::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
     void *data;
-    // TODO: Move the properties binding out of here? lol
     if (mMaterial->mPropertiesBuffer.mAllocation != nullptr) {
         vmaMapMemory(gGraphics->mAllocator, mMaterial->mPropertiesBuffer.mAllocation, &data);
         memcpy(data, &mMaterial->mMaterialProperties, sizeof(MaterialProperties));

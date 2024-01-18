@@ -56,12 +56,15 @@ public:
 
     // TODO: probably bind these to flycam instead?
     void MouseMovement(const SDL_MouseMotionEvent &aMouseMotion);
+
     void MouseInput(const SDL_MouseButtonEvent &aMouseInput);
 
-private:
     const btRigidBody *PickRigidBody(int x, int y) const;
 
+private:
+
     void DrawObjectsRecursive(Entity *obj);
+
     bool IsParentOfPickedEntity(const Entity *obj);
 
 public:

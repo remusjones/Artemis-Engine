@@ -80,6 +80,7 @@ public:
     std::vector<Transform*> GetChildren() const;
 
     glm::mat4 GetWorldMatrix();
+    glm::mat4 GetLocalMatrix();
 
     glm::mat4 GetRotationMatrix() const { return glm::mat4_cast(mRotation); }
     glm::mat4 GetTranslationMatrix() const { return glm::translate(glm::identity<glm::mat4>(), mPosition); }

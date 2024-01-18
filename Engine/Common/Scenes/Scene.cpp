@@ -16,7 +16,6 @@
 #include "BulletCollision/CollisionShapes/btBoxShape.h"
 #include "BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h"
 #include "BulletCollision/CollisionShapes/btSphereShape.h"
-#include "BulletCollision/NarrowPhaseCollision/btRaycastCallback.h"
 #include "BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h"
 #include "BulletDynamics/Dynamics/btRigidBody.h"
 #include "Components/Collision/ColliderComponent.h"
@@ -30,6 +29,9 @@
 #include "glm/gtx/string_cast.hpp"
 
 
+static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
+static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
+
 void Scene::PreConstruct(const char *aSceneName) {
     mSceneName = aSceneName;
 
@@ -39,9 +41,9 @@ void Scene::PreConstruct(const char *aSceneName) {
     mPhysicsSystem->Create();
     mSceneInteractionPhysicsSystem->Create();
     gInputManager->RegisterMouseInput([&](SDL_MouseMotionEvent motion) { MouseMovement(motion); },
-        "Scene Mouse Movement");
+                                      "Scene Mouse Movement");
     gInputManager->RegisterMouseInput([&](SDL_MouseButtonEvent input) { MouseInput(input); },
-        "Scene Mouse Press");
+                                      "Scene Mouse Press");
 }
 
 void Scene::MouseMovement(const SDL_MouseMotionEvent &aMouseMotion) {
@@ -81,9 +83,6 @@ void Scene::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
     OnImGuiRender();
 }
 
-// Declaring these here due to circular deps
-static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
-static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
 
 void Scene::DrawObjectsRecursive(Entity *obj) {
     const char *nodeLabel = obj->GetUniqueLabel(obj->mName);
@@ -100,7 +99,7 @@ void Scene::DrawObjectsRecursive(Entity *obj) {
     }
 
     if (mPickedEntity == obj) {
-        ImGui::Begin(GetUniqueLabel("Picked Object"));
+        ImGui::Begin("Picked Object");
         ImGui::Text(mPickedEntity->mName);
         obj->OnImGuiRender();
         ImGui::End();
@@ -119,9 +118,8 @@ bool Scene::IsParentOfPickedEntity(const Entity *obj) {
     if (mPickedEntity == nullptr) {
         return false;
     }
-    // Iterate up through parent entities of mPickedEntity
     for (const Entity *parentEntity = mPickedEntity; parentEntity != nullptr;
-        parentEntity = mTransformEntityRelationships[parentEntity->mTransform.GetParent()])  {
+         parentEntity = mTransformEntityRelationships[parentEntity->mTransform.GetParent()]) {
         if (parentEntity == obj) {
             return true;
         }
@@ -132,6 +130,7 @@ bool Scene::IsParentOfPickedEntity(const Entity *obj) {
 void Scene::OnImGuiRender() {
     ImGui::Begin(mSceneName);
 
+    const ImGuiIO &io = ImGui::GetIO();
     // Draw Gizmo Controls TODO: Add KB Control shortcuts
     ImGui::SeparatorText("Controls");
     ImGui::BeginChild(GetUniqueLabel("Controls"),
@@ -171,17 +170,6 @@ void Scene::OnImGuiRender() {
         ImGui::Unindent();
     }
 
-    const ImGuiIO &io = ImGui::GetIO();
-    //ImGuizmo::Enable(false);
-    //ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
-    //ImGuizmo::AllowAxisFlip(false);
-    //if (ImGuizmo::Manipulate(glm::value_ptr(mActiveSceneCamera->GetViewMatrix()),
-    //                         glm::value_ptr(mActiveSceneCamera->GetPerspectiveMatrix()),
-    //                         mCurrentGizmoOperation, mCurrentGizmoMode,
-    //                         glm::value_ptr(debugMatrix),NULL)) {
-    //}
-    //
-    //ImGuizmo::Enable(true);
     if (mPickedEntity != nullptr) {
         // Draw Gizmos
         glm::mat4 matrix = mPickedEntity->mTransform.GetWorldMatrix();
@@ -192,13 +180,11 @@ void Scene::OnImGuiRender() {
                                  glm::value_ptr(mActiveSceneCamera->GetPerspectiveMatrix()),
                                  mCurrentGizmoOperation, mCurrentGizmoMode,
                                  glm::value_ptr(matrix),NULL)) {
+
             mPickedEntity->mTransform.SetMatrix(matrix);
         }
-
-
     }
 
-    // Draw Objects in scene
     if (ImGui::CollapsingHeader("Objects")) {
         for (const auto obj: mObjects) {
             ImGui::BeginGroup();
@@ -257,6 +243,7 @@ void Scene::OnImGuiRender() {
 
 void Scene::Tick(const float aDeltaTime) {
     mPhysicsSystem->Tick(aDeltaTime);
+    mSceneInteractionPhysicsSystem->Tick(aDeltaTime);
     for (const auto obj: mObjects) {
         obj->Tick(aDeltaTime);
     }
@@ -306,7 +293,7 @@ MeshObject *Scene::MakeObject(const char *aName, const char *aMeshPath, Material
     //ColliderCreateInfo colliderInfo;
     //colliderInfo.collisionShape = CollisionHelper::MakeCollisionMesh(object->mMeshRenderer.mMesh->GetVertices(),
     //                                                                  object->mMeshRenderer.mMesh->GetIndices());
-   ////   colliderInfo.collisionShape = CollisionHelper::MakeAABBCollision(object->mMeshRenderer.mMesh->GetVertices());
+    ////   colliderInfo.collisionShape = CollisionHelper::MakeAABBCollision(object->mMeshRenderer.mMesh->GetVertices());
     //sceneCollider->Create(mSceneInteractionPhysicsSystem, colliderInfo);
     //object->AddComponent(sceneCollider);
 
@@ -330,7 +317,8 @@ void Scene::AttachSphereCollider(Entity &aEntity, const float aRadius, const flo
     aEntity.AddComponent(sphereCollider);
 }
 
-void Scene::AttachBoxCollider(Entity &aEntity, glm::vec3 aHalfExtents, float aMass, float aFriction) const {
+void Scene::AttachBoxCollider(Entity &aEntity, const glm::vec3 aHalfExtents, const float aMass,
+                              const float aFriction) const {
     auto *boxCollider = new ColliderComponent();
     ColliderCreateInfo boxColliderInfo{};
     boxColliderInfo.collisionShape = new btBoxShape(btVector3(aHalfExtents.x, aHalfExtents.y, aHalfExtents.z));
@@ -340,17 +328,16 @@ void Scene::AttachBoxCollider(Entity &aEntity, glm::vec3 aHalfExtents, float aMa
     aEntity.AddComponent(boxCollider);
 }
 
-const btRigidBody *Scene::PickRigidBody(int x, int y) const {
-    Ray ray = mActiveSceneCamera->GetRayTo(x, y);
-    btVector3 rayFrom(CollisionHelper::GlmToBullet(ray.origin));
-    btVector3 rayTo(CollisionHelper::GlmToBullet(ray.origin + ray.direction * mActiveSceneCamera->mZFar));
+const btRigidBody *Scene::PickRigidBody(const int x, const int y) const {
+    const Ray ray = mActiveSceneCamera->GetRayTo(x, y);
+    const btVector3 rayFrom(CollisionHelper::GlmToBullet(ray.origin));
+    const btVector3 rayTo(CollisionHelper::GlmToBullet(ray.origin + ray.direction * mActiveSceneCamera->mZFar));
 
     btCollisionWorld::ClosestRayResultCallback RayCallback(rayFrom, rayTo);
 
     mPhysicsSystem->mDynamicsWorld->rayTest(rayFrom, rayTo, RayCallback);
     if (RayCallback.hasHit()) {
-        const btRigidBody *pickedBody = btRigidBody::upcast(RayCallback.m_collisionObject);
-        if (pickedBody) {
+        if (const btRigidBody *pickedBody = btRigidBody::upcast(RayCallback.m_collisionObject)) {
             return pickedBody;
         }
     }

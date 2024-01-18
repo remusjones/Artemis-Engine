@@ -45,7 +45,7 @@ void ColliderComponent::Tick(const float aDeltaTime) {
         // Test to see whether matrix was modified externally since last frame
         // TODO: investigate on how to only wake up nearby colliders
         if (mWorldMatrixLastFrame != mAttachedEntity->mTransform.GetWorldMatrix()) {
-            mRigidBody->setWorldTransform(CollisionHelper::TransformToBulletTransform(mAttachedEntity->mTransform));
+            mRigidBody->proceedToTransform(CollisionHelper::TransformToBulletTransform(mAttachedEntity->mTransform));
             mPhysicsSystem->AwakeRigidBodies();
         }
 

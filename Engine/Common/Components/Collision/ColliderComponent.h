@@ -16,7 +16,7 @@ struct ColliderCreateInfo {
     float linearSleepThreshold = 0.1f;
     float angularSleepThreshold = 0.1f;
     float friction = 0.5f;
-    float rollingFriction = 0.1f;
+    float rollingFriction = 0.05f;
     float spinningFriction = 0.1f;
     btScalar mass{};
 };
@@ -27,7 +27,7 @@ public:
     void Tick(float aDeltaTime) override;
     void Initialize() override;
 
-    btRigidBody* GetRigidBody() const {return mRigidBody;}
+    btRigidBody* GetRigidBody() const { return mRigidBody; }
 
 protected:
     btCollisionShape* mCollisionShape;

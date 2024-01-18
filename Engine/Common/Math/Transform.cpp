@@ -229,6 +229,18 @@ glm::mat4 Transform::GetWorldMatrix() {
     return mLocalMatrix;
 }
 
+glm::mat4 Transform::GetLocalMatrix() {
+    if (mMatrixDirty) {
+        UpdateLocalMatrix();
+        for (const auto child: mChildren) {
+            child->SetDirty();
+        }
+        mMatrixDirty = false;
+    }
+
+    return mLocalMatrix;
+}
+
 void Transform::OnImGuiRender() {
     ImGui::SeparatorText("Transform");
     glm::vec3 rot = GetLocalEuler();

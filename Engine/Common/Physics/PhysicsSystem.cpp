@@ -17,8 +17,9 @@ void PhysicsSystem::Create() {
     mCollisionConfiguration = new btDefaultCollisionConfiguration();
     mDispatcher = new btCollisionDispatcher(mCollisionConfiguration);
     mBroadphase = new btDbvtBroadphase();
-    auto *sol = new btSequentialImpulseConstraintSolver;
+    auto *sol = new btSequentialImpulseConstraintSolver();
     mSolver = sol;
+
     mDynamicsWorld = new btDiscreteDynamicsWorld(mDispatcher, mBroadphase, mSolver, mCollisionConfiguration);
     mDynamicsWorld->setGravity(btVector3(0, mGravity, 0));
 }
@@ -32,7 +33,7 @@ void PhysicsSystem::AwakeRigidBodies()
 
 void PhysicsSystem::Tick(const float aDeltaTime) const {
     if (mDynamicsWorld) {
-        mDynamicsWorld->stepSimulation(aDeltaTime);
+        mDynamicsWorld->stepSimulation(aDeltaTime, 10, 1.f/240.f);
     }
 }
 
