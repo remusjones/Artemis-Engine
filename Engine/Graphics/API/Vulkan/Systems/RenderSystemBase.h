@@ -15,8 +15,8 @@ public:
     virtual void Create(const std::vector<VkDescriptorSetLayout> &aDescriptorLayouts);
 
 protected:
-    virtual void CreatePipelineLayout();
-    virtual void CreatePipeline();
+    virtual void CreatePipelineLayout() = 0;
+    virtual void CreatePipeline() = 0;
     void CreatePipelineObject(const char* pipelineName, bool aDestructive = false);
 
 

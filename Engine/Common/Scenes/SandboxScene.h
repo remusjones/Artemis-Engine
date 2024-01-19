@@ -7,11 +7,13 @@
 #include <memory>
 #include "Scene.h"
 #include "Vulkan/Common/MaterialFactory.h"
-#include "..\..\Graphics\API\Vulkan\Systems\SkyboxRenderSystem.h"
+#include "Vulkan/Systems/LineRenderSystem.h"
 #include "Vulkan/Systems/PBRRenderSystem.h"
-#include "Vulkan/Systems/RenderSystemBase.h"
+#include "Vulkan/Systems/PipelineConfigInfo.h"
+#include "Vulkan/Systems/SkyboxRenderSystem.h"
 #include "Vulkan/Systems/UnlitRenderSystem.h"
 
+class Cubemap;
 class Primative;
 class Texture;
 
@@ -28,7 +30,6 @@ public:
     void OnImGuiRender() override;
 
 private:
-
     std::unordered_map<std::string, Texture *> mLoadedTextures;
     PipelineConfigInfo mDefaultPipelineConfig;
 
@@ -41,8 +42,9 @@ private:
 
     std::shared_ptr<Cubemap> mCubemap;
     std::unique_ptr<SkyboxRenderSystem> mCubemapPipeline;
-    std::shared_ptr<PBRRenderSystem> mPBRPipeline;
     std::shared_ptr<UnlitRenderSystem> mUnlitPipeline;
+    std::shared_ptr<LineRenderSystem> mLineRendererPipeline;
+    std::shared_ptr<PBRRenderSystem> mPBRPipeline;
 
     MaterialFactory mMaterialUnlitFactory;
     MaterialFactory mMaterialPBRFactory;

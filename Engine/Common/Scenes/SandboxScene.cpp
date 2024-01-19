@@ -31,11 +31,12 @@ void SandboxScene::Construct() {
     mPBRPipeline = std::make_shared<PBRRenderSystem>();
     mUnlitPipeline = std::make_shared<UnlitRenderSystem>();
     mCubemapPipeline = std::make_unique<SkyboxRenderSystem>();
+    mLineRendererPipeline = std::make_shared<LineRenderSystem>();
 
     //
     // Define Material Usages
     //
-    Material *monkeyTexturedMaterial = mMaterialPBRFactory.CreateMaterialInstance<DefaultMaterial>("Monkey PBR").get();
+    Material *monkeyTexturedMaterial = mMaterialUnlitFactory.CreateMaterialInstance<DefaultMaterial>("Monkey Unlit").get();
     Material *teapotMaterial = mMaterialPBRFactory.CreateMaterialInstance<DefaultMaterial>("Teapot PBR").get();
     Material *lightMaterial = mMaterialUnlitFactory.CreateMaterialInstance<DefaultMaterial>("Light Unlit").get();
     Material *sphereMaterial = mMaterialPBRFactory.CreateMaterialInstance<DefaultMaterial>("Sphere PBR").get();
@@ -54,6 +55,7 @@ void SandboxScene::Construct() {
     //
     mUnlitPipeline->Create(mMaterialUnlitFactory.GetDescriptorLayouts());
     mPBRPipeline->Create(mMaterialPBRFactory.GetDescriptorLayouts());
+    mLineRendererPipeline->Create(mMaterialUnlitFactory.GetDescriptorLayouts());
 
     std::vector<VkDescriptorSetLayout> mCubemapLayouts;
     mCubemapLayouts.push_back(mCubemap->GetDescriptorLayout());
@@ -65,15 +67,15 @@ void SandboxScene::Construct() {
     //
     mMonkey = MakeObject("Monkey",
                          "/Assets/Models/monkey_smooth.obj", *monkeyTexturedMaterial,
-                         *mPBRPipeline->mPipeline,
+                         *mLineRendererPipeline->mPipeline,
                          glm::vec3(2, 0, -5),
                          glm::vec3(0),
                          glm::vec3(1.f));
 
 
     mTeapot = MakeObject("Teapot",
-                         "/Assets/Models/teapot.obj", *teapotMaterial,
-                         *mPBRPipeline->mPipeline,
+                         "/Assets/Models/teapot.obj", *monkeyTexturedMaterial,
+                         *mLineRendererPipeline->mPipeline,
                          glm::vec3(2, 0, -20),
                          glm::vec3(0),
                          glm::vec3(0.1f));
@@ -154,6 +156,7 @@ void SandboxScene::Construct() {
     AddGraphicsPipeline(mCubemapPipeline->mPipeline.get());
     AddGraphicsPipeline(mUnlitPipeline->mPipeline.get());
     AddGraphicsPipeline(mPBRPipeline->mPipeline.get());
+    AddGraphicsPipeline(mLineRendererPipeline->mPipeline.get());
 
     //
     // Construct Scene

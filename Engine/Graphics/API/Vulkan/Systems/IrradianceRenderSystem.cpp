@@ -5,9 +5,7 @@
 #include "IrradianceRenderSystem.h"
 
 void IrradianceRenderSystem::CreatePipelineLayout() {
-    RenderSystemBase::CreatePipelineLayout();
 }
 
 void IrradianceRenderSystem::CreatePipeline() {
-    RenderSystemBase::CreatePipeline();
 }
