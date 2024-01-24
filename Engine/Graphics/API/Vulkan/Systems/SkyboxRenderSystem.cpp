@@ -47,7 +47,6 @@ void SkyboxRenderSystem::CreatePipeline() {
     bindingDescriptions.push_back(VertexPosition::GetBindingDescription());
     mPipelineConfig.mBindingDescriptions = bindingDescriptions;
 
-    // create a pipelined
     CreatePipelineObject("SkyboxRenderSystem");
     mPipeline->CreateShaderModule("/Assets/Shaders/Skybox_v.spv", VK_SHADER_STAGE_VERTEX_BIT);
     mPipeline->CreateShaderModule("/Assets/Shaders/Skybox_f.spv", VK_SHADER_STAGE_FRAGMENT_BIT);

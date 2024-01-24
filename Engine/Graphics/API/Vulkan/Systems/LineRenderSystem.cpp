@@ -12,7 +12,7 @@ void LineRenderSystem::CreatePipelineLayout() {
     VkPushConstantRange pushConstantRange{};
     pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
     pushConstantRange.offset = 0;
-    pushConstantRange.size = sizeof(PushConstants);
+    pushConstantRange.size = sizeof(LineRendererPushConstants);
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -20,6 +20,7 @@ void LineRenderSystem::CreatePipelineLayout() {
     pipelineLayoutInfo.pSetLayouts = mBoundDescriptorLayouts.data();
     pipelineLayoutInfo.pushConstantRangeCount = 1;
     pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+
     if (vkCreatePipelineLayout(gGraphics->mLogicalDevice, &pipelineLayoutInfo, nullptr, &mPipelineLayout) !=
         VK_SUCCESS) {
         Logger::Log(spdlog::level::critical, "Failed to create <LineRenderSystem> render pipeline layout");
