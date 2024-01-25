@@ -41,7 +41,6 @@ void LineRenderSystem::CreatePipeline() {
     mPipelineConfig.depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS;
 
     mPipelineConfig.inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
-    mPipelineConfig.inputAssemblyInfo.primitiveRestartEnable = VK_TRUE;
 
     std::vector<VkVertexInputBindingDescription> bindingDescriptions(1);
     bindingDescriptions[0] = Position::GetBindingDescription();

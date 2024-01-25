@@ -35,7 +35,7 @@ void LineRenderer::DestroyRenderer() {
     Renderer::DestroyRenderer();
     if (mAllocatedPositions) {
         mAllocatedPositions->Destroy();
-        delete mAllocatedPositions
+        delete mAllocatedPositions;
     }
 }
 
