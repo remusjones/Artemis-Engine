@@ -16,6 +16,7 @@
 #include "Vulkan/Renderers/SkyboxRenderer.h"
 #include "Vulkan/Materials/Cubemap.h"
 #include "Vulkan/Materials/DefaultMaterial.h"
+#include "Vulkan/Renderers/LineRenderer.h"
 #include "Vulkan/Systems/GraphicsPipeline.h"
 
 void SandboxScene::PreConstruct(const char *aSceneName) {
@@ -32,11 +33,14 @@ void SandboxScene::Construct() {
     mUnlitPipeline = std::make_shared<UnlitRenderSystem>();
     mCubemapPipeline = std::make_unique<SkyboxRenderSystem>();
     mWireframeRenderSystem = std::make_shared<WireframeRenderSystem>();
+    mLineRenderPipeline = std::make_shared<LineRenderSystem>();
 
     //
     // Define Material Usages
     //
-    Material *monkeyTexturedMaterial = mMaterialUnlitFactory.CreateMaterialInstance<DefaultMaterial>("Monkey Unlit").get();
+    Material *monkeyTexturedMaterial = mMaterialUnlitFactory.CreateMaterialInstance<DefaultMaterial>("Monkey Unlit").
+            get();
+    Material *unlitMaterial = mMaterialUnlitFactory.CreateMaterialInstance<DefaultMaterial>("Unlit").get();
     Material *teapotMaterial = mMaterialPBRFactory.CreateMaterialInstance<DefaultMaterial>("Teapot PBR").get();
     Material *lightMaterial = mMaterialUnlitFactory.CreateMaterialInstance<DefaultMaterial>("Light Unlit").get();
     Material *sphereMaterial = mMaterialPBRFactory.CreateMaterialInstance<DefaultMaterial>("Sphere PBR").get();
@@ -54,6 +58,7 @@ void SandboxScene::Construct() {
     // Bind Materials
     //
     mUnlitPipeline->Create(mMaterialUnlitFactory.GetDescriptorLayouts());
+    mLineRenderPipeline->Create(mMaterialUnlitFactory.GetDescriptorLayouts());
     mPBRPipeline->Create(mMaterialPBRFactory.GetDescriptorLayouts());
     mWireframeRenderSystem->Create(mMaterialUnlitFactory.GetDescriptorLayouts());
 
@@ -143,12 +148,27 @@ void SandboxScene::Construct() {
     mActiveSceneCamera->Construct();
     mActiveSceneCamera->mTransform.SetLocalPosition({0, 0, -5.0f});
 
+    mLineRendererEntity = new Primative("LineRenderer");
+    mLineRendererEntity->mRenderer = mLineRenderer;
+
+    mLineRenderer = new LineRenderer();
+    mLineRenderer->mTransform = &mLineRendererEntity->mTransform;
+    mLineRenderer->SetLinePositions(
+        {
+            glm::vec3(0, -10, 0),
+            glm::vec3(0, 10, 0),
+            glm::vec3(10, 10, 0)
+        });
+
+    mLineRenderer->mMaterial = unlitMaterial;
+    mLineRenderer->BindRenderer(*mLineRenderPipeline->mPipeline);
 
     //
     // Setup Scene Dependencies
     // Register to scene TODO: Review if we auto-register these
     //
     AddEntity(mCubemapMesh);
+    AddEntity(mLineRendererEntity);
 
     //
     // Setup Draw Order
@@ -157,7 +177,7 @@ void SandboxScene::Construct() {
     AddGraphicsPipeline(mUnlitPipeline->mPipeline.get());
     AddGraphicsPipeline(mPBRPipeline->mPipeline.get());
     AddGraphicsPipeline(mWireframeRenderSystem->mPipeline.get());
-
+    AddGraphicsPipeline(mLineRenderPipeline->mPipeline.get());
     //
     // Construct Scene
     //
@@ -179,6 +199,12 @@ void SandboxScene::Tick(float aDeltaTime) {
     mMonkey->mTransform.RotateAxisLocal(aDeltaTime / 5, glm::vec3(0.0f, 1, 0));
     Scene::Tick(aDeltaTime);
 
+
+    mLineRenderer->SetLinePositions({
+        mTeapot->mTransform.GetWorldPosition(), mMonkey->mTransform.GetWorldPosition(), mLight->mTransform
+        .GetWorldPosition()
+    });
+
     mActiveSceneCamera->Tick(aDeltaTime);
 }
 
@@ -187,7 +213,7 @@ void SandboxScene::Cleanup() {
         loadedTextures.second->Destroy();
         delete loadedTextures.second;
     }
-
+    mLineRenderer->DestroyRenderer();
     mMaterialUnlitFactory.DestroyMaterials();
     mMaterialPBRFactory.DestroyMaterials();
     mGenericMaterialFactory.DestroyMaterials();

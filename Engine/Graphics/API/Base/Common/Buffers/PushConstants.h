@@ -12,13 +12,12 @@ public:
 };
 
 class LineRendererPushConstants {
-public:
-    int32_t vertexCount;
-
-    int32_t _pad1;
-    int32_t _pad2;
-    int32_t _pad3;
-
-    glm::vec4 vertices[];
-    glm::vec4 colors[];
+//public:
+//    int32_t vertexCount;
+//    int32_t _pad1;
+//    int32_t _pad2;
+//    int32_t _pad3;
+//
+//    glm::vec4 vertices[];
+//    glm::vec4 colors[];
 };

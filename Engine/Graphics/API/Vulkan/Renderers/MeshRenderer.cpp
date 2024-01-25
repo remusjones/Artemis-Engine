@@ -23,11 +23,11 @@ void MeshRenderer::BindRenderer(GraphicsPipeline &aBoundGraphicsPipeline) {
 
 void MeshRenderer::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
     mMesh->Bind(aCommandBuffer);
+    mPushConstants.model = mTransform->GetWorldMatrix();
     vkCmdPushConstants(aCommandBuffer, mGraphicsPipeline->mPipelineConfig.pipelineLayout,
                        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
                        sizeof(PushConstants), &mPushConstants);
 
-    vkCmdDrawIndexed(aCommandBuffer, mMesh->GetIndicesSize(), 1, 0 ,0, 0);
-    mPushConstants.model = mTransform->GetWorldMatrix();
+    vkCmdDrawIndexed(aCommandBuffer, mMesh->GetIndicesSize(), 1, 0, 0, 0);
     Renderer::Render(aCommandBuffer, aScene);
 }
