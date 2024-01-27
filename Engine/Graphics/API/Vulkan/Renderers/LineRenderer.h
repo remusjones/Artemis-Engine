@@ -13,7 +13,7 @@ class Color;
 class LineRenderer : public Renderer {
 public:
     enum LineRenderMode {
-        // Draws a continous connected line
+        // Draws a continuous connected line
         LINES_CONTINUOUS,
         // Draws a line between each position
         LINES_SEGMENTED,

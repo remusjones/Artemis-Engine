@@ -19,7 +19,7 @@ bool PrimativeMesh::LoadFromObject(const char *aFileName, const char *mtlDirecto
     std::vector<Vertex> vertices;
 
     if (LoadUtilities::LoadMeshFromDisk(aFileName, vertices, mIndices, mtlDirectory)) {
-        mVertices = std::vector<VertexPosition>(vertices.size());
+        mVertices = std::vector<Vertex>(vertices.size());
         for (int i = 0; i < vertices.size(); i++) {
             mVertices[i] = vertices[i];
         }

@@ -3,7 +3,6 @@
 //
 
 #pragma once
-#include <vector>
 
 #include "Base/Common/Buffers/AllocatedBuffer.h"
 #include "Base/Common/Data/GPUSceneData.h"

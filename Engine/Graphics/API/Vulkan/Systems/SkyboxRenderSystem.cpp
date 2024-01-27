@@ -8,7 +8,6 @@
 #include "PipelineConfigInfo.h"
 #include "VulkanGraphicsImpl.h"
 #include "Base/Common/Buffers/PushConstants.h"
-#include "Base/Common/Data/VertexPosition.h"
 
 void SkyboxRenderSystem::CreatePipelineLayout() {
     VkPushConstantRange pushConstantRange{};
@@ -41,10 +40,12 @@ void SkyboxRenderSystem::CreatePipeline() {
     mPipelineConfig.depthStencilInfo.depthTestEnable = false;
     mPipelineConfig.depthStencilInfo.depthCompareOp = VK_COMPARE_OP_NEVER;
 
-    mPipelineConfig.mAttributeDescriptions = VertexPosition::GetAttributeDescriptions();
+    mPipelineConfig.mAttributeDescriptions = Vertex::GetAttributeDescriptions(
+        Vertex::GetBindingMask(true, false, false, false, false)
+    );
 
     std::vector<VkVertexInputBindingDescription> bindingDescriptions;
-    bindingDescriptions.push_back(VertexPosition::GetBindingDescription());
+    bindingDescriptions.push_back(Vertex::GetBindingDescription());
     mPipelineConfig.mBindingDescriptions = bindingDescriptions;
 
     CreatePipelineObject("SkyboxRenderSystem");
