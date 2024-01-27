@@ -6,6 +6,7 @@
 
 #include "imgui.h"
 #include "VulkanGraphicsImpl.h"
+#include "Base/Common/Color.h"
 #include "Base/Common/Material.h"
 #include "Components/Collision/ColliderComponent.h"
 #include "File Management/FileManagement.h"
@@ -157,7 +158,8 @@ void SandboxScene::Construct() {
         {
             glm::vec3(0, -10, 0),
             glm::vec3(0, 10, 0),
-            glm::vec3(10, 10, 0)
+            glm::vec3(10, 10, 0),
+            glm::vec3(10, -10, 0)
         });
 
     mLineRenderer->mMaterial = unlitMaterial;
@@ -201,8 +203,15 @@ void SandboxScene::Tick(float aDeltaTime) {
 
 
     mLineRenderer->SetLinePositions({
-        mTeapot->mTransform.GetWorldPosition(), mMonkey->mTransform.GetWorldPosition(), mLight->mTransform
-        .GetWorldPosition()
+        mTeapot->mTransform.GetWorldPosition(),
+        mMonkey->mTransform.GetWorldPosition(),
+        mLight->mTransform.GetWorldPosition(),
+        mFloor->mTransform.GetWorldPosition()
+    }, {
+        Color::Red(),
+        Color::Green(),
+        Color::Blue(),
+        Color::Yellow()
     });
 
     mActiveSceneCamera->Tick(aDeltaTime);

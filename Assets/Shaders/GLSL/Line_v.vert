@@ -21,9 +21,11 @@ layout(set = 0, binding = 0) uniform SceneBuffer {
 } sceneData;
 
 layout(location = 0) in vec3 inPosition;
+layout(location = 2) in vec3 inColor;
+
 layout(location = 0) out vec3 fragColor;
 
 void main() {
     gl_Position = sceneData.proj * sceneData.view * inPushConstants.model * vec4(inPosition, 1.0f);
-    fragColor = vec3(1,1,0);
+    fragColor = inColor;
 }

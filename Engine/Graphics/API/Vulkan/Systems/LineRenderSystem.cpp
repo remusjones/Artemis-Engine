@@ -43,9 +43,11 @@ void LineRenderSystem::CreatePipeline() {
     mPipelineConfig.inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
 
     std::vector<VkVertexInputBindingDescription> bindingDescriptions(1);
-    bindingDescriptions[0] = Position::GetBindingDescription();
+    bindingDescriptions[0] = Vertex::GetBindingDescription();
     mPipelineConfig.mBindingDescriptions = bindingDescriptions;
-    mPipelineConfig.mAttributeDescriptions = Position::GetAttributeDescriptions();
+
+    const std::bitset<5> vertexMask = Vertex::GetBindingMask(true, false, true, false, false);
+    mPipelineConfig.mAttributeDescriptions = Vertex::GetAttributeDescriptions(vertexMask);
 
     // create a pipeline
     CreatePipelineObject("LineRenderSystem");

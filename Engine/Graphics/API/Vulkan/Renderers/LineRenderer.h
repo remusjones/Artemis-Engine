@@ -6,12 +6,23 @@
 #include "Renderer.h"
 #include "Base/Common/Data/Vertex.h"
 
+class Color;
 /*
  * Draws line(s) between "positions"
  */
 class LineRenderer : public Renderer {
 public:
-    void SetLinePositions(const std::vector<glm::vec3>& aPositions);
+    enum LineRenderMode {
+        // Draws a continous connected line
+        LINES_CONTINUOUS,
+        // Draws a line between each position
+        LINES_SEGMENTED,
+    };
+
+    void SetLinePositions(const std::vector<glm::vec3> &aPositions, const LineRenderMode aMode = LINES_CONTINUOUS);
+
+    void SetLinePositions(const std::vector<glm::vec3> &aPositions, const std::vector<Color> &aColors,
+        const LineRenderMode aMode = LINES_CONTINUOUS);
 
     void DestroyRenderer() override;
 
@@ -19,7 +30,10 @@ public:
 
     void Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) override;
 
-    std::vector<Position> mLinePositions;
+    std::vector<Vertex> mLinePositions;
     AllocatedBuffer *mAllocatedPositions;
     Transform *mTransform;
+
+private:
+    LineRenderMode mLineRenderMode{};
 };
