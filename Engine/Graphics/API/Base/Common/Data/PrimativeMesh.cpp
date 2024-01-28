@@ -7,11 +7,11 @@
 #include "LoadUtilities.h"
 
 void PrimativeMesh::Bind(VkCommandBuffer aCommandBuffer) const {
-    const VkBuffer vertexBuffers[] = {mVerticesBuffer->mBuffer};
+    const VkBuffer vertexBuffers[] = {mVerticesBuffer->GetBuffer()};
     const VkDeviceSize offsets[] = {0};
 
     vkCmdBindVertexBuffers(aCommandBuffer, 0, 1, vertexBuffers, offsets);
-    vkCmdBindIndexBuffer(aCommandBuffer, mIndicesBuffer->mBuffer,
+    vkCmdBindIndexBuffer(aCommandBuffer, mIndicesBuffer->GetBuffer(),
                          0, VK_INDEX_TYPE_UINT32);
 }
 
@@ -31,9 +31,9 @@ bool PrimativeMesh::LoadFromObject(const char *aFileName, const char *mtlDirecto
                                              VK_BUFFER_USAGE_TRANSFER_DST_BIT |
                                              VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 
-        vmaSetAllocationName(gGraphics->mAllocator, mVerticesBuffer->mAllocation,
+        vmaSetAllocationName(gGraphics->mAllocator, mVerticesBuffer->GetAllocation(),
                              (std::string(aFileName) + " mVerticesBuffer").c_str());
-        vmaSetAllocationName(gGraphics->mAllocator, mIndicesBuffer->mAllocation,
+        vmaSetAllocationName(gGraphics->mAllocator, mIndicesBuffer->GetAllocation(),
                              (std::string(aFileName) + " mIndicesBuffer").c_str());
         return true;
     }

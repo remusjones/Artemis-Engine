@@ -29,9 +29,8 @@ void Material::Create(MaterialBase *aBaseMaterial) {
 
 void Material::CreateProperties(const uint32_t aBinding, const MaterialProperties &aMaterialProperties) {
     mMaterialProperties = aMaterialProperties;
-    mPropertiesBuffer = gGraphics->mVulkanEngine.CreateBuffer(sizeof(MaterialProperties),
-                                                              VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                                                              VMA_MEMORY_USAGE_CPU_TO_GPU);
+    mPropertiesBuffer =AllocatedBuffer();
+    mPropertiesBuffer.Create(sizeof(MaterialProperties), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
 
     for (int i = 0; i < VulkanEngine::MAX_FRAMES_IN_FLIGHT; i++)
         SetBuffers(mPropertiesBuffer, aBinding, 0);
@@ -79,7 +78,7 @@ void Material::SetBuffers(const AllocatedBuffer &aBuffer, const uint8_t aBinding
     auto *descriptors = static_cast<VkDescriptorBufferInfo *>(alloca(
         sizeof(VkDescriptorBufferInfo) * binding.descriptorCount));
     for (int i = 0; i < binding.descriptorCount; i++) {
-        descriptors[i].buffer = aBuffer.mBuffer;
+        descriptors[i].buffer = aBuffer.GetBuffer();
         descriptors[i].offset = 0;
         descriptors[i].range = VK_WHOLE_SIZE;
     }
@@ -100,7 +99,7 @@ void Material::Destroy() {
     vkDestroyDescriptorSetLayout(gGraphics->mLogicalDevice, mLayout, nullptr);
     vkFreeDescriptorSets(gGraphics->mLogicalDevice, gGraphics->mVulkanEngine.mDescriptorPool, 1, &mDescriptorSet);
 
-    if (mPropertiesBuffer.mBuffer)
+    if (mPropertiesBuffer.GetBuffer())
         mPropertiesBuffer.Destroy();
 
 }

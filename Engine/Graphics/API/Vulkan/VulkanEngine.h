@@ -55,8 +55,6 @@ public:
 
     void Cleanup();
 
-    AllocatedBuffer CreateBuffer(size_t aAllocSize, VkBufferUsageFlags aUsage, VmaMemoryUsage vmaMemoryUsage);
-
 private:
     void CleanupOldSyncObjects();
 

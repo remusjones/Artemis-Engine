@@ -12,13 +12,20 @@ public:
     VkBufferUsageFlags aUsageFlags);
     ~AllocatedBuffer();
 
-    void Create(VkDeviceSize aSize, VkBufferUsageFlags aUsage, VkBuffer &aBuffer,
-                      VmaAllocation &aAllocation);
+    void Create(const VkDeviceSize aSize, const VkBufferUsageFlags aUsage);
+
     void AllocateBuffer(const void* aData, VkDeviceSize aBufferSize, VkBufferUsageFlags aUsageFlags);
+
+    // Copy void* data to buffer
+    static void MapMemory(const VmaAllocator aVmaAllocator, const void *aData, VmaAllocation aAllocation, VkDeviceSize aSize);
+
+    [[nodiscard]] VkBuffer GetBuffer() const;
+    [[nodiscard]] VmaAllocation GetAllocation() const;
     [[nodiscard]] bool IsAllocted() const;
 
     void Destroy();
 
+private:
     VkBuffer mBuffer = nullptr;
     VmaAllocation mAllocation = nullptr;
 };

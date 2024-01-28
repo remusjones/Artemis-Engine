@@ -227,10 +227,9 @@ void GraphicsPipeline::Draw(VkCommandBuffer aCommandBuffer, const Scene &aScene)
 
     const FrameData currentFrame = gGraphics->mVulkanEngine.GetCurrentFrame();
 
-    void *data;
-    vmaMapMemory(gGraphics->mAllocator, currentFrame.mSceneBuffer.mAllocation, &data);
-    memcpy(data, &aScene.mSceneData, sizeof(GPUSceneData));
-    vmaUnmapMemory(gGraphics->mAllocator, currentFrame.mSceneBuffer.mAllocation);
+    AllocatedBuffer::MapMemory(
+    gGraphics->mAllocator, &aScene.mSceneData,  currentFrame.mSceneBuffer.GetAllocation(),
+    sizeof(GPUSceneData));
 
     for (auto &mRenderer: mRenderers) {
         std::vector<VkDescriptorSet> descriptorSets;

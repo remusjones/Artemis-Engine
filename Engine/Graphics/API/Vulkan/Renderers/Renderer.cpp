@@ -9,10 +9,10 @@
 
 void Renderer::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
     void *data;
-    if (mMaterial->mPropertiesBuffer.mAllocation != nullptr) {
-        vmaMapMemory(gGraphics->mAllocator, mMaterial->mPropertiesBuffer.mAllocation, &data);
-        memcpy(data, &mMaterial->mMaterialProperties, sizeof(MaterialProperties));
-        vmaUnmapMemory(gGraphics->mAllocator, mMaterial->mPropertiesBuffer.mAllocation);
+    if (mMaterial->mPropertiesBuffer.IsAllocted()) {
+        AllocatedBuffer::MapMemory(
+            gGraphics->mAllocator, &mMaterial->mMaterialProperties, mMaterial->mPropertiesBuffer.GetAllocation(),
+            sizeof(MaterialProperties));
     }
 }
 

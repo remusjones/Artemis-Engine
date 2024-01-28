@@ -100,7 +100,7 @@ bool LoadUtilities::LoadImageFromDisk(const VulkanGraphics *aEngine, const char 
         copyRegion.imageExtent = imageExtent;
 
         //copy the buffer into the image
-        vkCmdCopyBufferToImage(cmd, stagingBuffer.mBuffer, newImage.mImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
+        vkCmdCopyBufferToImage(cmd, stagingBuffer.GetBuffer(), newImage.mImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
                                &copyRegion);
 
         VkImageMemoryBarrier imageBarrier_toReadable = imageBarrier_toTransfer;
@@ -114,7 +114,7 @@ bool LoadUtilities::LoadImageFromDisk(const VulkanGraphics *aEngine, const char 
         vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr,
                              0, nullptr, 1, &imageBarrier_toReadable);
     });
-    vmaDestroyBuffer(aEngine->mAllocator, stagingBuffer.mBuffer, stagingBuffer.mAllocation);
+    vmaDestroyBuffer(aEngine->mAllocator, stagingBuffer.GetBuffer(), stagingBuffer.GetAllocation());
     aResult = newImage;
     return true;
 }
@@ -147,15 +147,15 @@ bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics *aEngine, const std:
     }
     //Create the staging buffer
     AllocatedBuffer stagingBuffer;
-    stagingBuffer.Create(totalSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingBuffer.mBuffer, stagingBuffer.mAllocation);
+    stagingBuffer.Create(totalSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
 
     std::string bufferName;
     bufferName.append(aPaths[0]);
-    vmaSetAllocationName(gGraphics->mAllocator, stagingBuffer.mAllocation, (bufferName + " staging buffer").c_str());
+    vmaSetAllocationName(gGraphics->mAllocator, stagingBuffer.GetAllocation(), (bufferName + " staging buffer").c_str());
 
     // Map the memory
     void *data;
-    vmaMapMemory(gGraphics->mAllocator, stagingBuffer.mAllocation, &data);
+    vmaMapMemory(gGraphics->mAllocator, stagingBuffer.GetAllocation(), &data);
     uint64_t memAddress = reinterpret_cast<uint64_t>(data);
 
     for (int i = 0; i < imageCount; i++) {
@@ -212,7 +212,7 @@ bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics *aEngine, const std:
         }
     }
 
-    vmaUnmapMemory(gGraphics->mAllocator, stagingBuffer.mAllocation);
+    vmaUnmapMemory(gGraphics->mAllocator, stagingBuffer.GetAllocation());
 
 
     VkExtent3D imageExtent;
@@ -249,12 +249,12 @@ bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics *aEngine, const std:
 
     if (result != VK_SUCCESS) {
         Logger::Log(spdlog::level::err, "vmaCreateImage failed!");
-        vmaDestroyBuffer(gGraphics->mAllocator, stagingBuffer.mBuffer, stagingBuffer.mAllocation);
+        vmaDestroyBuffer(gGraphics->mAllocator, stagingBuffer.GetBuffer(), stagingBuffer.GetAllocation());
         return false;
     }
     if (!newImage.mImage || !newImage.mAllocation) {
         Logger::Log(spdlog::level::err, "Image or allocation from vmaCreateImage is null!");
-        vmaDestroyBuffer(gGraphics->mAllocator, stagingBuffer.mBuffer, stagingBuffer.mAllocation);
+        vmaDestroyBuffer(gGraphics->mAllocator, stagingBuffer.GetBuffer(), stagingBuffer.GetAllocation());
         return false;
     }
     aEngine->mVulkanEngine.SubmitBufferCommand([&](VkCommandBuffer cmd) {
@@ -291,7 +291,7 @@ bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics *aEngine, const std:
         copyRegion.imageExtent = imageExtent;
 
         //copy the buffer into the image
-        vkCmdCopyBufferToImage(cmd, stagingBuffer.mBuffer, newImage.mImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
+        vkCmdCopyBufferToImage(cmd, stagingBuffer.GetBuffer(), newImage.mImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
                                &copyRegion);
 
         VkImageMemoryBarrier imageBarrier_toReadable = imageBarrier_toTransfer;
@@ -306,7 +306,7 @@ bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics *aEngine, const std:
                              0, nullptr, 1, &imageBarrier_toReadable);
     });
     // Cleanup staging buffer
-    vmaDestroyBuffer(aEngine->mAllocator, stagingBuffer.mBuffer, stagingBuffer.mAllocation);
+    vmaDestroyBuffer(aEngine->mAllocator, stagingBuffer.GetBuffer(), stagingBuffer.GetAllocation());
     aResult = newImage;
     return true;
 }
@@ -383,7 +383,7 @@ bool LoadUtilities::CreateImage(const int aWidth, const int aHeight,
         copyRegion.imageExtent = imageExtent;
 
         //copy the buffer into the image
-        vkCmdCopyBufferToImage(cmd, stagingBuffer.mBuffer, newImage.mImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
+        vkCmdCopyBufferToImage(cmd, stagingBuffer.GetBuffer(), newImage.mImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
                                &copyRegion);
 
         VkImageMemoryBarrier imageBarrier_toReadable = imageBarrier_toTransfer;

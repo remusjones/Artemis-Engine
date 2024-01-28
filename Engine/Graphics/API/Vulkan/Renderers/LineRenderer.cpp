@@ -111,12 +111,14 @@ void LineRenderer::BindRenderer(GraphicsPipeline &aBoundGraphicsPipeline) {
 
 void LineRenderer::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
     if (mAllocatedPositions) {
-        void *data;
-        vmaMapMemory(gGraphics->mAllocator, mAllocatedPositions->mAllocation, &data);
-        memcpy(data, mLinePositions.data(), sizeof(mLinePositions[0]) * mLinePositions.size());
-        vmaUnmapMemory(gGraphics->mAllocator, mAllocatedPositions->mAllocation);
 
-        const VkBuffer vertexBuffers[] = {mAllocatedPositions->mBuffer};
+        AllocatedBuffer::MapMemory(
+            gGraphics->mAllocator,
+            mLinePositions.data(),
+            mAllocatedPositions->GetAllocation(),
+            sizeof(Vertex) * mLinePositions.size());
+
+        const VkBuffer vertexBuffers[] = {mAllocatedPositions->GetBuffer()};
         const VkDeviceSize offsets[] = {0};
         vkCmdBindVertexBuffers(aCommandBuffer, 0, 1, vertexBuffers, offsets);
 
@@ -140,12 +142,14 @@ void LineRenderer::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
 
 
     if (!mTemporaryLines.empty()) {
-        void *data;
-        vmaMapMemory(gGraphics->mAllocator, mTemporaryAllocatedPositions->mAllocation, &data);
-        memcpy(data, mTemporaryLines.data(), sizeof(mTemporaryLines[0]) * mTemporaryLines.size());
-        vmaUnmapMemory(gGraphics->mAllocator, mTemporaryAllocatedPositions->mAllocation);
 
-        const VkBuffer vertexBuffers[] = {mTemporaryAllocatedPositions->mBuffer};
+        AllocatedBuffer::MapMemory(
+            gGraphics->mAllocator,
+            mTemporaryLines.data(),
+            mTemporaryAllocatedPositions->GetAllocation(),
+            sizeof(Vertex) * mLinePositions.size());
+
+        const VkBuffer vertexBuffers[] = {mTemporaryAllocatedPositions->GetBuffer()};
         const VkDeviceSize offsets[] = {0};
         vkCmdBindVertexBuffers(aCommandBuffer, 0, 1, vertexBuffers, offsets);
 

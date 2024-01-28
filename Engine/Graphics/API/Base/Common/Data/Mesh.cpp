@@ -16,11 +16,11 @@ Mesh::~Mesh() {
 }
 
 void Mesh::Bind(VkCommandBuffer aCommandBuffer) const {
-    const VkBuffer vertexBuffers[] = {mVertexBuffer->mVerticesBuffer->mBuffer};
+    const VkBuffer vertexBuffers[] = {mVertexBuffer->mVerticesBuffer->GetBuffer()};
     const VkDeviceSize offsets[] = {0};
 
     vkCmdBindVertexBuffers(aCommandBuffer, 0, 1, vertexBuffers, offsets);
-    vkCmdBindIndexBuffer(aCommandBuffer, mVertexBuffer->mIndicesBuffer->mBuffer,
+    vkCmdBindIndexBuffer(aCommandBuffer, mVertexBuffer->mIndicesBuffer->GetBuffer(),
                          0, VK_INDEX_TYPE_UINT32);
 }
 
@@ -31,10 +31,10 @@ bool Mesh::LoadFromObject(const char *aFileName, const char *aMtlDirectory = "")
 
         std::string bufferName;
         bufferName.append(aFileName);
-        vmaSetAllocationName(gGraphics->mAllocator, mVertexBuffer->mVerticesBuffer->mAllocation,
+        vmaSetAllocationName(gGraphics->mAllocator, mVertexBuffer->mVerticesBuffer->GetAllocation(),
                              (bufferName + " mVerticesBuffer").c_str());
 
-        vmaSetAllocationName(gGraphics->mAllocator, mVertexBuffer->mIndicesBuffer->mAllocation,
+        vmaSetAllocationName(gGraphics->mAllocator, mVertexBuffer->mIndicesBuffer->GetAllocation(),
                              (bufferName + " mIndicesBuffer").c_str());
         return true;
     }

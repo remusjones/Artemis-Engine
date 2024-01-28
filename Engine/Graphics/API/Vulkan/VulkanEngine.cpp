@@ -160,27 +160,6 @@ void VulkanEngine::DestroyCommandPool()
     }
 }
 
-AllocatedBuffer VulkanEngine::CreateBuffer(size_t aAllocSize, VkBufferUsageFlags aUsage,
-                                           VmaMemoryUsage vmaMemoryUsage)
-{
-    VkBufferCreateInfo bufferInfo = {};
-    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.pNext = nullptr;
-
-    bufferInfo.size = aAllocSize;
-    bufferInfo.usage = aUsage;
-
-    VmaAllocationCreateInfo vmaAllocInfo = {};
-    vmaAllocInfo.usage = vmaMemoryUsage;
-
-    AllocatedBuffer newBuffer;
-    vmaCreateBuffer(gGraphics->mAllocator, &bufferInfo,
-                    &vmaAllocInfo, &newBuffer.mBuffer,
-                    &newBuffer.mAllocation, nullptr);
-
-    return newBuffer;
-}
-
 void VulkanEngine::CreateDescriptorPool()
 {
     std::vector<VkDescriptorPoolSize> sizes =
@@ -206,9 +185,8 @@ void VulkanEngine::CreateDescriptorPool()
         //                                           VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
         //                                           VMA_MEMORY_USAGE_CPU_TO_GPU);
 
-        mFrameData[i].mSceneBuffer = CreateBuffer(sizeof(GPUSceneData),
-                                                  VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                                                  VMA_MEMORY_USAGE_CPU_TO_GPU);
+        mFrameData[i].mSceneBuffer = AllocatedBuffer();
+        mFrameData[i].mSceneBuffer.Create(sizeof(GPUSceneData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
     }
 }
 
