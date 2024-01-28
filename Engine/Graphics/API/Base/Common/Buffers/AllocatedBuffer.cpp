@@ -40,7 +40,7 @@ VkBuffer AllocatedBuffer::GetBuffer() const { return mBuffer; }
 
 VmaAllocation AllocatedBuffer::GetAllocation() const { return mAllocation; }
 
-bool AllocatedBuffer::IsAllocted() const {
+bool AllocatedBuffer::IsAllocated() const {
     return mBuffer != nullptr || mAllocation != nullptr;
 }
 

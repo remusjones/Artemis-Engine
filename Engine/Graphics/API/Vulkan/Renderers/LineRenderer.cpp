@@ -80,7 +80,7 @@ void LineRenderer::DrawLine(glm::vec3 aStart, glm::vec3 aEnd, Color aColor) {
         if (mTemporaryAllocatedPositions == nullptr)
             mTemporaryAllocatedPositions = new AllocatedBuffer();
 
-        if (mTemporaryAllocatedPositions->IsAllocted())
+        if (mTemporaryAllocatedPositions->IsAllocated())
             mTemporaryAllocatedPositions->Destroy();
 
         mTemporaryAllocatedPositions->AllocateBuffer(mTemporaryLines.data(),

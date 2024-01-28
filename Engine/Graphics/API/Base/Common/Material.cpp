@@ -99,7 +99,7 @@ void Material::Destroy() {
     vkDestroyDescriptorSetLayout(gGraphics->mLogicalDevice, mLayout, nullptr);
     vkFreeDescriptorSets(gGraphics->mLogicalDevice, gGraphics->mVulkanEngine.mDescriptorPool, 1, &mDescriptorSet);
 
-    if (mPropertiesBuffer.IsAllocted())
+    if (mPropertiesBuffer.IsAllocated())
         mPropertiesBuffer.Destroy();
 
 }

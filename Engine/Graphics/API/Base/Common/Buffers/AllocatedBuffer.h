@@ -21,7 +21,7 @@ public:
 
     [[nodiscard]] VkBuffer GetBuffer() const;
     [[nodiscard]] VmaAllocation GetAllocation() const;
-    [[nodiscard]] bool IsAllocted() const;
+    [[nodiscard]] bool IsAllocated() const;
 
     void Destroy();
 
