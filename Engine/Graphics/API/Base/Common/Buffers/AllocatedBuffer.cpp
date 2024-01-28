@@ -7,22 +7,35 @@
 #include "Logger.h"
 #include "VulkanGraphicsImpl.h"
 
-AllocatedBuffer::AllocatedBuffer(const void *aData, VkDeviceSize aBufferSize,
-                                 VkBufferUsageFlags aUsageFlags) {
+AllocatedBuffer::AllocatedBuffer(const void *aData, const VkDeviceSize aBufferSize,
+                                 const VkBufferUsageFlags aUsageFlags) {
     void *data;
     Create(aBufferSize, aUsageFlags, mBuffer, mAllocation);
     //copy vertex data
     vmaMapMemory(gGraphics->mAllocator, mAllocation, &data);
     memcpy(data, aData, aBufferSize);
     vmaUnmapMemory(gGraphics->mAllocator, mAllocation);
-
 }
 
 AllocatedBuffer::~AllocatedBuffer() {
 }
 
-void AllocatedBuffer::Create(VkDeviceSize aSize,
-                             VkBufferUsageFlags aUsage,
+void AllocatedBuffer::AllocateBuffer(const void *aData, const VkDeviceSize aBufferSize,
+                                     const VkBufferUsageFlags aUsageFlags) {
+    void *data;
+    Create(aBufferSize, aUsageFlags, mBuffer, mAllocation);
+    //copy vertex data
+    vmaMapMemory(gGraphics->mAllocator, mAllocation, &data);
+    memcpy(data, aData, aBufferSize);
+    vmaUnmapMemory(gGraphics->mAllocator, mAllocation);
+}
+
+bool AllocatedBuffer::IsAllocted() const {
+    return mBuffer != nullptr || mAllocation != nullptr;
+}
+
+void AllocatedBuffer::Create(const VkDeviceSize aSize,
+                             const VkBufferUsageFlags aUsage,
                              VkBuffer &aBuffer, VmaAllocation &aAllocation) {
     VkBufferCreateInfo bufferInfo = {};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -33,13 +46,16 @@ void AllocatedBuffer::Create(VkDeviceSize aSize,
     vmaallocInfo.usage = VMA_MEMORY_USAGE_AUTO;
     vmaallocInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT |
                          VMA_ALLOCATION_CREATE_MAPPED_BIT;
-
-    vmaCreateBuffer(gGraphics->mAllocator, &bufferInfo, &vmaallocInfo,
-                    &aBuffer,
-                    &aAllocation,
-                    nullptr);
+    if (const VkResult result = vmaCreateBuffer(gGraphics->mAllocator, &bufferInfo, &vmaallocInfo,
+                                                &aBuffer,
+                                                &aAllocation,nullptr); result != VK_SUCCESS) {
+        Logger::Log(spdlog::level::critical, "Failed to create AllocatedBuffer");
+    }
 }
+
 
 void AllocatedBuffer::Destroy() {
     vmaDestroyBuffer(gGraphics->mAllocator, mBuffer, mAllocation);
+    mBuffer = nullptr;
+    mAllocation = nullptr;
 }

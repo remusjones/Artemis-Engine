@@ -39,8 +39,7 @@ void LineRenderer::SetLinePositions(const std::vector<glm::vec3> &aPositions, co
 }
 
 void LineRenderer::SetLinePositions(const std::vector<glm::vec3> &aPositions, const std::vector<Color> &aColors,
-const LineRenderMode aMode) {
-
+                                    const LineRenderMode aMode) {
     mLineRenderMode = aMode;
     if (mLinePositions.size() == aPositions.size()) {
         for (int i = 0; i < aPositions.size(); i++) {
@@ -50,8 +49,8 @@ const LineRenderMode aMode) {
     }
 
     mLinePositions = std::vector<Vertex>(aPositions.size());
-    for (int i = 0; i < aPositions.size(); i++){
-            mLinePositions[i] = {aPositions[i], {}, aColors[i].RGB()};
+    for (int i = 0; i < aPositions.size(); i++) {
+        mLinePositions[i] = {aPositions[i], {}, aColors[i].RGB()};
     }
 
     if (mAllocatedPositions) {
@@ -65,12 +64,43 @@ const LineRenderMode aMode) {
                                               VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 }
 
+void LineRenderer::DrawLine(glm::vec3 aStart, glm::vec3 aEnd, Color aColor) {
+    mTemporaryLines.reserve(2);
+
+    Vertex start = {aStart, {}, aColor.RGB()};
+    Vertex end = {aEnd, {}, aColor.RGB()};
+
+    mTemporaryLines.emplace_back(start);
+    mTemporaryLines.emplace_back(end);
+
+    // Permanantly reallocate size of buffer
+    if (mTemporaryLines.size() > currentAllocationCount) {
+        currentAllocationCount = mTemporaryLines.size();
+
+        if (mTemporaryAllocatedPositions == nullptr)
+            mTemporaryAllocatedPositions = new AllocatedBuffer();
+
+        if (mTemporaryAllocatedPositions->IsAllocted())
+            mTemporaryAllocatedPositions->Destroy();
+
+        mTemporaryAllocatedPositions->AllocateBuffer(mTemporaryLines.data(),
+                                                     sizeof(Vertex) * currentAllocationCount,
+                                                     VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                                                     VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    }
+}
+
 
 void LineRenderer::DestroyRenderer() {
     Renderer::DestroyRenderer();
     if (mAllocatedPositions) {
         mAllocatedPositions->Destroy();
         delete mAllocatedPositions;
+    }
+    if (mTemporaryAllocatedPositions) {
+        if (mTemporaryAllocatedPositions)
+            mTemporaryAllocatedPositions->Destroy();
+        delete mTemporaryAllocatedPositions;
     }
 }
 
@@ -106,5 +136,28 @@ void LineRenderer::Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) {
                 break;
             default: break;
         }
+    }
+
+
+    if (!mTemporaryLines.empty()) {
+        void *data;
+        vmaMapMemory(gGraphics->mAllocator, mTemporaryAllocatedPositions->mAllocation, &data);
+        memcpy(data, mTemporaryLines.data(), sizeof(mTemporaryLines[0]) * mTemporaryLines.size());
+        vmaUnmapMemory(gGraphics->mAllocator, mTemporaryAllocatedPositions->mAllocation);
+
+        const VkBuffer vertexBuffers[] = {mTemporaryAllocatedPositions->mBuffer};
+        const VkDeviceSize offsets[] = {0};
+        vkCmdBindVertexBuffers(aCommandBuffer, 0, 1, vertexBuffers, offsets);
+
+        vkCmdPushConstants(aCommandBuffer, mGraphicsPipeline->mPipelineConfig.pipelineLayout,
+                           VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
+                           sizeof(PushConstants), &mPushConstants);
+
+
+        for (int i = 0; i < mTemporaryLines.size() - 1; i += 2) {
+            vkCmdDraw(aCommandBuffer, 2, 1, i, 0);
+        }
+
+        mTemporaryLines.clear(); // TODO: Reduce allocations here for a new frame, and instead reuse buffer
     }
 }

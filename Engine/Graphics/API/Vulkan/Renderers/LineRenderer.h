@@ -22,7 +22,9 @@ public:
     void SetLinePositions(const std::vector<glm::vec3> &aPositions, const LineRenderMode aMode = LINES_CONTINUOUS);
 
     void SetLinePositions(const std::vector<glm::vec3> &aPositions, const std::vector<Color> &aColors,
-        const LineRenderMode aMode = LINES_CONTINUOUS);
+                          const LineRenderMode aMode = LINES_CONTINUOUS);
+
+    void DrawLine(glm::vec3 aStart, glm::vec3 aEnd, Color aColor);
 
     void DestroyRenderer() override;
 
@@ -30,10 +32,19 @@ public:
 
     void Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) override;
 
-    std::vector<Vertex> mLinePositions;
-    AllocatedBuffer *mAllocatedPositions;
+private:
+    void SetLinePositions(const std::vector<Vertex> &aLines, const LineRenderMode aMode = LINES_CONTINUOUS);
+
+public:
     Transform *mTransform;
 
 private:
+    AllocatedBuffer *mAllocatedPositions;
+    std::vector<Vertex> mLinePositions;
+
+    uint32_t currentAllocationCount = 0;
+    AllocatedBuffer *mTemporaryAllocatedPositions;
+    std::vector<Vertex> mTemporaryLines;
+
     LineRenderMode mLineRenderMode{};
 };

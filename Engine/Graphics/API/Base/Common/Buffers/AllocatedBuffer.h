@@ -14,6 +14,8 @@ public:
 
     void Create(VkDeviceSize aSize, VkBufferUsageFlags aUsage, VkBuffer &aBuffer,
                       VmaAllocation &aAllocation);
+    void AllocateBuffer(const void* aData, VkDeviceSize aBufferSize, VkBufferUsageFlags aUsageFlags);
+    [[nodiscard]] bool IsAllocted() const;
 
     void Destroy();
 

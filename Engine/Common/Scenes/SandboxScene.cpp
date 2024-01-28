@@ -214,6 +214,11 @@ void SandboxScene::Tick(float aDeltaTime) {
         Color::Yellow()
     });
 
+    mLineRenderer->DrawLine(
+        mFloor->mTransform.GetWorldPosition(),
+        mActiveSceneCamera->mTransform.GetWorldPosition() - glm::vec3(0,1,0),
+        Color::Magenta());
+
     mActiveSceneCamera->Tick(aDeltaTime);
 }
 
