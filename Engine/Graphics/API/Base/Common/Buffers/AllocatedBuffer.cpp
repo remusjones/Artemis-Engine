@@ -17,8 +17,7 @@ AllocatedBuffer::AllocatedBuffer(const void *aData, const VkDeviceSize aBufferSi
     vmaUnmapMemory(gGraphics->mAllocator, mAllocation);
 }
 
-AllocatedBuffer::~AllocatedBuffer() {
-}
+AllocatedBuffer::~AllocatedBuffer() = default;
 
 void AllocatedBuffer::AllocateBuffer(const void *aData, const VkDeviceSize aBufferSize,
                                      const VkBufferUsageFlags aUsageFlags) {

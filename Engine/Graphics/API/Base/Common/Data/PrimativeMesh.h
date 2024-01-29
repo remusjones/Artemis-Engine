@@ -13,7 +13,7 @@ class PrimativeMesh {
 public:
     void Bind(VkCommandBuffer aCommandBuffer) const;
 
-    bool LoadFromObject(const char *aFileName, const char *mtlDirectory);
+    bool LoadFromObject(const char *aFileName, const char *aMtlDirectory);
 
     ~PrimativeMesh();
 

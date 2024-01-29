@@ -180,7 +180,6 @@ void Scene::OnImGuiRender() {
                                  glm::value_ptr(mActiveSceneCamera->GetPerspectiveMatrix()),
                                  mCurrentGizmoOperation, mCurrentGizmoMode,
                                  glm::value_ptr(matrix),NULL)) {
-
             mPickedEntity->mTransform.SetMatrix(matrix);
         }
     }
@@ -275,7 +274,8 @@ void Scene::AddGraphicsPipeline(GraphicsPipeline *aGraphicsPipeline) {
     aGraphicsPipeline->Create();
 }
 
-MeshObject *Scene::MakeObject(const char *aName, const char *aMeshPath, Material &aMaterial,
+// TODO: Make pointers managed
+MeshObject *Scene::CreateObject(const char *aName, const char *aMeshPath, Material &aMaterial,
                               GraphicsPipeline &aPipeline, const glm::vec3 aPos, const glm::vec3 aRot,
                               const glm::vec3 aScale) {
     auto *object = new MeshObject();
@@ -342,5 +342,20 @@ const btRigidBody *Scene::PickRigidBody(const int x, const int y) const {
         }
     }
 
+    return nullptr;
+}
+
+Texture *Scene::CreateTexture(const char *aName, std::vector<std::string> aPathsSet) {
+    if (mLoadedTextures.find(aName) == mLoadedTextures.end()) {
+        mLoadedTextures[aName] = std::make_unique<Texture>();
+
+        auto *texture = mLoadedTextures[aName].get();
+        texture->LoadImagesFromDisk(aPathsSet);
+        texture->Create();
+
+        return texture;
+    }
+
+    Logger::Log(spdlog::level::err, "Texture Already Exists");
     return nullptr;
 }

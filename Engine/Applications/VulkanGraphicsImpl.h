@@ -114,7 +114,7 @@ private:
 
 public:
     VulkanEngine mVulkanEngine;
-    VulkanSwapChain *mSwapChain;
+    std::unique_ptr<VulkanSwapChain> mSwapChain;
     VkInstance mVulkanInstance;
     SDL_Window *mWindow{nullptr}; // TODO: Move to interface
     VkDevice mLogicalDevice{};

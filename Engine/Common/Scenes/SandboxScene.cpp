@@ -39,14 +39,13 @@ void SandboxScene::Construct() {
     //
     // Define Material Usages
     //
-    Material *monkeyTexturedMaterial = mMaterialUnlitFactory.CreateMaterialInstance<DefaultMaterial>("Monkey Unlit").
-            get();
+    Material *monkeyTexturedMaterial = mMaterialUnlitFactory.CreateMaterialInstance<DefaultMaterial>("Monkey Unlit").get();
     Material *unlitMaterial = mMaterialUnlitFactory.CreateMaterialInstance<DefaultMaterial>("Unlit").get();
     Material *teapotMaterial = mMaterialPBRFactory.CreateMaterialInstance<DefaultMaterial>("Teapot PBR").get();
     Material *lightMaterial = mMaterialUnlitFactory.CreateMaterialInstance<DefaultMaterial>("Light Unlit").get();
     Material *sphereMaterial = mMaterialPBRFactory.CreateMaterialInstance<DefaultMaterial>("Sphere PBR").get();
     Material *cubeMaterial = mMaterialPBRFactory.CreateMaterialInstance<DefaultMaterial>("Cube PBR").get();
-    mCubemap = mGenericMaterialFactory.CreateMaterialInstance<Cubemap>("Skybox Cubemap");
+    mCubemap = mGenericMaterialFactory.CreateMaterialInstance<Cubemap>("Skybox Cubemap").get();
 
     //
     // Make Materials
@@ -71,7 +70,7 @@ void SandboxScene::Construct() {
     // Create Objects
     // TODO: Create constructor helper to make this smaller?
     //
-    mMonkey = MakeObject("Monkey",
+    mMonkey = CreateObject("Monkey",
                          "/Assets/Models/monkey_smooth.obj", *monkeyTexturedMaterial,
                          *mWireframeRenderSystem->mPipeline,
                          glm::vec3(2, 0, -5),
@@ -79,14 +78,14 @@ void SandboxScene::Construct() {
                          glm::vec3(1.f));
 
 
-    mTeapot = MakeObject("Teapot",
-                         "/Assets/Models/teapot.obj", *monkeyTexturedMaterial,
-                         *mWireframeRenderSystem->mPipeline,
+    mTeapot = CreateObject("Teapot",
+                         "/Assets/Models/teapot.obj", *teapotMaterial,
+                         *mPBRPipeline->mPipeline,
                          glm::vec3(2, 0, -20),
                          glm::vec3(0),
                          glm::vec3(0.1f));
 
-    mLight = MakeObject("Light",
+    mLight = CreateObject("Light",
                         "/Assets/Models/sphere.obj", *lightMaterial,
                         *mUnlitPipeline->mPipeline,
                         glm::vec3(0, 0, 0),
@@ -100,7 +99,7 @@ void SandboxScene::Construct() {
         for (int j = 0; j < uniformSphereCount; j++) {
             for (int k = 0; k < uniformSphereCount; k++) {
                 constexpr float sphereRadius = 0.5f;
-                MeshObject *sphere = MakeObject("Physics Sphere",
+                MeshObject *sphere = CreateObject("Physics Sphere",
                                                 "/Assets/Models/sphere.obj", *sphereMaterial,
                                                 *mPBRPipeline->mPipeline,
                                                 glm::vec3(i, j, k),
@@ -114,29 +113,26 @@ void SandboxScene::Construct() {
 
 
     constexpr glm::vec3 floorScale(50, 0.5f, 50);
-    mFloor = MakeObject("Floor", "/Assets/Models/cube.obj",
+    mFloor = CreateObject("Floor", "/Assets/Models/cube.obj",
                         *cubeMaterial, *mPBRPipeline->mPipeline,
                         glm::vec3(0, -10, 0), glm::vec3(0), floorScale);
 
     AttachBoxCollider(*mFloor, floorScale, 0);
 
-    auto *stoneTexture = new Texture();
-    mLoadedTextures["stoneTexture"] = stoneTexture;
-    std::vector<std::string> stoneSet;
-    stoneSet.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/Stone/Stone Wall.png");
-    stoneSet.push_back(FileManagement::GetWorkingDirectory() + "/Assets/Textures/Stone/Stone Wall_NRM.png");
-    stoneTexture->LoadImagesFromDisk(stoneSet);
-    stoneTexture->Create();
-
+    const std::vector stoneSet{
+        FileManagement::GetWorkingDirectory() + "/Assets/Textures/Stone/Stone Wall.png",
+        FileManagement::GetWorkingDirectory() + "/Assets/Textures/Stone/Stone Wall_NRM.png"
+    };
+    const auto stoneTexture = CreateTexture("stoneTexture", stoneSet);
     teapotMaterial->BindTexture(stoneTexture->mImageBufferInfo, DefaultMaterial::TEXTURE);
 
     //
     // Skybox TODO: Skybox Constructor Required
     //
     mCubemapMesh = new Primative("Skybox");
-    SkyboxRenderer *mSkyboxRenderer = new SkyboxRenderer();
+    auto *mSkyboxRenderer = new SkyboxRenderer();
     mCubemapMesh->mRenderer = mSkyboxRenderer;
-    mSkyboxRenderer->mMaterial = mCubemap.get();
+    mSkyboxRenderer->mMaterial = mCubemap;
     mSkyboxRenderer->mTransform = &mCubemapMesh->mTransform;
     mSkyboxRenderer->BindRenderer(*mCubemapPipeline->mPipeline);
     mSkyboxRenderer->LoadMesh((FileManagement::GetWorkingDirectory() +
@@ -203,20 +199,20 @@ void SandboxScene::Tick(float aDeltaTime) {
 
 
     mLineRenderer->SetLinePositions({
-        mTeapot->mTransform.GetWorldPosition(),
-        mMonkey->mTransform.GetWorldPosition(),
-        mLight->mTransform.GetWorldPosition(),
-        mFloor->mTransform.GetWorldPosition()
-    }, {
-        Color::Red(),
-        Color::Green(),
-        Color::Blue(),
-        Color::Yellow()
-    });
+                                        mTeapot->mTransform.GetWorldPosition(),
+                                        mMonkey->mTransform.GetWorldPosition(),
+                                        mLight->mTransform.GetWorldPosition(),
+                                        mFloor->mTransform.GetWorldPosition()
+                                    }, {
+                                        Color::Red(),
+                                        Color::Green(),
+                                        Color::Blue(),
+                                        Color::Yellow()
+                                    });
 
     mLineRenderer->DrawLine(
         mFloor->mTransform.GetWorldPosition(),
-        mActiveSceneCamera->mTransform.GetWorldPosition() - glm::vec3(0,1,0),
+        mActiveSceneCamera->mTransform.GetWorldPosition() - glm::vec3(0, 1, 0),
         Color::Magenta());
 
     mActiveSceneCamera->Tick(aDeltaTime);
@@ -225,7 +221,6 @@ void SandboxScene::Tick(float aDeltaTime) {
 void SandboxScene::Cleanup() {
     for (const auto &loadedTextures: mLoadedTextures) {
         loadedTextures.second->Destroy();
-        delete loadedTextures.second;
     }
     mLineRenderer->DestroyRenderer();
     mMaterialUnlitFactory.DestroyMaterials();

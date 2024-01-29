@@ -32,10 +32,11 @@ public:
     void OnImGuiRender() override;
 
 private:
-    std::unordered_map<std::string, Texture *> mLoadedTextures;
     PipelineConfigInfo mDefaultPipelineConfig;
 
     VkSampler mBlockySampler;
+
+    // TODO: Remove unmanaged pointer usage
     MeshObject *mMonkey;
     MeshObject *mTeapot;
     MeshObject *mLight;
@@ -44,7 +45,7 @@ private:
     Primative *mCubemapMesh;
     Primative *mLineRendererEntity;
 
-    std::shared_ptr<Cubemap> mCubemap;
+    Cubemap* mCubemap;
     std::unique_ptr<SkyboxRenderSystem> mCubemapPipeline;
     std::shared_ptr<UnlitRenderSystem> mUnlitPipeline;
     std::shared_ptr<WireframeRenderSystem> mWireframeRenderSystem;

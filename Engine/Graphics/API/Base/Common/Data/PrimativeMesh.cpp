@@ -15,10 +15,10 @@ void PrimativeMesh::Bind(VkCommandBuffer aCommandBuffer) const {
                          0, VK_INDEX_TYPE_UINT32);
 }
 
-bool PrimativeMesh::LoadFromObject(const char *aFileName, const char *mtlDirectory) {
+bool PrimativeMesh::LoadFromObject(const char *aFileName, const char *aMtlDirectory) {
     std::vector<Vertex> vertices;
 
-    if (LoadUtilities::LoadMeshFromDisk(aFileName, vertices, mIndices, mtlDirectory)) {
+    if (LoadUtilities::LoadMeshFromDisk(aFileName, vertices, mIndices, aMtlDirectory)) {
         mVertices = std::vector<Vertex>(vertices.size());
         for (int i = 0; i < vertices.size(); i++) {
             mVertices[i] = vertices[i];

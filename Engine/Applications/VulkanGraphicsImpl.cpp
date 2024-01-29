@@ -45,7 +45,7 @@ void VulkanGraphicsImpl::InitializeVulkan() {
     allocatorInfo.instance = mVulkanInstance;
     vmaCreateAllocator(&allocatorInfo, &mAllocator);
 
-    mSwapChain = new VulkanSwapChain();
+    mSwapChain = std::make_unique<VulkanSwapChain>();
     mSwapChain->Initialize(mLogicalDevice,
                            mPhysicalDevice,
                            mSurface,
@@ -293,7 +293,7 @@ void VulkanGraphicsImpl::DestroyScenes() const {
 
 void VulkanGraphicsImpl::CreateGraphicsPipeline() {
     mVulkanEngine.Initialize(mLogicalDevice,
-                             mSwapChain,
+                             mSwapChain.get(),
                              mPhysicalDevice,
                              mGraphicsQueue,
                              mPresentQueue
@@ -307,7 +307,6 @@ void VulkanGraphicsImpl::CreateGraphicsPipeline() {
 void VulkanGraphicsImpl::DestroyGraphicsPipeline() {
     mVulkanEngine.Cleanup();
     mSwapChain->Cleanup();
-    delete mSwapChain;
 }
 
 bool VulkanGraphicsImpl::CheckValidationLayerSupport() const {

@@ -4,11 +4,14 @@
 
 #pragma once
 
+#include <memory>
+
 #include "Base/Common/Buffers/AllocatedBuffer.h"
 #include "Base/Common/Data/GPUSceneData.h"
 #include "Objects/FlyCamera.h"
 #include "Objects/ImGuiLayer.h"
 
+class Texture;
 class btRigidBody;
 class btVector3;
 class Material;
@@ -38,7 +41,8 @@ public:
 
     void AddGraphicsPipeline(GraphicsPipeline *aGraphicsPipeline);
 
-    MeshObject *MakeObject(const char *aName,
+
+    MeshObject *CreateObject(const char *aName,
                            const char *aMeshPath,
                            Material &aMaterial,
                            GraphicsPipeline &aPipeline,
@@ -60,10 +64,9 @@ public:
 
     const btRigidBody *PickRigidBody(int x, int y) const;
 
+    Texture* CreateTexture(const char *aName, std::vector<std::string> aPathsSet);
 private:
-
     void DrawObjectsRecursive(Entity *obj);
-
     bool IsParentOfPickedEntity(const Entity *obj);
 
 public:
@@ -73,9 +76,11 @@ public:
     const char *mSceneName; //
     PhysicsSystem *mPhysicsSystem;
 
-private:
+protected:
     std::vector<Entity *> mObjects;
     std::unordered_map<Transform *, Entity *> mTransformEntityRelationships;
+    std::unordered_map<std::string, std::unique_ptr<Texture>> mLoadedTextures;
+private:
     PhysicsSystem *mSceneInteractionPhysicsSystem;
     Entity *mPickedEntity{nullptr};
     int mMouseX{0}, mMouseY{0};
