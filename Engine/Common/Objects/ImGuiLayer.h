@@ -12,6 +12,7 @@ public:
     virtual void OnImGuiRender() = 0; // TODO: Invoke from single point in app
     const char* GetUniqueLabel(const char* aLabel);
 
+
 private:
 
     /**

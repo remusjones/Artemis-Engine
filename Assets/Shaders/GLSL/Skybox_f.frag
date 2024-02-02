@@ -25,6 +25,5 @@ layout(set = 0, binding = 1) uniform samplerCube samplerCubeMap;
 
 void main() {
 
-    vec3 test = vec3(fragUVW.x, fragUVW.y, -fragUVW.z);
-    outColor = texture(samplerCubeMap, test);
+    outColor = texture(samplerCubeMap, vec3(fragUVW.x, fragUVW.y, fragUVW.z));
 }

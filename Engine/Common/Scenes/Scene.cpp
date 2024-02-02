@@ -27,6 +27,7 @@
 #include "Components/Component.h"
 #include "Physics/Ray.h"
 #include "glm/gtx/string_cast.hpp"
+#include "Vulkan/Systems/RenderSystemBase.h"
 
 
 static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
@@ -62,7 +63,6 @@ void Scene::PreConstruct(const char *aSceneName) {
                                             if (!mActiveSceneCamera->IsCameraConsumingInput())
                                                 ChangeImGuizmoOperation(ImGuizmo::SCALE);
                                         }, "Scene Gizmo Scale");
-
 }
 
 
@@ -99,8 +99,8 @@ void Scene::Construct() {
 
 void Scene::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
                    uint32_t aCurrentFrame) {
-    for (auto obj: mGraphicsPipelines) {
-        obj->Draw(aCommandBuffer, *this);
+    for (const auto obj: mRenderSystems) {
+        obj->mPipeline->Draw(aCommandBuffer, *this);
     }
 
     OnImGuiRender();
@@ -244,16 +244,26 @@ void Scene::OnImGuiRender() {
         ImGui::Text(std::to_string(static_cast<int32_t>(mObjects.size())).c_str());
         ImGui::Text("Graphic Systems: ");
         ImGui::SameLine();
-        ImGui::Text(std::to_string(static_cast<int32_t>(mGraphicsPipelines.size())).c_str());
+        ImGui::Text(std::to_string(static_cast<int32_t>(mRenderSystems.size())).c_str());
         if (ImGui::CollapsingHeader("Graphic Systems Info")) {
+            if (ImGui::Button(GetUniqueLabel("Rebuild All"))) {
+                gGraphics->mVulkanEngine.SubmitEndOfFrameTask([=] {
+                    for (const auto &renderSystem: mRenderSystems) {
+                        vkDeviceWaitIdle(gGraphics->mLogicalDevice);
+                        renderSystem->mPipeline->Destroy();
+                        renderSystem->Create(renderSystem->GetBoundDescriptors());
+                        renderSystem->mPipeline->Create();
+                    }
+                });
+            }
             ImGui::Indent();
-            for (const auto pipeline: mGraphicsPipelines) {
-                if (ImGui::CollapsingHeader(pipeline->mPipelineName)) {
+            for (auto system: mRenderSystems) {
+                if (ImGui::CollapsingHeader(system->mPipeline->mPipelineName)) {
                     ImGui::Indent();
                     ImGui::Text("Material Count: ");
                     ImGui::SameLine();
-                    ImGui::Text(std::to_string(pipeline->mRenderers.size()).c_str());
-                    for (const auto renderer: pipeline->mRenderers) {
+                    ImGui::Text(std::to_string(system->mPipeline->mRenderers.size()).c_str());
+                    for (const auto renderer: system->mPipeline->mRenderers) {
                         ImGui::Text(renderer->mMaterial->mMaterialName);
                     }
                     ImGui::Unindent();
@@ -283,9 +293,9 @@ void Scene::Cleanup() {
     }
 
     delete mActiveSceneCamera;
-    for (const auto pipeline: mGraphicsPipelines) {
-        pipeline->Destroy();
-        delete pipeline;
+    for (const auto system: mRenderSystems) {
+        system->mPipeline->Destroy();
+        delete system->mPipeline.get();
     }
     mPhysicsSystem->Destroy();
     delete mPhysicsSystem;
@@ -296,9 +306,9 @@ void Scene::Cleanup() {
     mSceneInteractionPhysicsSystem = nullptr;
 }
 
-void Scene::AddGraphicsPipeline(GraphicsPipeline *aGraphicsPipeline) {
-    mGraphicsPipelines.push_back(aGraphicsPipeline);
-    aGraphicsPipeline->Create();
+void Scene::AddRenderSystem(RenderSystemBase *aRenderSystem) {
+    mRenderSystems.push_back(aRenderSystem);
+    aRenderSystem->mPipeline->Create();
 }
 
 // TODO: Make pointers managed

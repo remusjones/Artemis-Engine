@@ -171,11 +171,11 @@ void SandboxScene::Construct() {
     //
     // Setup Draw Order
     //
-    AddGraphicsPipeline(mCubemapPipeline->mPipeline.get());
-    AddGraphicsPipeline(mUnlitPipeline->mPipeline.get());
-    AddGraphicsPipeline(mPBRPipeline->mPipeline.get());
-    AddGraphicsPipeline(mWireframeRenderSystem->mPipeline.get());
-    AddGraphicsPipeline(mLineRenderPipeline->mPipeline.get());
+    AddRenderSystem(mCubemapPipeline.get());
+    AddRenderSystem(mUnlitPipeline.get());
+    AddRenderSystem(mPBRPipeline.get());
+    AddRenderSystem(mWireframeRenderSystem.get());
+    AddRenderSystem(mLineRenderPipeline.get());
     //
     // Construct Scene
     //
@@ -230,14 +230,5 @@ void SandboxScene::Cleanup() {
 }
 
 void SandboxScene::OnImGuiRender() {
-    // TODO: Move this to a function
-    if (ImGui::Button(GetUniqueLabel("Rebuild PBR Pipeline"))) {
-        gGraphics->mVulkanEngine.SubmitEndOfFrameTask([&] {
-            vkDeviceWaitIdle(gGraphics->mLogicalDevice);
-            mPBRPipeline->mPipeline->Destroy();
-            mPBRPipeline->Create(mPBRPipeline->GetBoundDescriptors());
-            mPBRPipeline->mPipeline->Create();
-        });
-    }
     Scene::OnImGuiRender();
 }

@@ -11,6 +11,7 @@
 #include "Objects/FlyCamera.h"
 #include "Objects/ImGuiLayer.h"
 
+class RenderSystemBase;
 class Texture;
 class btRigidBody;
 class btVector3;
@@ -39,7 +40,7 @@ public:
 
     void OnImGuiRender() override;
 
-    void AddGraphicsPipeline(GraphicsPipeline *aGraphicsPipeline);
+    void AddRenderSystem(RenderSystemBase * aRenderSystem);
 
 
     MeshObject *CreateObject(const char *aName,
@@ -71,17 +72,20 @@ private:
     void ChangeImGuizmoOperation(int aOperation);
 
 public:
+    // TODO: Make unique ptr
     FlyCamera *mActiveSceneCamera;
-    std::vector<GraphicsPipeline *> mGraphicsPipelines;
+    std::vector<RenderSystemBase *> mRenderSystems;
     GPUSceneData mSceneData;
     const char *mSceneName; //
     PhysicsSystem *mPhysicsSystem;
 
 protected:
+    // TODO: Make unique ptr
     std::vector<Entity *> mObjects;
     std::unordered_map<Transform *, Entity *> mTransformEntityRelationships;
     std::unordered_map<std::string, std::unique_ptr<Texture>> mLoadedTextures;
 private:
+    // TODO: Make unique ptr
     PhysicsSystem *mSceneInteractionPhysicsSystem;
     Entity *mPickedEntity{nullptr};
     int mMouseX{0}, mMouseY{0};

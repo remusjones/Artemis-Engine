@@ -22,7 +22,6 @@ const char* ImGuiLayer::GetUniqueLabel(const char *aLabel)  {
     return mConstructedLabels[aLabel].c_str();
 }
 
-
 // Psuedo GUID implementation
 static std::random_device rd;
 static std::mt19937 gen(rd());

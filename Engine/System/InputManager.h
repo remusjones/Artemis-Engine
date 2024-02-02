@@ -59,6 +59,7 @@ public:
     void ConsumeInput(const SDL_Event *aInputEvent);
     void ProcessInput(const SDL_Event *aInputEvent);
     void Update();
+
     void RegisterKeyCodeInput(
         SDL_KeyCode aKeyCode,
         std::function<void(KeyboardEvent aKeyboardEvent)> &&aCallback,
@@ -68,20 +69,20 @@ public:
     void RegisterMouseInput(
         std::function<void(SDL_MouseMotionEvent)> &&aCallback,
         const char *aBindingName = "Default");
+
     void RegisterMouseInput(
         std::function<void(SDL_MouseButtonEvent)> &&aCallback,
         const char *aBindingName = "Default");
 
     // TODO: make descriptor map
     std::unordered_map<int32_t, std::vector<KeyCodeInputBinding>> mKeyboardBindings;
+
     // TODO: make map
     std::vector<MouseMotionBinding> mMouseMotionBindings;
     std::vector<MouseInputBinding> mMouseInputBindings;
 
     std::queue<SDL_Event> mQueuedEvents;
 
-
 };
-
 
 extern InputManager *gInputManager;

@@ -1,10 +1,9 @@
 #include "InputManager.h"
 #include <imgui_impl_sdl3.h>
-#include <iostream>
 
 InputManager *gInputManager = nullptr;
-
 InputManager::InputManager() {
+    assert(gInputManager == nullptr);
     gInputManager = this;
 }
 
@@ -32,7 +31,6 @@ void InputManager::ProcessInput(const SDL_Event *aInputEvent) {
                     binding.mCallback(aInputEvent->motion);
                 }
 
-            // Mouse events getting sent regardless of input changed state
             case SDL_EVENT_MOUSE_BUTTON_UP:
                 for (const auto &binding: mMouseInputBindings) {
                     binding.mCallback(aInputEvent->button);
@@ -67,7 +65,7 @@ void InputManager::RegisterMouseInput(std::function<void(SDL_MouseButtonEvent)> 
     mMouseInputBindings.push_back(newBinding);
 }
 
-void InputManager::RegisterKeyCodeInput(SDL_KeyCode aKeyCode,
+void InputManager::RegisterKeyCodeInput(const SDL_KeyCode aKeyCode,
                                         std::function<void(KeyboardEvent aKeyboardEvent)> &&aCallback,
                                         const char *aBindingName) {
     const KeyCodeInputBinding newBinding(aBindingName, (std::move(aCallback)));
