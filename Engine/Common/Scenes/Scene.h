@@ -68,6 +68,7 @@ public:
 private:
     void DrawObjectsRecursive(Entity *obj);
     bool IsParentOfPickedEntity(const Entity *obj);
+    void ChangeImGuizmoOperation(int aOperation);
 
 public:
     FlyCamera *mActiveSceneCamera;

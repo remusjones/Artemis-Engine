@@ -33,6 +33,7 @@ public:
     void MouseMovement(const SDL_MouseMotionEvent &aMouseMotion);
 
     void MouseInput(const SDL_MouseButtonEvent &aMouseInput);
+    bool IsCameraConsumingInput() const;
 
 private:
     glm::vec3 mMoveVector = {};

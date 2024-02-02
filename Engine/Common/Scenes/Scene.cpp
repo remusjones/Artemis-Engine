@@ -44,7 +44,27 @@ void Scene::PreConstruct(const char *aSceneName) {
                                       "Scene Mouse Movement");
     gInputManager->RegisterMouseInput([&](SDL_MouseButtonEvent input) { MouseInput(input); },
                                       "Scene Mouse Press");
+
+    gInputManager->RegisterKeyCodeInput(SDLK_w,
+                                        [this](KeyboardEvent kb) {
+                                            if (!mActiveSceneCamera->IsCameraConsumingInput())
+                                                ChangeImGuizmoOperation(ImGuizmo::TRANSLATE);
+                                        }, "Scene Gizmo Translate");
+
+    gInputManager->RegisterKeyCodeInput(SDLK_e,
+                                        [this](KeyboardEvent kb) {
+                                            if (!mActiveSceneCamera->IsCameraConsumingInput())
+                                                ChangeImGuizmoOperation(ImGuizmo::ROTATE);
+                                        }, "Scene Gizmo Rotate");
+
+    gInputManager->RegisterKeyCodeInput(SDLK_r,
+                                        [this](KeyboardEvent kb) {
+                                            if (!mActiveSceneCamera->IsCameraConsumingInput())
+                                                ChangeImGuizmoOperation(ImGuizmo::SCALE);
+                                        }, "Scene Gizmo Scale");
+
 }
+
 
 void Scene::MouseMovement(const SDL_MouseMotionEvent &aMouseMotion) {
     mMouseX = static_cast<int>(aMouseMotion.x);
@@ -52,6 +72,9 @@ void Scene::MouseMovement(const SDL_MouseMotionEvent &aMouseMotion) {
 }
 
 void Scene::MouseInput(const SDL_MouseButtonEvent &aMouseInput) {
+    if (mActiveSceneCamera->IsCameraConsumingInput())
+        return;
+
     if (aMouseInput.button == SDL_BUTTON_LEFT
         && aMouseInput.state == SDL_PRESSED
         && !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow)
@@ -125,6 +148,10 @@ bool Scene::IsParentOfPickedEntity(const Entity *obj) {
         }
     }
     return false;
+}
+
+void Scene::ChangeImGuizmoOperation(const int aOperation) {
+    mCurrentGizmoOperation = static_cast<ImGuizmo::OPERATION>(aOperation);
 }
 
 void Scene::OnImGuiRender() {
@@ -276,8 +303,8 @@ void Scene::AddGraphicsPipeline(GraphicsPipeline *aGraphicsPipeline) {
 
 // TODO: Make pointers managed
 MeshObject *Scene::CreateObject(const char *aName, const char *aMeshPath, Material &aMaterial,
-                              GraphicsPipeline &aPipeline, const glm::vec3 aPos, const glm::vec3 aRot,
-                              const glm::vec3 aScale) {
+                                GraphicsPipeline &aPipeline, const glm::vec3 aPos, const glm::vec3 aRot,
+                                const glm::vec3 aScale) {
     auto *object = new MeshObject();
 
     object->CreateObject(aMaterial, aName);

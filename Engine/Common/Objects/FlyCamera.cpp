@@ -5,7 +5,6 @@
 #include "FlyCamera.h"
 
 #include <glm/detail/type_quat.hpp>
-#include <glm/ext/quaternion_trigonometric.hpp>
 
 #include "imgui.h"
 #include "InputManager.h"
@@ -106,19 +105,26 @@ void FlyCamera::MouseInput(const SDL_MouseButtonEvent &aMouseInput) {
     }
 }
 
+bool FlyCamera::IsCameraConsumingInput() const {
+    return mMouseRPressed;
+}
+
 
 void FlyCamera::Tick(float aDeltaTime) {
 
     // TODO: investigate global mouse state for off window input
     //float x, y;
     //LOG(INFO) << x << " " << y;
-
-    mMoveVector.z += mInput[0] ? -mSpeed : 0;
-    mMoveVector.z += mInput[1] ? mSpeed : 0;
-    mMoveVector.x += mInput[2] ? -mSpeed : 0;
-    mMoveVector.x += mInput[3] ? mSpeed : 0;
-    mMoveVector.y += mInput[4] ? mSpeed : 0;
-    mMoveVector.y += mInput[5] ? -mSpeed : 0;
+    if (IsCameraConsumingInput()) {
+        mMoveVector.z += mInput[0] ? -mSpeed : 0;
+        mMoveVector.z += mInput[1] ? mSpeed : 0;
+        mMoveVector.x += mInput[2] ? -mSpeed : 0;
+        mMoveVector.x += mInput[3] ? mSpeed : 0;
+        mMoveVector.y += mInput[4] ? mSpeed : 0;
+        mMoveVector.y += mInput[5] ? -mSpeed : 0;
+    }else if (length(mMoveVector) > 0){
+        mMoveVector = glm::vec3(0);
+    }
 
     Entity::Tick(aDeltaTime);
     mTransform.TranslateLocal(mMoveVector * aDeltaTime);
