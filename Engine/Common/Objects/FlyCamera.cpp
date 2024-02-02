@@ -87,7 +87,6 @@ void FlyCamera::Down(const KeyboardEvent &keyboardEvent) {
 }
 
 void FlyCamera::MouseMovement(const SDL_MouseMotionEvent &aMouseMotion) {
-
     if (!mMouseRPressed)
         return;
 
@@ -109,24 +108,29 @@ bool FlyCamera::IsCameraConsumingInput() const {
     return mMouseRPressed;
 }
 
+glm::vec3 lerp(glm::vec3 x, glm::vec3 y, float t) {
+    return x * (1.f - t) + y * t;
+}
 
 void FlyCamera::Tick(float aDeltaTime) {
-
     // TODO: investigate global mouse state for off window input
     //float x, y;
     //LOG(INFO) << x << " " << y;
     if (IsCameraConsumingInput()) {
+        mMoveVector = glm::vec3();
         mMoveVector.z += mInput[0] ? -mSpeed : 0;
         mMoveVector.z += mInput[1] ? mSpeed : 0;
         mMoveVector.x += mInput[2] ? -mSpeed : 0;
         mMoveVector.x += mInput[3] ? mSpeed : 0;
         mMoveVector.y += mInput[4] ? mSpeed : 0;
         mMoveVector.y += mInput[5] ? -mSpeed : 0;
-    }else if (length(mMoveVector) > 0){
-        mMoveVector = glm::vec3(0);
+        mTransform.TranslateLocal(mMoveVector * aDeltaTime);
+    } else {
+        constexpr float dampeningSpeed = 25.f;
+        mMoveVector = lerp(mMoveVector, glm::vec3(), aDeltaTime * dampeningSpeed);
+        mTransform.TranslateLocal(mMoveVector * aDeltaTime);
     }
 
+
     Entity::Tick(aDeltaTime);
-    mTransform.TranslateLocal(mMoveVector * aDeltaTime);
-    mMoveVector = glm::vec3();
 }

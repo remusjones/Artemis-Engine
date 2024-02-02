@@ -36,6 +36,7 @@ public:
     bool IsCameraConsumingInput() const;
 
 private:
+
     glm::vec3 mMoveVector = {};
     bool mInput[6] = {};
     float_t mSpeed = 10;

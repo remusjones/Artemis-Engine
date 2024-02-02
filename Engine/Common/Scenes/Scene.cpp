@@ -40,25 +40,25 @@ void Scene::PreConstruct(const char *aSceneName) {
 
     mPhysicsSystem->Create();
     mSceneInteractionPhysicsSystem->Create();
-    gInputManager->RegisterMouseInput([&](SDL_MouseMotionEvent motion) { MouseMovement(motion); },
+    gInputManager->RegisterMouseInput([&](const SDL_MouseMotionEvent &motion) { MouseMovement(motion); },
                                       "Scene Mouse Movement");
-    gInputManager->RegisterMouseInput([&](SDL_MouseButtonEvent input) { MouseInput(input); },
+    gInputManager->RegisterMouseInput([&](const SDL_MouseButtonEvent &input) { MouseInput(input); },
                                       "Scene Mouse Press");
 
     gInputManager->RegisterKeyCodeInput(SDLK_w,
-                                        [this](KeyboardEvent kb) {
+                                        [this](KeyboardEvent) {
                                             if (!mActiveSceneCamera->IsCameraConsumingInput())
                                                 ChangeImGuizmoOperation(ImGuizmo::TRANSLATE);
                                         }, "Scene Gizmo Translate");
 
     gInputManager->RegisterKeyCodeInput(SDLK_e,
-                                        [this](KeyboardEvent kb) {
+                                        [this](KeyboardEvent) {
                                             if (!mActiveSceneCamera->IsCameraConsumingInput())
                                                 ChangeImGuizmoOperation(ImGuizmo::ROTATE);
                                         }, "Scene Gizmo Rotate");
 
     gInputManager->RegisterKeyCodeInput(SDLK_r,
-                                        [this](KeyboardEvent kb) {
+                                        [this](KeyboardEvent) {
                                             if (!mActiveSceneCamera->IsCameraConsumingInput())
                                                 ChangeImGuizmoOperation(ImGuizmo::SCALE);
                                         }, "Scene Gizmo Scale");
