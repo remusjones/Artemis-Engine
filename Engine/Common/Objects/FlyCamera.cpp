@@ -87,15 +87,15 @@ void FlyCamera::Down(const KeyboardEvent &keyboardEvent) {
 }
 
 void FlyCamera::MouseMovement(const SDL_MouseMotionEvent &aMouseMotion) {
+
     if (!mMouseRPressed)
         return;
 
-    float xDelta = aMouseMotion.xrel;
-    float yDelta = aMouseMotion.yrel;
+    const float xDelta = aMouseMotion.xrel;
+    const float yDelta = aMouseMotion.yrel;
 
-    float sensitivity = 0.1f;
-    glm::vec2 delta = -glm::vec2(xDelta, yDelta) * sensitivity;
-    delta = glm::vec2(delta.y, delta.x);
+    constexpr float sensitivity = 0.1f;
+    const glm::vec2 delta = -glm::vec2(yDelta, xDelta) * sensitivity;
     mTransform.RotateAxisLocal(delta);
 }
 
