@@ -78,6 +78,7 @@ public:
 
     Transform *GetParent() const;
     std::vector<Transform*> GetChildren() const;
+    size_t GetChildCount() const;
 
     glm::mat4 GetWorldMatrix();
     glm::mat4 GetLocalMatrix();

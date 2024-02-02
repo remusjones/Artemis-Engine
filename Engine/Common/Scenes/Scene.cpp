@@ -109,31 +109,34 @@ void Scene::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
 
 void Scene::DrawObjectsRecursive(Entity *obj) {
     const char *nodeLabel = obj->GetUniqueLabel(obj->mName);
-    constexpr ImGuiTreeNodeFlags nodeFlag = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
 
     if (IsParentOfPickedEntity(obj)) {
         ImGui::SetNextItemOpen(true, ImGuiCond_Once);
     }
 
-    const bool nodeOpen = ImGui::TreeNodeEx(nodeLabel, nodeFlag);
+    ImGuiTreeNodeFlags nodeFlag = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
 
-    if (ImGui::IsItemClicked()) {
-        mPickedEntity = obj;
-    }
+    if (obj->mTransform.GetChildCount() == 0)
+        nodeFlag = ImGuiTreeNodeFlags_Leaf;
 
     if (mPickedEntity == obj) {
+        nodeFlag |= ImGuiTreeNodeFlags_Selected;
         ImGui::Begin("Picked Object");
         ImGui::Text(mPickedEntity->mName);
         obj->OnImGuiRender();
         ImGui::End();
     }
 
-    if (nodeOpen) {
+    if (ImGui::TreeNodeEx(nodeLabel, nodeFlag)) {
         for (auto childTransform: obj->mTransform.GetChildren()) {
             Entity *childEntity = mTransformEntityRelationships[childTransform];
             DrawObjectsRecursive(childEntity);
         }
         ImGui::TreePop();
+    }
+
+    if (ImGui::IsItemClicked()) {
+        mPickedEntity = obj;
     }
 }
 

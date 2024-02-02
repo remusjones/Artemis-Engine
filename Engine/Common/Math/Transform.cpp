@@ -196,6 +196,10 @@ std::vector<Transform *> Transform::GetChildren() const {
     return mChildren;
 }
 
+size_t Transform::GetChildCount() const {
+    return mChildren.size();
+}
+
 void Transform::RemoveChild(Transform *aChild) {
     if (const auto it = std::find(mChildren.begin(), mChildren.end(), aChild); it != mChildren.end())
         mChildren.erase(it);
