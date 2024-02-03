@@ -4,7 +4,6 @@
 
 #include "SandboxScene.h"
 
-#include "imgui.h"
 #include "VulkanGraphicsImpl.h"
 #include "Base/Common/Color.h"
 #include "Base/Common/Material.h"
@@ -25,10 +24,10 @@ void SandboxScene::PreConstruct(const char *aSceneName) {
 }
 
 void SandboxScene::Construct() {
+
     //
     // Create Render Pipelines
     //
-
     GraphicsPipeline::DefaultPipelineConfigInfo(mDefaultPipelineConfig);
     mPBRPipeline = std::make_shared<PBRRenderSystem>();
     mUnlitPipeline = std::make_shared<UnlitRenderSystem>();

@@ -14,6 +14,7 @@
 #include "Vulkan/VulkanEngine.h"
 #include "Vulkan/VulkanSystemStructs.h"
 
+class Editor;
 class Scene;
 class VulkanSwapChain;
 class MeshObject;
@@ -125,6 +126,7 @@ public:
     std::unique_ptr<Scene> mActiveScene;
 
 private:
+    std::unique_ptr<Editor> mEditor;
     QueueFamilyIndices mFamilyIndices;
     // TODO: Move these to IApplication
     int mWindowWidth;

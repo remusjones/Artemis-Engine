@@ -18,6 +18,7 @@
 #include "InputManager.h"
 #include "Logger.h"
 #include "ImGuizmo.h"
+#include "Objects/Editor.h"
 #include "Scenes/SandboxScene.h"
 #include "Vulkan/Common/MeshObject.h"
 
@@ -53,6 +54,7 @@ void VulkanGraphicsImpl::InitializeVulkan() {
                            this);
     CreateGraphicsPipeline();
     InitializeImgui();
+    mEditor = std::make_unique<Editor>();
 }
 
 void VulkanGraphicsImpl::InitializeImgui() {
@@ -139,9 +141,14 @@ void VulkanGraphicsImpl::Update() {
             ImGui::NewFrame();
             ImGuizmo::BeginFrame();
             ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+
+            // Editor Loop
+            mEditor->OnImGuiRender();
+
+            // Game Loop
             gInputManager->Update();
-            this->mActiveScene->Tick(mDeltaTime);
-            this->mVulkanEngine.DrawFrame(*mActiveScene);
+            mActiveScene->Tick(mDeltaTime);
+            mVulkanEngine.DrawFrame(*mActiveScene);
 
             ImGui::UpdatePlatformWindows();
             ImGui::RenderPlatformWindowsDefault();

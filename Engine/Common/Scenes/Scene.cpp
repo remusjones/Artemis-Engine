@@ -102,8 +102,6 @@ void Scene::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
     for (const auto obj: mRenderSystems) {
         obj->mPipeline->Draw(aCommandBuffer, *this);
     }
-
-    OnImGuiRender();
 }
 
 
