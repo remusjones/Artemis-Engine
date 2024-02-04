@@ -248,7 +248,7 @@ void Scene::OnImGuiRender() {
         ImGui::Text(std::to_string(static_cast<int32_t>(mRenderSystems.size())).c_str());
         if (ImGui::CollapsingHeader("Graphic Systems Info")) {
             if (ImGui::Button(GetUniqueLabel("Rebuild All"))) {
-                gGraphics->mVulkanEngine.SubmitEndOfFrameTask([=] {
+                gGraphics->mVulkanEngine.SubmitEndOfFrameTask([this] {
                     for (const auto &renderSystem: mRenderSystems) {
                         vkDeviceWaitIdle(gGraphics->mLogicalDevice);
                         renderSystem->mPipeline->Destroy();
