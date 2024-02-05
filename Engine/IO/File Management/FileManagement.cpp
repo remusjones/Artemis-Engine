@@ -30,7 +30,6 @@ std::vector<char> FileManagement::GetShaderFileData(const std::string &filename)
 
     return buffer;
 }
-
 std::string FileManagement::GetWorkingDirectory()
 {
     char buffer[MAX_PATH];
@@ -69,7 +68,7 @@ std::vector<char> FileManagement::GetShaderFileDataPath(const char* aRelativeDir
     std::ifstream file(finalDirectory, std::ios::ate | std::ios::binary);
 
     if (!file.is_open()) {
-        throw std::runtime_error("failed to open file");
+        throw std::runtime_error("failed to open file" + std::string(aRelativeDirectory));
     }
 
     size_t fileSize = (size_t) file.tellg();
