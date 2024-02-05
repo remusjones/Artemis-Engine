@@ -20,7 +20,7 @@
 #include "BulletDynamics/Dynamics/btRigidBody.h"
 #include "Components/Collision/ColliderComponent.h"
 #include "Components/Collision/CollisionHelper.h"
-#include "File Management/FileManagement.h"
+#include "../../IO/FileManagement.h"
 #include "Physics/PhysicsSystem.h"
 #include "Vulkan/Common/MeshObject.h"
 #include "Vulkan/Systems/GraphicsPipeline.h"

@@ -55,6 +55,7 @@ void VulkanGraphicsImpl::InitializeVulkan() {
     CreateGraphicsPipeline();
     InitializeImgui();
     mEditor = std::make_unique<Editor>();
+    mEditor->Create();
 }
 
 void VulkanGraphicsImpl::InitializeImgui() {

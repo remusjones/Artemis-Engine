@@ -11,7 +11,7 @@
 #include <stb_image.h>
 
 #include "Logger.h"
-#include "File Management/FileManagement.h"
+#include "FileManagement.h"
 #include "Vulkan/Helpers/VulkanInitialization.h"
 
 struct IndexComparator {
