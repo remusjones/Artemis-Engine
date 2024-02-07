@@ -46,6 +46,9 @@ void ColliderComponent::Tick(const float aDeltaTime) {
         // TODO: investigate on how to only wake up nearby colliders
         if (mWorldMatrixLastFrame != mAttachedEntity->mTransform.GetWorldMatrix()) {
             mRigidBody->proceedToTransform(CollisionHelper::TransformToBulletTransform(mAttachedEntity->mTransform));
+            mRigidBody->clearForces();
+            mRigidBody->clearGravity();
+
             mPhysicsSystem->AwakeRigidBodies();
         }
 
