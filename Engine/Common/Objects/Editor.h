@@ -6,7 +6,7 @@
 #include <memory>
 
 #include "ImGuiLayer.h"
-#include "DirectoryMonitor.h"
+#include "ProjectExplorer/DirectoryMonitor.h"
 
 
 class Editor : ImGuiLayer{

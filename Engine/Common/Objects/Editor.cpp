@@ -4,8 +4,8 @@
 
 #include "Editor.h"
 
-#include <imgui_internal.h>
 
+#include "ProjectExplorer/DirectoryMonitor.h"
 #include "FileManagement.h"
 #include "imgui.h"
 #include "VulkanGraphicsImpl.h"
