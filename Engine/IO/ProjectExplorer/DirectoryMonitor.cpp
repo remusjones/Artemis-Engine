@@ -15,7 +15,6 @@ void DirectoryMonitor::CreateDirectoryMonitor(const std::string &aPath) {
     if (mImportingThread.joinable()) {
         mImportingThread.join();
     }
-
 }
 
 void DirectoryMonitor::UpdateDirectoryMonitor() {

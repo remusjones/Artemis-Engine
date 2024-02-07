@@ -3,8 +3,6 @@
 //
 
 #include "Editor.h"
-
-
 #include "ProjectExplorer/DirectoryMonitor.h"
 #include "FileManagement.h"
 #include "imgui.h"
@@ -14,6 +12,10 @@
 void Editor::Create(){
     mAssetDirectoryMonitor = std::make_unique<DirectoryMonitor>();
     mAssetDirectoryMonitor->CreateDirectoryMonitor(FileManagement::GetAssetPath());
+
+    // Works around the path having a '/' at the end TODO: fix this
+    mCurrentPath = std::filesystem::path(FileManagement::GetAssetPath()).parent_path();
+    mContextBounds = std::filesystem::path(FileManagement::GetAssetPath()).parent_path();
 }
 
 void Editor::OnImGuiRender() {
@@ -22,27 +24,68 @@ void Editor::OnImGuiRender() {
     DrawContent();
 }
 
+void Editor::FileBrowser(const std::filesystem::path& aPath)
+{
+    ImGui::Text("Current path: %s", aPath.string().c_str());
+    ImGui::Text("t1 path: %s", mContextBounds.string().c_str());
+    if (aPath.has_parent_path() && aPath != mContextBounds)
+    {
+        if (ImGui::Button("Up"))
+        {
+            mCurrentPath = aPath.parent_path();
+            GetFilesInDirectory(mCurrentPath, mFilesInDirectory);
+        }
+    }
+    if (is_directory(aPath))
+    {
+        for (auto& entry : std::filesystem::directory_iterator(aPath))
+        {
+            ImGui::PushID(entry.path().string().c_str());
+            if (is_directory(entry.status()))
+            {
+                if (ImGui::Button(entry.path().filename().string().c_str()))
+                {
+                    mCurrentPath = entry.path();
+                    GetFilesInDirectory(mCurrentPath, mFilesInDirectory);
+                }
+            }
+            ImGui::PopID();
+        }
+    }
+}
+
 void Editor::DrawContent() {
 
-    ImGui::Begin("Project Window");
+    ImGui::Begin("DirectoryBrowser");
+    FileBrowser(mCurrentPath);
+    ImGui::End();
 
-    if (ImGui::Button(GetUniqueLabel("Refresh Content"))) {
+    ImGui::Begin("File Display");
+
+    if (ImGui::Button(GetUniqueLabel("Refresh Files"))) {
         mAssetDirectoryMonitor->UpdateDirectoryMonitor();
     }
 
-    std::unordered_map<std::string, FileInfo> content = mAssetDirectoryMonitor->GetDirectoryContent();
-    if (!content.empty() && ImGui::BeginTable("3D Files", content.size() - 1, ImGuiTableFlags_BordersOuterH |
-    ImGuiTableFlags_BordersOuterV | ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_RowBg), ImVec2(110, 110), 110.0f)
-    {
-        for(auto& [key, value] : content)
-        {
-            // TODO: incorporate row usage
-            ImGui::Button("", ImVec2(100,100)); // Placeholder for thumbnail button
-            ImGui::Text("%s", value.fileName.c_str());
-            ImGui::TableNextColumn();
-        }
-        ImGui::EndTable();
+    ImGui::BeginTable("files", 2, ImGuiTableFlags_BordersOuterH |
+    ImGuiTableFlags_BordersOuterV | ImGuiTableFlags_BordersInnerV);
+
+    for (const auto& entry: mFilesInDirectory) {
+        // TODO: Extract directly from importer files instead of raw paths
+
+        ImGui::Button((std::string("##") + entry.path().filename().string()).c_str(),
+            ImVec2(100,100));
+        ImGui::Text("%s", entry.path().filename().string().c_str());
+        ImGui::TableNextColumn();
     }
+    ImGui::EndTable();
     mAssetDirectoryMonitor->OnImGuiRender();
     ImGui::End();
+}
+
+void Editor::GetFilesInDirectory(const std::filesystem::path &aPath, std::vector<std::filesystem::directory_entry> &aFilesInDirectory) {
+    aFilesInDirectory.clear();
+    for (auto& entry : std::filesystem::directory_iterator(aPath)) {
+        if (!is_directory(entry))
+            aFilesInDirectory.push_back(entry);
+    }
 }
