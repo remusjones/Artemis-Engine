@@ -27,7 +27,6 @@ void Editor::OnImGuiRender() {
 void Editor::FileBrowser(const std::filesystem::path& aPath)
 {
     ImGui::Text("Current path: %s", aPath.string().c_str());
-    ImGui::Text("t1 path: %s", mContextBounds.string().c_str());
     if (aPath.has_parent_path() && aPath != mContextBounds)
     {
         if (ImGui::Button("Up"))
