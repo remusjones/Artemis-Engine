@@ -16,6 +16,7 @@ void Editor::Create(){
     // Works around the path having a '/' at the end TODO: fix this
     mCurrentPath = std::filesystem::path(FileManagement::GetAssetPath()).parent_path();
     mContextBounds = std::filesystem::path(FileManagement::GetAssetPath()).parent_path();
+    GetFilesInDirectory(mCurrentPath, mFilesInDirectory, mDirectoriesInDirectory);
 }
 
 void Editor::OnImGuiRender() {
@@ -32,21 +33,19 @@ void Editor::FileBrowser(const std::filesystem::path& aPath)
         if (ImGui::Button("Up"))
         {
             mCurrentPath = aPath.parent_path();
-            GetFilesInDirectory(mCurrentPath, mFilesInDirectory);
+            GetFilesInDirectory(mCurrentPath, mFilesInDirectory, mDirectoriesInDirectory);
         }
     }
-    if (is_directory(aPath))
+
+    for (auto& entry : mDirectoriesInDirectory)
     {
-        for (auto& entry : std::filesystem::directory_iterator(aPath))
+        ImGui::PushID(entry.c_str());
+        if (ImGui::Button(entry.c_str()))
         {
-            ImGui::PushID(entry.path().string().c_str());
-            if (ImGui::Button(entry.path().filename().string().c_str()))
-            {
-                mCurrentPath = entry.path();
-                GetFilesInDirectory(mCurrentPath, mFilesInDirectory);
-            }
-            ImGui::PopID();
+            mCurrentPath =  std::filesystem::path(aPath) / entry;
+            GetFilesInDirectory(mCurrentPath, mFilesInDirectory, mDirectoriesInDirectory);
         }
+        ImGui::PopID();
     }
 }
 
@@ -81,7 +80,21 @@ void Editor::DrawContent() {
 void Editor::GetFilesInDirectory(const std::filesystem::path &aPath, std::vector<std::filesystem::directory_entry> &aFilesInDirectory) {
     aFilesInDirectory.clear();
     for (auto& entry : std::filesystem::directory_iterator(aPath)) {
-        if (!is_directory(entry))
+        if (!is_directory(entry.status()))
             aFilesInDirectory.push_back(entry);
+    }
+}
+
+void Editor::GetFilesInDirectory(const std::filesystem::path &aPath,
+    std::vector<std::filesystem::directory_entry> &aFilesInDirectory,
+    std::vector<std::string> &aDirectoriesInDirectory) {
+    aFilesInDirectory.clear();
+    aDirectoriesInDirectory.clear();
+
+    for (auto& entry : std::filesystem::directory_iterator(aPath)) {
+        if (!is_directory(entry.status()))
+            aFilesInDirectory.push_back(entry);
+        else
+            aDirectoriesInDirectory.push_back(entry.path().filename().string());
     }
 }
