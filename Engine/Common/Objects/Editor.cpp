@@ -40,13 +40,10 @@ void Editor::FileBrowser(const std::filesystem::path& aPath)
         for (auto& entry : std::filesystem::directory_iterator(aPath))
         {
             ImGui::PushID(entry.path().string().c_str());
-            if (is_directory(entry.status()))
+            if (ImGui::Button(entry.path().filename().string().c_str()))
             {
-                if (ImGui::Button(entry.path().filename().string().c_str()))
-                {
-                    mCurrentPath = entry.path();
-                    GetFilesInDirectory(mCurrentPath, mFilesInDirectory);
-                }
+                mCurrentPath = entry.path();
+                GetFilesInDirectory(mCurrentPath, mFilesInDirectory);
             }
             ImGui::PopID();
         }
