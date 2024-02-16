@@ -1,5 +1,5 @@
 #pragma once
-#include "spdlog/common.h"
+#include "../../vendor/spdlog/include/spdlog/common.h"
 
 class Logger {
 public:

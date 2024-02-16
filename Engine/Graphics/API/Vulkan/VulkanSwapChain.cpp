@@ -8,7 +8,7 @@
 
 #include <SDL_events.h>
 
-#include "Logger.h"
+#include <Logger.h>
 #include "VulkanSystemStructs.h"
 #include "VulkanGraphicsImpl.h"
 #include "Helpers/VulkanInitialization.h"

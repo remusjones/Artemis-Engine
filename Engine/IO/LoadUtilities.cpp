@@ -10,7 +10,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-#include "Logger.h"
+#include <Logger.h>
 #include "FileManagement.h"
 #include "Vulkan/Helpers/VulkanInitialization.h"
 

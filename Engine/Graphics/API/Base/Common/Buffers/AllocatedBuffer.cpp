@@ -4,7 +4,7 @@
 
 #include "AllocatedBuffer.h"
 
-#include "Logger.h"
+#include <Logger.h>
 #include "VulkanGraphicsImpl.h"
 
 AllocatedBuffer::AllocatedBuffer(const void *aData, const VkDeviceSize aBufferSize,

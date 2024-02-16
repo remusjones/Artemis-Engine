@@ -4,7 +4,7 @@
 
 #include "LightingRenderSystem.h"
 
-#include "Logger.h"
+#include <Logger.h>
 #include "VulkanGraphicsImpl.h"
 #include "Base/Common/Buffers/PushConstants.h"
 

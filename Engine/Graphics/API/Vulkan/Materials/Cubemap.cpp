@@ -5,8 +5,8 @@
 #include "Cubemap.h"
 
 #include "LoadUtilities.h"
-#include "Logger.h"
-#include "../../../../IO/FileManagement.h"
+#include <Logger.h>
+#include <FileManagement.h>
 #include "Vulkan/Helpers/VulkanInitialization.h"
 
 void Cubemap::Create(MaterialBase *aBaseMaterial) {

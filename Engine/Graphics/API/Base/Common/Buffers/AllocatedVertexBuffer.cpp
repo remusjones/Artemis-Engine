@@ -5,7 +5,6 @@
 #include "AllocatedVertexBuffer.h"
 
 #include "AllocatedBuffer.h"
-#include "Logger.h"
 #include "Base/Common/Data/Vertex.h"
 
 AllocatedVertexBuffer::AllocatedVertexBuffer(const std::vector<Vertex> &aVertices,

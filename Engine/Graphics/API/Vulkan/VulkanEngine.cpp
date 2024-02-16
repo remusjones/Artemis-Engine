@@ -10,7 +10,7 @@
 #include <iostream>
 
 #include "imgui.h"
-#include "Logger.h"
+#include <Logger.h>
 #include "Base/Common/Material.h"
 #include "Base/Common/Data/GPUCameraData.h"
 #include "Base/Common/Data/GPUSceneData.h"
