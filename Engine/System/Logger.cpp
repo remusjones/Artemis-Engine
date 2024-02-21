@@ -19,3 +19,11 @@ void Logger::Log(const char *aMessage) {
 void Logger::Log(std::string aMessage) {
     Log(spdlog::level::info, aMessage);
 }
+
+void Logger::LogError(const char *str) {
+    Log(spdlog::level::err, str);
+}
+
+void Logger::LogError(const std::string &aMessage) {
+    Log(spdlog::level::err, aMessage);
+}
