@@ -120,7 +120,6 @@ void VulkanGraphicsImpl::Update() {
     // Start Clock for FPS Monitoring
     auto startTime = std::chrono::high_resolution_clock::now();
     auto fpsStartTime = std::chrono::high_resolution_clock::now();
-    Profiler profiler;
     ImGuiIO &io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     // Create FPS Window Header
@@ -134,7 +133,7 @@ void VulkanGraphicsImpl::Update() {
 
     //main loop
     while (!bQuitting) {
-        profiler.BeginSample("Application Update");
+        Profiler::GetInstance().BeginSample("Application Frame");
         while (SDL_PollEvent(&e) != 0) {
             gInputManager->ConsumeInput(&e);
             if (e.type == SDL_EVENT_QUIT) bQuitting = true;
@@ -148,13 +147,12 @@ void VulkanGraphicsImpl::Update() {
 
             // Editor Loop
             mEditor->OnImGuiRender();
-            // TODO: move this to the Editor layer?
-            profiler.OnImGuiRender();
 
-            // Game Loop
+            Profiler::GetInstance().BeginSample("Engine Update");
             gInputManager->Update();
             mActiveScene->Tick(mDeltaTime);
             mVulkanEngine.DrawFrame(*mActiveScene);
+            Profiler::GetInstance().EndSample();
 
             ImGui::UpdatePlatformWindows();
             ImGui::RenderPlatformWindowsDefault();
@@ -175,7 +173,7 @@ void VulkanGraphicsImpl::Update() {
             fpsStartTime = currentTime;
         }
         startTime = currentTime;
-        profiler.EndSample();
+        Profiler::GetInstance().EndSample();
     }
 }
 

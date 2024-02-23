@@ -6,6 +6,13 @@
 
 class Profiler : public ImGuiLayer{
 public:
+    static Profiler& GetInstance() {
+        static Profiler instance;
+        return instance;
+    }
+
+    Profiler(Profiler const&) = delete;
+    void operator=(Profiler const&) = delete;
 
     Profiler() = default;
     ~Profiler();

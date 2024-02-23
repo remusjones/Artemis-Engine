@@ -27,14 +27,16 @@ void Profiler::EndSample() {
 }
 
 void Profiler::EnsureProfilerLimits(const std::string& aName) {
-    while (mTimerHistory[aName].size() > mMaxHistorySize) {
-        mTimerHistory[aName].pop();
+    auto& history = mTimerHistory[aName];
+    size_t size = history.size();
+    while (size > mMaxHistorySize) {
+        history.pop();
+        --size;
     }
 }
 
 void Profiler::OnImGuiRender() {
     ImGui::Begin("Profiler");
-    BeginSample("Profiler Render");
     for (auto& pair : mTimerHistory) {
         std::vector<float> durations;
         std::queue<TimerInformation> tempQueue = pair.second;
@@ -50,13 +52,11 @@ void Profiler::OnImGuiRender() {
 
         float average = (count > 0) ? sum / count : 0.0f;
         char overlay[32];
-        sprintf(overlay, "Avg: %.3f ms", average);
+        sprintf(overlay, "%.3f ms", average);
         if (!durations.empty()) {
             ImGui::PlotHistogram(pair.first.c_str(), &durations[0], durations.size(),0.f, overlay);
         }
     }
-    EndSample();
-
     ImGui::End();
 }
 

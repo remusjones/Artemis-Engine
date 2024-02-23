@@ -6,6 +6,7 @@
 #include "ProjectExplorer/DirectoryMonitor.h"
 #include "FileManagement.h"
 #include "imgui.h"
+#include "Profiler.h"
 #include "VulkanGraphicsImpl.h"
 #include "Scenes/Scene.h"
 
@@ -22,6 +23,7 @@ void Editor::Create(){
 void Editor::OnImGuiRender() {
     //DrawContent();
     gGraphics->mActiveScene->OnImGuiRender();
+    Profiler::GetInstance().OnImGuiRender();
     DrawContent();
 }
 
