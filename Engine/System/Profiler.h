@@ -15,7 +15,7 @@ public:
 
     [[nodiscard]] bool IsProfilerEmpty() const;
 private:
-    void EnsureProfilerLimits();
+    void EnsureProfilerLimits(const std::string &aName);
 
 public:
     void OnImGuiRender() override;
@@ -24,5 +24,5 @@ private:
     std::stack<ProfilerTimer> mTimerStack;
 
     const int mMaxHistorySize = 1000;
-    std::queue<TimerInformation> mTimerHistory;
+    std::unordered_map<std::string, std::queue<TimerInformation>> mTimerHistory;
 };
