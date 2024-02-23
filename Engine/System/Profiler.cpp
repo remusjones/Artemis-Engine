@@ -22,7 +22,7 @@ void Profiler::EndSample() {
     mTimerStack.pop();
 
     auto sample = timer.GetInformation();
-    mTimerHistory[sample.name].push(sample);
+    mTimerHistory[sample.name].emplace_back(sample);
     EnsureProfilerLimits(sample.name);
 }
 
@@ -30,7 +30,7 @@ void Profiler::EnsureProfilerLimits(const std::string& aName) {
     auto& history = mTimerHistory[aName];
     size_t size = history.size();
     while (size > mMaxHistorySize) {
-        history.pop();
+        history.pop_front();
         --size;
     }
 }
@@ -38,23 +38,22 @@ void Profiler::EnsureProfilerLimits(const std::string& aName) {
 void Profiler::OnImGuiRender() {
     ImGui::Begin("Profiler");
     for (auto& pair : mTimerHistory) {
+        std::deque<TimerInformation>& tempDeque = pair.second;
         std::vector<float> durations;
-        std::queue<TimerInformation> tempQueue = pair.second;
         float sum = 0.0f;
-        int count = tempQueue.size();
+        int count = tempDeque.size();
 
-        while (!tempQueue.empty()) {
-            float duration = tempQueue.front().duration.count() * 1000.0f;
+        for(auto& info : tempDeque) {
+            float duration = info.duration.count() * 1000.0f;
             durations.push_back(duration);
             sum += duration;
-            tempQueue.pop();
         }
 
-        float average = (count > 0) ? sum / count : 0.0f;
+        float average = count > 0 ? sum / (float)count : 0.0f;
         char overlay[32];
         sprintf(overlay, "%.3f ms", average);
         if (!durations.empty()) {
-            ImGui::PlotHistogram(pair.first.c_str(), &durations[0], durations.size(),0.f, overlay);
+            ImGui::PlotHistogram(pair.first.c_str(), &durations[0], count, 0, overlay);
         }
     }
     ImGui::End();

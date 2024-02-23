@@ -1,10 +1,9 @@
 #pragma once
-#include <queue>
 #include <stack>
 #include "ProfilerTimer.h"
 #include "Objects/ImGuiLayer.h"
 
-class Profiler : public ImGuiLayer{
+class Profiler final : public ImGuiLayer{
 public:
     static Profiler& GetInstance() {
         static Profiler instance;
@@ -15,7 +14,7 @@ public:
     void operator=(Profiler const&) = delete;
 
     Profiler() = default;
-    ~Profiler();
+    ~Profiler() override;
 
     void BeginSample(const std::string &aName);
     void EndSample();
@@ -31,5 +30,5 @@ private:
     std::stack<ProfilerTimer> mTimerStack;
 
     const int mMaxHistorySize = 1000;
-    std::unordered_map<std::string, std::queue<TimerInformation>> mTimerHistory;
+    std::unordered_map<std::string,std::deque<TimerInformation>> mTimerHistory;
 };

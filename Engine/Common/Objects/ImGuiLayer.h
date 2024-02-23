@@ -8,6 +8,8 @@
 
 class ImGuiLayer {
 public:
+    virtual ~ImGuiLayer() = default;
+
     ImGuiLayer();
     virtual void OnImGuiRender() = 0;
     const char* GetUniqueLabel(const char* aLabel);
