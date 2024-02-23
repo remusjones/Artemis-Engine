@@ -25,6 +25,8 @@ private:
                              &aFilesInDirectory, std::vector<std::string> &aDirectoriesInDirectory);
     void GetDirectoriesInDirectory(const std::filesystem::path &aPath, std::vector<std::string> &aDirectoriesInDirectory);
 
+
+
     std::unique_ptr<DirectoryMonitor> mAssetDirectoryMonitor;
     std::vector<std::filesystem::directory_entry> mFilesInDirectory;
     std::vector<std::string> mDirectoriesInDirectory;

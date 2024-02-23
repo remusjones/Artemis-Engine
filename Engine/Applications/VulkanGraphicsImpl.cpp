@@ -18,6 +18,7 @@
 #include "InputManager.h"
 #include <Logger.h>
 #include "ImGuizmo.h"
+#include "Profiler.h"
 #include "Objects/Editor.h"
 #include "Scenes/SandboxScene.h"
 #include "Vulkan/Common/MeshObject.h"
@@ -119,6 +120,7 @@ void VulkanGraphicsImpl::Update() {
     // Start Clock for FPS Monitoring
     auto startTime = std::chrono::high_resolution_clock::now();
     auto fpsStartTime = std::chrono::high_resolution_clock::now();
+    Profiler profiler;
     ImGuiIO &io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     // Create FPS Window Header
@@ -132,6 +134,7 @@ void VulkanGraphicsImpl::Update() {
 
     //main loop
     while (!bQuitting) {
+        profiler.BeginSample("Application Update");
         while (SDL_PollEvent(&e) != 0) {
             gInputManager->ConsumeInput(&e);
             if (e.type == SDL_EVENT_QUIT) bQuitting = true;
@@ -145,6 +148,8 @@ void VulkanGraphicsImpl::Update() {
 
             // Editor Loop
             mEditor->OnImGuiRender();
+            // TODO: move this to the Editor layer?
+            profiler.OnImGuiRender();
 
             // Game Loop
             gInputManager->Update();
@@ -170,6 +175,7 @@ void VulkanGraphicsImpl::Update() {
             fpsStartTime = currentTime;
         }
         startTime = currentTime;
+        profiler.EndSample();
     }
 }
 

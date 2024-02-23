@@ -4,6 +4,7 @@
 
 #include "Profiler.h"
 
+#include "imgui.h"
 #include "Logger.h"
 
 Profiler::~Profiler() {
@@ -32,7 +33,21 @@ void Profiler::EnsureProfilerLimits() {
 }
 
 void Profiler::OnImGuiRender() {
-    // TODO: Implement Profiler::OnImGuiRender with Graphing and History
+    ImGui::Begin("Profiler");
+
+    // TODO: Sort by name(s) and duration(s)
+    std::vector<float> durations;
+    std::queue<TimerInformation> tempQueue = mTimerHistory;
+    while (!tempQueue.empty()) {
+        durations.push_back(tempQueue.front().duration.count() * 1000.0f);
+        tempQueue.pop();
+    }
+
+    if (!durations.empty()) {
+        ImGui::PlotHistogram("Timer Durations", &durations[0], durations.size());
+    }
+
+    ImGui::End();
 }
 
 bool Profiler::IsProfilerEmpty() const {

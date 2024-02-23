@@ -59,7 +59,6 @@ private:
 
     void ShutdownWindow() const;
 
-
     // Main Engine Loop
     void Update();
 
