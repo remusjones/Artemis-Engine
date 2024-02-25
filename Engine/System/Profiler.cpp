@@ -41,7 +41,7 @@ void Profiler::OnImGuiRender() {
         std::deque<TimerInformation>& tempDeque = pair.second;
         std::vector<float> durations;
         float sum = 0.0f;
-        int count = tempDeque.size();
+        const int count = tempDeque.size();
 
         for(auto& info : tempDeque) {
             float duration = info.duration.count() * 1000.0f;
@@ -49,11 +49,11 @@ void Profiler::OnImGuiRender() {
             sum += duration;
         }
 
-        float average = count > 0 ? sum / (float)count : 0.0f;
+        const float average = count > 0 ? sum / static_cast<float>(count) : 0.0f;
         char overlay[32];
         sprintf(overlay, "%.3f ms", average);
         if (!durations.empty()) {
-            ImGui::PlotHistogram(pair.first.c_str(), &durations[0], count, 0, overlay);
+            ImGui::PlotHistogram(pair.first.c_str(), &durations[0], count, 0, overlay, 0.0f, 2.0f);
         }
     }
     ImGui::End();

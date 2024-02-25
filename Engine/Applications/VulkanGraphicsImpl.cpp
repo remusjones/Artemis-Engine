@@ -145,8 +145,9 @@ void VulkanGraphicsImpl::Update() {
             ImGuizmo::BeginFrame();
             ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
-            // Editor Loop
+            Profiler::GetInstance().BeginSample("Editor Draw");
             mEditor->OnImGuiRender();
+            Profiler::GetInstance().EndSample();
 
             Profiler::GetInstance().BeginSample("Engine Update");
             gInputManager->Update();
