@@ -2,33 +2,38 @@
 #include <chrono>
 
 
-struct TimerInformation {
-    std::string name;
-    std::chrono::duration<float> duration{};
+struct TimerResult {
+    const char* Name;
+    long long Start, End;
 
-    [[nodiscard]] std::chrono::duration<float> GetMilliseconds() const {
-        return duration * 1000.0f;
+    [[nodiscard]] std::chrono::duration<float> GetDurationMilliseconds() const {
+        return std::chrono::milliseconds(End - Start);
     }
-
+    [[nodiscard]] std::chrono::microseconds GetDurationMicroseconds() const {
+        return std::chrono::duration_cast<std::chrono::microseconds>( std::chrono::microseconds(End - Start));
+    }
 };
 
 struct ProfilerTimer {
 
+    const char* mName;
     std::chrono::time_point<std::chrono::system_clock> start, end;
 
-    explicit ProfilerTimer(const std::string& aName) {
+
+    explicit ProfilerTimer(const char* aName) {
         start = std::chrono::high_resolution_clock::now();
-        timerInformation.name = aName;
+        mName = aName;
     }
 
     void StopTimer() {
         end = std::chrono::high_resolution_clock::now();
-        timerInformation.duration = end - start;
     }
 
-    [[nodiscard]] TimerInformation GetInformation() const {
-        return timerInformation;
+    [[nodiscard]] TimerResult GetResult() const {
+        return {
+            mName,
+            std::chrono::time_point_cast<std::chrono::microseconds>(start).time_since_epoch().count(),
+            std::chrono::time_point_cast<std::chrono::microseconds>(end).time_since_epoch().count()
+        };
     }
-private:
-    TimerInformation timerInformation;
 };

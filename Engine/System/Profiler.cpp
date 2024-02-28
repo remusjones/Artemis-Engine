@@ -5,14 +5,14 @@
 
 Profiler::~Profiler() {
     while (!mTimerStack.empty()) {
-        Logger::LogError("Profiler: Failed to end sample \"" + mTimerStack.top().GetInformation().name + "\".");
+        Logger::LogError("Profiler: Failed to end sample \"" + std::string(mTimerStack.top().GetResult().Name) + "\".");
         EndSample();
     }
 }
 
 // TODO: nested profiling tracking for sample > sample
 // TODO: make name unique?
-void Profiler::BeginSample(const std::string &aName) {
+void Profiler::BeginSample(const char* aName) {
     mTimerStack.emplace(aName);
 }
 
@@ -21,9 +21,9 @@ void Profiler::EndSample() {
     timer.StopTimer();
     mTimerStack.pop();
 
-    auto sample = timer.GetInformation();
-    mTimerHistory[sample.name].emplace_back(sample);
-    EnsureProfilerLimits(sample.name);
+    auto sample = timer.GetResult();
+    mTimerHistory[sample.Name].emplace_back(sample);
+    EnsureProfilerLimits(sample.Name);
 }
 
 void Profiler::EnsureProfilerLimits(const std::string& aName) {
@@ -38,13 +38,13 @@ void Profiler::EnsureProfilerLimits(const std::string& aName) {
 void Profiler::OnImGuiRender() {
     ImGui::Begin("Profiler");
     for (auto& pair : mTimerHistory) {
-        std::deque<TimerInformation>& tempDeque = pair.second;
+        std::deque<TimerResult>& tempDeque = pair.second;
         std::vector<float> durations;
         float sum = 0.0f;
         const int count = tempDeque.size();
 
         for(auto& info : tempDeque) {
-            float duration = info.duration.count() * 1000.0f;
+            float duration = info.GetDurationMilliseconds().count();
             durations.push_back(duration);
             sum += duration;
         }

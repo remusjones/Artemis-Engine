@@ -16,7 +16,7 @@ public:
     Profiler() = default;
     ~Profiler() override;
 
-    void BeginSample(const std::string &aName);
+    void BeginSample(const char *aName);
     void EndSample();
 
     [[nodiscard]] bool IsProfilerEmpty() const;
@@ -30,5 +30,5 @@ private:
     std::stack<ProfilerTimer> mTimerStack;
 
     const int mMaxHistorySize = 1000;
-    std::unordered_map<std::string,std::deque<TimerInformation>> mTimerHistory;
+    std::unordered_map<std::string,std::deque<TimerResult>> mTimerHistory;
 };
