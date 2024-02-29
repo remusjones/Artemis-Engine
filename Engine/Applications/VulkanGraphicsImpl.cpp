@@ -149,10 +149,12 @@ void VulkanGraphicsImpl::Update() {
             mEditor->OnImGuiRender();
             Profiler::GetInstance().EndSample();
 
-            Profiler::GetInstance().BeginSample("Engine Update");
+            PROFILE_FUNCTION();
+            //Profiler::GetInstance().BeginSample("Engine Update");
             gInputManager->Update();
             mActiveScene->Tick(mDeltaTime);
             mVulkanEngine.DrawFrame(*mActiveScene);
+
             Profiler::GetInstance().EndSample();
 
             ImGui::UpdatePlatformWindows();
@@ -179,6 +181,7 @@ void VulkanGraphicsImpl::Update() {
 }
 
 void VulkanGraphicsImpl::Cleanup() {
+
     vkDeviceWaitIdle(mLogicalDevice);
     DestroyScenes();
     ShutdownImgui();

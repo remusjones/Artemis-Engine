@@ -1,10 +1,10 @@
 #pragma once
 #include <chrono>
 
-
 struct TimerResult {
     const char* Name;
     long long Start, End;
+    int ThreadID;
 
     [[nodiscard]] std::chrono::duration<float> GetDurationMilliseconds() const {
         return std::chrono::milliseconds(End - Start);
@@ -18,7 +18,6 @@ struct ProfilerTimer {
 
     const char* mName;
     std::chrono::time_point<std::chrono::system_clock> start, end;
-
 
     explicit ProfilerTimer(const char* aName) {
         start = std::chrono::high_resolution_clock::now();
