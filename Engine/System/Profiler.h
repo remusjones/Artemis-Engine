@@ -2,7 +2,7 @@
 #include <fstream>
 #include <mutex>
 #include <stack>
-#include "ProfilerTimer.h"
+
 #include "Objects/ImGuiLayer.h"
 
 #ifdef _MSC_VER
@@ -11,8 +11,16 @@
     #define FUNCTION_SIGNATURE __PRETTY_FUNCTION__
 #endif
 
-//#define PROFILE_FUNCTION(x) Profiler::GetInstance().BeginSample((x + std::string(FUNCTION_SIGNATURE) + std::to_string(##__LINE__).c_str())
-#define PROFILE_FUNCTION() Profiler::GetInstance().BeginSample(FUNCTION_SIGNATURE)
+#define PROFILE_SCOPE(name) ScopedProfileTimer timer##__LINE__(name, Profiler::GetInstance(), FUNCTION_SIGNATURE, __LINE__)
+#define PROFILE_FUNCTION_SCOPED() PROFILE_SCOPE("")
+#define PROFILE_FUNCTION_SCOPED_NAMED(name) PROFILE_SCOPE(name)
+
+#define PROFILE_BEGIN(name) Profiler::GetInstance().BeginProfile(name, FUNCTION_SIGNATURE, __LINE__)
+#define PROFILE_END() Profiler::GetInstance().EndProfile()
+
+struct ManagedProfileTimer;
+struct TimerResult;
+struct ScopedProfileTimer;
 
 class Profiler final : public ImGuiLayer{
 public:
@@ -25,13 +33,14 @@ public:
     Profiler(Profiler const&) = delete;
     void operator=(Profiler const&) = delete;
 
+    void EndSample(const TimerResult &aResult);
+
+    void BeginProfile(const char *aName, const char *aFunctionSignature, const int aLineNumber);
+    void EndProfile();
+
+
     Profiler();
     ~Profiler() override;
-
-    void BeginSample(const char *aName);
-    void EndSample();
-
-    [[nodiscard]] bool IsProfilerEmpty() const;
 private:
     void EnsureProfilerLimits(const std::string &aName);
     void StartTraceSession();
@@ -42,9 +51,9 @@ public:
     void OnImGuiRender() override;
 
 private:
-    std::stack<ProfilerTimer> mTimerStack;
+    std::stack<ManagedProfileTimer> mTimerStack;
     std::unordered_map<std::string,std::deque<TimerResult>> mTimerHistory;
-    const int mMaxDisplayedHistorySize = 1000;
+    const int mMaxDisplayedHistorySize = 100;
     const char* mSessionTraceFilename = "trace.json";
     std::mutex mTraceWriteMutex;
     std::ofstream mSessionOutputStream;

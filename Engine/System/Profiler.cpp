@@ -2,45 +2,44 @@
 
 #include "imgui.h"
 #include "Logger.h"
+#include "ScopedProfileTimer.h"
 
-#define TRACE 1
+#define TRACE 1 // Move to state or config
 
 Profiler::Profiler() {
-
 #if TRACE
     StartTraceSession();
 #endif
 }
 
 Profiler::~Profiler() {
-    while (!mTimerStack.empty()) {
-        Logger::LogError("Profiler: Failed to end sample \"" + std::string(mTimerStack.top().mName) + "\".");
-        EndSample();
-    }
 #if TRACE
     EndTraceSession();
 #endif
+
+    while (!mTimerStack.empty()) {
+        const auto item = mTimerStack.top();
+        Logger::LogError(std::string("Profiler: Timer stack not empty at destruction ") + item.mName);
+        mTimerStack.pop();
+    }
 }
 
-// TODO: nested profiling tracking for sample > sample
-// TODO: make name unique?
-void Profiler::BeginSample(const char* aName) {
-    mTimerStack.emplace(aName);
-}
-
-void Profiler::EndSample() {
-    ProfilerTimer timer = mTimerStack.top();
-    timer.StopTimer();
-    mTimerStack.pop();
-
-    auto sample = timer.GetResult();
-    mTimerHistory[sample.Name].emplace_back(sample);
+void Profiler::EndSample(const TimerResult &aResult) {
+    mTimerHistory[aResult.Name].emplace_back(aResult);
 
 #if TRACE
-    ExportTraceFrame(sample);
+    ExportTraceFrame(aResult);
 #endif
+    EnsureProfilerLimits(aResult.Name);
+}
 
-    EnsureProfilerLimits(sample.Name);
+void Profiler::BeginProfile(const char* aName, const char* aFunctionSignature, const int aLineNumber) {
+    mTimerStack.emplace(aName, *this, aFunctionSignature, aLineNumber);
+}
+
+void Profiler::EndProfile() {
+    mTimerStack.top().StopTimer();
+    mTimerStack.pop();
 }
 
 void Profiler::EnsureProfilerLimits(const std::string& aName) {
@@ -67,6 +66,11 @@ void Profiler::ExportTraceFrame(const TimerResult &aResult) {
 
     std::string name = aResult.Name;
     std::replace(name.begin(), name.end(), '"', '\'');
+
+    if (!name.empty()) {
+        name.append("_");
+    }
+    name.append(std::string(aResult.Metadata.FunctionSignature) + ":"+ std::to_string(aResult.Metadata.LineNumber));
 
     mSessionOutputStream << "{";
     mSessionOutputStream << "\"name\":\"" << name << "\",";
@@ -110,8 +114,4 @@ void Profiler::OnImGuiRender() {
         }
     }
     ImGui::End();
-}
-
-bool Profiler::IsProfilerEmpty() const {
-    return mTimerStack.empty();
 }
