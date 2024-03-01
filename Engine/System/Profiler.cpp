@@ -34,10 +34,16 @@ void Profiler::EndSample(const TimerResult &aResult) {
 }
 
 void Profiler::BeginProfile(const char* aName, const char* aFunctionSignature, const int aLineNumber) {
+    if (!mRunning)
+        return;
+
     mTimerStack.emplace(aName, *this, aFunctionSignature, aLineNumber);
 }
 
 void Profiler::EndProfile() {
+    if (!mRunning || mTimerStack.empty()) // Catch incase of mismatched begin/end
+        return;
+
     mTimerStack.top().StopTimer();
     mTimerStack.pop();
 }
@@ -56,7 +62,7 @@ void Profiler::StartTraceSession() {
     mSessionOutputStream << "{\"otherData\": {}, \"traceEvents\":[";
     mSessionOutputStream.flush();
 }
-
+// TODO: Convert to ProtoBuf format
 void Profiler::ExportTraceFrame(const TimerResult &aResult) {
     std::lock_guard lock(mTraceWriteMutex);
 
@@ -89,9 +95,20 @@ void Profiler::EndTraceSession() {
     mSessionOutputStream.flush();
     mSessionOutputStream.close();
 }
-
 void Profiler::OnImGuiRender() {
     ImGui::Begin("Profiler");
+    if (ImGui::Checkbox("Running", &mRunning)) {
+        if (!mRunning) {
+            while(!mTimerStack.empty()) {
+                mTimerStack.top().StopTimer();
+                mTimerStack.pop();
+            }
+            EndTraceSession();
+        } else {
+            StartTraceSession();
+        }
+    }
+
     for (auto&[fst, snd] : mTimerHistory) {
 
         std::deque<TimerResult>& tempDeque = snd;

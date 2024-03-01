@@ -7,15 +7,16 @@
 struct TimerMetadata {
     TimerMetadata(const char* aFunctionSignature, const int aLineNumber) : FunctionSignature(aFunctionSignature), LineNumber(aLineNumber) {}
     TimerMetadata();
+
     const char* FunctionSignature;
     const int LineNumber;
 };
 
 struct TimerResult {
 
-    const char* Name;
-    long long Start, End;
-    int ThreadID;
+    const char* Name{};
+    long long Start{}, End{};
+    int ThreadID{};
 
     TimerMetadata Metadata;
 
@@ -26,8 +27,10 @@ struct TimerResult {
         return std::chrono::duration_cast<std::chrono::microseconds>( std::chrono::microseconds(End - Start));
     }
 };
-struct ScopedProfileTimer {
 
+// Todo: create base class for scoped and managed timer?
+
+struct ScopedProfileTimer {
     const char* mName;
     Profiler* mProfiler;
     std::chrono::time_point<std::chrono::system_clock> start, end;

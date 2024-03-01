@@ -2,6 +2,7 @@
 #include <fstream>
 #include <mutex>
 #include <stack>
+#include <bits/stl_vector.h>
 
 #include "Objects/ImGuiLayer.h"
 
@@ -11,8 +12,8 @@
     #define FUNCTION_SIGNATURE __PRETTY_FUNCTION__
 #endif
 
-#define PROFILE_SCOPE(name) ScopedProfileTimer timer##__LINE__(name, Profiler::GetInstance(), FUNCTION_SIGNATURE, __LINE__)
-#define PROFILE_FUNCTION_SCOPED() PROFILE_SCOPE("")
+#define PROFILE_SCOPE(name) ScopedProfileTimer timer##__LINE__ = (Profiler::GetInstance().mRunning ? ScopedProfileTimer(name, Profiler::GetInstance(), FUNCTION_SIGNATURE, __LINE__) : ScopedProfileTimer())
+#define PROFILE_FUNCTION_SCOPED() PROFILE_SCOPE(FUNCTION_SIGNATURE)
 #define PROFILE_FUNCTION_SCOPED_NAMED(name) PROFILE_SCOPE(name)
 
 #define PROFILE_BEGIN(name) Profiler::GetInstance().BeginProfile(name, FUNCTION_SIGNATURE, __LINE__)
@@ -51,6 +52,9 @@ public:
     void OnImGuiRender() override;
 
 private:
+    bool mRunning = true;
+
+
     std::stack<ManagedProfileTimer> mTimerStack;
     std::unordered_map<std::string,std::deque<TimerResult>> mTimerHistory;
     const int mMaxDisplayedHistorySize = 100;

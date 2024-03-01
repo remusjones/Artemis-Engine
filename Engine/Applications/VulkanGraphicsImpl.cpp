@@ -134,7 +134,6 @@ void VulkanGraphicsImpl::Update() {
 
     //main loop
     while (!bQuitting) {
-        PROFILE_FUNCTION_SCOPED_NAMED("Application Loop");
         while (SDL_PollEvent(&e) != 0) {
             gInputManager->ConsumeInput(&e);
             if (e.type == SDL_EVENT_QUIT) bQuitting = true;
@@ -151,14 +150,17 @@ void VulkanGraphicsImpl::Update() {
             mEditor->OnImGuiRender();
             PROFILE_END();
 
+            PROFILE_BEGIN("Input Manager Update");
+            gInputManager->Update();
+            PROFILE_END();
 
-            {
-                PROFILE_FUNCTION_SCOPED_NAMED("Input Manager");
-                gInputManager->Update();
-            }
-
+            PROFILE_BEGIN("Scene Tick");
             mActiveScene->Tick(mDeltaTime);
+            PROFILE_END();
+
+            PROFILE_BEGIN("Scene Draw");
             mVulkanEngine.DrawFrame(*mActiveScene);
+            PROFILE_END();
 
 
             ImGui::UpdatePlatformWindows();
