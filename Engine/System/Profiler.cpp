@@ -50,20 +50,25 @@ void Profiler::EndProfile() {
 
 void Profiler::EnsureProfilerLimits(const std::string& aName) {
     auto& history = mTimerHistory[aName];
-    size_t size = history.size();
-    while (size > mMaxDisplayedHistorySize) {
+    while (history.size() > mMaxDisplayedHistorySize) {
         history.pop_front();
-        --size;
     }
 }
 
 void Profiler::StartTraceSession() {
+    if (mSessionOutputStream.is_open()) {
+        EndTraceSession();
+    }
+
     mSessionOutputStream.open(mSessionTraceFilename, std::ios::out);
     mSessionOutputStream << "{\"otherData\": {}, \"traceEvents\":[";
     mSessionOutputStream.flush();
 }
 // TODO: Convert to ProtoBuf format
 void Profiler::ExportTraceFrame(const TimerResult &aResult) {
+    if (!mSessionOutputStream.is_open())
+        return;
+
     std::lock_guard lock(mTraceWriteMutex);
 
     if (mTraceFrameCounter++ > 0) {
@@ -91,6 +96,8 @@ void Profiler::ExportTraceFrame(const TimerResult &aResult) {
 }
 
 void Profiler::EndTraceSession() {
+    if (!mSessionOutputStream.is_open())
+        return;
     mSessionOutputStream << "]}";
     mSessionOutputStream.flush();
     mSessionOutputStream.close();
@@ -105,11 +112,22 @@ void Profiler::OnImGuiRender() {
             }
             EndTraceSession();
         } else {
+            if (mSerializeTrace) {
+                StartTraceSession();
+            }
+        }
+    }
+    if (ImGui::Checkbox("Serialize Trace", &mSerializeTrace)) {
+        if (mSerializeTrace) {
             StartTraceSession();
+        } else {
+            EndTraceSession();
         }
     }
 
     for (auto&[fst, snd] : mTimerHistory) {
+        if (snd.empty())
+            continue;
 
         std::deque<TimerResult>& tempDeque = snd;
         std::vector<float> durations;

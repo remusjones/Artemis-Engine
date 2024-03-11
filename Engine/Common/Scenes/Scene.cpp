@@ -13,6 +13,8 @@
 
 #include "VulkanGraphicsImpl.h"
 #include <FileManagement.h>
+
+#include "Profiler.h"
 #include "BulletCollision/CollisionDispatch/btCollisionWorld.h"
 #include "BulletCollision/CollisionShapes/btBoxShape.h"
 #include "BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h"
@@ -34,6 +36,7 @@ static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
 static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
 
 void Scene::PreConstruct(const char *aSceneName) {
+    PROFILE_BEGIN("SCENE CONSTRUCT");
     mSceneName = aSceneName;
 
     mPhysicsSystem = new PhysicsSystem();
@@ -63,6 +66,7 @@ void Scene::PreConstruct(const char *aSceneName) {
                                             if (!mActiveSceneCamera->IsCameraConsumingInput())
                                                 ChangeImGuizmoOperation(ImGuizmo::SCALE);
                                         }, "Scene Gizmo Scale");
+    PROFILE_END();
 }
 
 
@@ -279,11 +283,13 @@ void Scene::OnImGuiRender() {
 }
 
 void Scene::Tick(const float aDeltaTime) {
+    PROFILE_BEGIN("Scene Physics");
     mPhysicsSystem->Tick(aDeltaTime);
     mSceneInteractionPhysicsSystem->Tick(aDeltaTime);
     for (const auto obj: mObjects) {
         obj->Tick(aDeltaTime);
     }
+    PROFILE_END();
 }
 
 void Scene::Cleanup() {

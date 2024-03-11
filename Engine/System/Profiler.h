@@ -2,7 +2,6 @@
 #include <fstream>
 #include <mutex>
 #include <stack>
-#include <bits/stl_vector.h>
 
 #include "Objects/ImGuiLayer.h"
 
@@ -52,11 +51,11 @@ public:
     void OnImGuiRender() override;
 
 private:
+
+    bool mSerializeTrace = true;
     bool mRunning = true;
-
-
     std::stack<ManagedProfileTimer> mTimerStack;
-    std::unordered_map<std::string,std::deque<TimerResult>> mTimerHistory;
+    std::unordered_map<std::string, std::deque<TimerResult>> mTimerHistory;
     const int mMaxDisplayedHistorySize = 100;
     const char* mSessionTraceFilename = "trace.json";
     std::mutex mTraceWriteMutex;

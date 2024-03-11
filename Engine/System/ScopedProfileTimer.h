@@ -13,7 +13,6 @@ struct TimerMetadata {
 };
 
 struct TimerResult {
-
     const char* Name{};
     long long Start{}, End{};
     int ThreadID{};
@@ -29,13 +28,11 @@ struct TimerResult {
 };
 
 // Todo: create base class for scoped and managed timer?
-
 struct ScopedProfileTimer {
     const char* mName;
     Profiler* mProfiler;
     std::chrono::time_point<std::chrono::system_clock> start, end;
     TimerMetadata metadata;
-    mutable bool HasBeenSampled = false;
 
     explicit ScopedProfileTimer(const char* aName, Profiler& aBoundProfiler, const char* aFunctionSignature, const int aLineNumber) : metadata(aFunctionSignature, aLineNumber) {
         start = std::chrono::high_resolution_clock::now();
@@ -49,11 +46,12 @@ struct ScopedProfileTimer {
     }
 
     [[nodiscard]] TimerResult GetResult() const {
+        const int hash = static_cast<int>(std::hash<std::thread::id>{}(std::this_thread::get_id()));
         return {
             mName,
             std::chrono::time_point_cast<std::chrono::microseconds>(start).time_since_epoch().count(),
             std::chrono::time_point_cast<std::chrono::microseconds>(end).time_since_epoch().count(),
-            0,
+            hash,
             metadata
         };
     }
@@ -63,7 +61,6 @@ struct ManagedProfileTimer {
     Profiler* mProfiler;
     std::chrono::time_point<std::chrono::system_clock> start, end;
     TimerMetadata metadata;
-    mutable bool HasBeenSampled = false;
 
     explicit ManagedProfileTimer(const char* aName, Profiler& aBoundProfiler, const char* aFunctionSignature, const int aLineNumber) : metadata(aFunctionSignature, aLineNumber) {
         start = std::chrono::high_resolution_clock::now();
@@ -77,11 +74,12 @@ struct ManagedProfileTimer {
     }
 
     [[nodiscard]] TimerResult GetResult() const {
+        const int hash = static_cast<int>(std::hash<std::thread::id>{}(std::this_thread::get_id()));
         return {
             mName,
             std::chrono::time_point_cast<std::chrono::microseconds>(start).time_since_epoch().count(),
             std::chrono::time_point_cast<std::chrono::microseconds>(end).time_since_epoch().count(),
-            0,
+            hash,
             metadata
         };
     }
