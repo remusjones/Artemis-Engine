@@ -44,6 +44,8 @@ void Profiler::EndProfile() {
     if (!mRunning || mTimerStack.empty()) // Catch incase of mismatched begin/end
         return;
 
+    // TODO: This doesn't allow us to profile different threads without race condition, and is not thread safe
+    // Perhaps migrate to a ID system timer stack and use a map to store the results
     mTimerStack.top().StopTimer();
     mTimerStack.pop();
 }
@@ -55,6 +57,7 @@ void Profiler::EnsureProfilerLimits(const std::string& aName) {
     }
 }
 
+// TODO: Migrate to protobuf format instead of JSON
 void Profiler::StartTraceSession() {
     if (mSessionOutputStream.is_open()) {
         EndTraceSession();

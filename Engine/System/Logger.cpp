@@ -1,7 +1,7 @@
 #include "Logger.h"
 #include <iostream>
 
-#include "../../vendor/spdlog/include/spdlog/spdlog.h"
+#include <spdlog/spdlog.h>
 
 void Logger::Log(spdlog::level::level_enum aSeverity, const char* aMessage)
 {
@@ -16,8 +16,12 @@ void Logger::Log(const char *aMessage) {
     Log(spdlog::level::info, aMessage);
 }
 
-void Logger::Log(std::string aMessage) {
+void Logger::Log(const std::string &aMessage) {
     Log(spdlog::level::info, aMessage);
+}
+
+void Logger::LogWarning(const std::string &aMessage) {
+    Log(spdlog::level::warn, aMessage);
 }
 
 void Logger::LogError(const char *str) {

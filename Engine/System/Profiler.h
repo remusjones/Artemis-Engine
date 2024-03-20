@@ -3,6 +3,7 @@
 #include <mutex>
 #include <stack>
 
+#include "Logger.h"
 #include "Objects/ImGuiLayer.h"
 
 #ifdef _MSC_VER
@@ -27,6 +28,7 @@ public:
     // TODO: Maybe make a profiler factory for different sessions/groups?
     static Profiler& GetInstance() {
         static Profiler instance;
+        LOG_INFO("Test");
         return instance;
     }
 
