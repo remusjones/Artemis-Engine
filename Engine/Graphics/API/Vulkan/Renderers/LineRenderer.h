@@ -19,10 +19,10 @@ public:
         LINES_SEGMENTED,
     };
 
-    void SetLinePositions(const std::vector<glm::vec3> &aPositions, const LineRenderMode aMode = LINES_CONTINUOUS);
+    void SetLinePositions(const std::vector<glm::vec3> &aPositions, LineRenderMode aMode = LINES_CONTINUOUS);
 
     void SetLinePositions(const std::vector<glm::vec3> &aPositions, const std::vector<Color> &aColors,
-                          const LineRenderMode aMode = LINES_CONTINUOUS);
+                          LineRenderMode aMode = LINES_CONTINUOUS);
 
     void DrawLine(glm::vec3 aStart, glm::vec3 aEnd, Color aColor);
 
@@ -33,7 +33,7 @@ public:
     void Render(VkCommandBuffer aCommandBuffer, const Scene &aScene) override;
 
 private:
-    void SetLinePositions(const std::vector<Vertex> &aLines, const LineRenderMode aMode = LINES_CONTINUOUS);
+    void SetLinePositions(const std::vector<Vertex> &aLines, LineRenderMode aMode = LINES_CONTINUOUS);
 
 public:
     Transform *mTransform;

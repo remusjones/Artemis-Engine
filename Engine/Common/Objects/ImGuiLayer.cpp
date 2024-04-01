@@ -15,7 +15,7 @@ ImGuiLayer::ImGuiLayer() = default;
 
 const char* ImGuiLayer::GetUniqueLabel(const char *aLabel)  {
 
-    if (mConstructedLabels.find(aLabel) != mConstructedLabels.end())
+    if (mConstructedLabels.contains(aLabel))
         return mConstructedLabels[aLabel].c_str();
 
     mConstructedLabels[aLabel] = std::string(aLabel + std::string("##") + MakeGuid());

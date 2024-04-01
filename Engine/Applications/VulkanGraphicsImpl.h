@@ -3,7 +3,6 @@
 // Generic VulkanGraphicsImpl process to run the "project"
 //
 #pragma once
-#include <functional>
 #include <memory>
 #include <vector>
 #include <SDL_video.h>
@@ -78,7 +77,7 @@ private:
     // specify queues to be created & features for engine
     void CreateLogicalDevice();
 
-    void DestroyLogicalDevice();
+    void DestroyLogicalDevice() const;
 
     // Create WSI > Vulkan bridge
     void CreateSurface();
@@ -147,7 +146,7 @@ private:
 
     void InitializePhysicalDevice();
 
-    bool IsDeviceSuitable(VkPhysicalDevice aPhysicalDevice);
+    bool IsDeviceSuitable(VkPhysicalDevice aPhysicalDevice) const;
 
     bool CheckDeviceExtensionSupport(VkPhysicalDevice aPhysicalDevice) const;
 

@@ -1,23 +1,18 @@
-//
-// Created by Remus on 17/12/2023.
-//
-
 #include <vulkan/vulkan_core.h>
 #include "GraphicsPipeline.h"
 
 #include <stdexcept>
-
 #include <Logger.h>
-#include "PipelineConfigInfo.h"
-#include "Base/Common/Data/Vertex.h"
-#include "VulkanGraphicsImpl.h"
+#include <Vulkan/Systems/PipelineConfigInfo.h>
+#include <Base/Common/Data/Vertex.h>
+#include <VulkanGraphicsImpl.h>
 #include <FileManagement.h>
-#include "Base/Common/Buffers/PushConstants.h"
-#include "Base/Common/Material.h"
+#include <Base/Common/Buffers/PushConstants.h>
+#include <Base/Common/Material.h>
 #include "Base/Common/Data/GPUSceneData.h"
-#include "Scenes/Scene.h"
-#include "Vulkan/Common/MeshObject.h"
-#include "Vulkan/Helpers/VulkanInitialization.h"
+#include <Scenes/Scene.h>
+#include <Vulkan/Common/MeshObject.h>
+#include <Vulkan/Helpers/VulkanInitialization.h>
 
 void GraphicsPipeline::Create() {
     Logger::Log(spdlog::level::info,
@@ -35,8 +30,8 @@ void GraphicsPipeline::Create() {
 
         // Bind these elsewhere?
         std::vector<VkDescriptorSetLayout> layouts;
-        for (int i = 0; i < mRenderers.size(); i++) {
-            layouts.push_back(mRenderers[i]->mMaterial->GetDescriptorLayout());
+        for (auto & mRenderer : mRenderers) {
+            layouts.push_back(mRenderer->mMaterial->GetDescriptorLayout());
         }
         //hook the global set layout
         pipelineLayoutInfo.setLayoutCount = layouts.size();

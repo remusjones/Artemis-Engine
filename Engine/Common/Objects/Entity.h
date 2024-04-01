@@ -46,7 +46,7 @@ public:
     }
     template<class T>
     bool GetComponent(const char* name, T &aResult) {
-        if (mComponentMap.find(name) != mComponentMap.end()) {
+        if (mComponentMap.contains(name)) {
             aResult = *static_cast<T*>(mComponentMap[name]);  // add static_cast here
             return true;
         }
@@ -55,7 +55,7 @@ public:
 
     template<class T>
     bool GetComponent(const std::string name, T &aResult) {
-        if (mComponentMap.find(name) != mComponentMap.end()) {
+        if (mComponentMap.contains(name)) {
             aResult = *static_cast<T*>(mComponentMap[name]);  // add static_cast here
             return true;
         }

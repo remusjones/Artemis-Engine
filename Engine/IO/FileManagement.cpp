@@ -22,7 +22,7 @@ std::vector<char> FileManagement::GetShaderFileData(const std::string &filename)
         throw std::runtime_error("failed to open file " + filename);
     }
 
-    size_t fileSize = (size_t) file.tellg();
+    const size_t fileSize = (size_t) file.tellg();
     std::vector<char> buffer(fileSize);
     file.seekg(0);
     file.read(buffer.data(), fileSize);
@@ -34,7 +34,7 @@ std::string FileManagement::GetWorkingDirectory()
 {
     char buffer[MAX_PATH];
     GetModuleFileNameA(nullptr, buffer, MAX_PATH);
-    std::string::size_type pos = std::string(buffer).find_last_of("\\/");
+    const std::string::size_type pos = std::string(buffer).find_last_of("\\/");
     return std::string(buffer).substr(0, pos);
 }
 std::string FileManagement::MakeAssetPath(const std::string &aRelativeFilePath) {
@@ -71,7 +71,7 @@ std::vector<char> FileManagement::GetShaderFileDataPath(const char* aRelativeDir
         throw std::runtime_error("failed to open file" + std::string(aRelativeDirectory));
     }
 
-    size_t fileSize = (size_t) file.tellg();
+    const size_t fileSize = file.tellg();
     std::vector<char> buffer(fileSize);
     file.seekg(0);
     file.read(buffer.data(), fileSize);

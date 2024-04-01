@@ -4,7 +4,7 @@
 #include "Logger.h"
 #include "ScopedProfileTimer.h"
 
-#define TRACE 1 // Move to state or config
+#define TRACE 0 // Move to state or config
 
 Profiler::Profiler() {
 #if TRACE

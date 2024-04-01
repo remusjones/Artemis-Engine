@@ -1,7 +1,3 @@
-//
-// Created by Remus on 22/12/2023.
-//
-
 #include "Transform.h"
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -18,8 +14,8 @@ glm::vec3 Transform::GetWorldPosition(){
 }
 
 glm::quat Transform::GetWorldRotation() {
-    glm::mat4 matrix = GetWorldMatrix();
-    glm::mat3 upper_mat3(matrix);
+    const glm::mat4 matrix = GetWorldMatrix();
+    const glm::mat3 upper_mat3(matrix);
     return glm::quat(upper_mat3);
 }
 
@@ -201,7 +197,7 @@ size_t Transform::GetChildCount() const {
 }
 
 void Transform::RemoveChild(Transform *aChild) {
-    if (const auto it = std::find(mChildren.begin(), mChildren.end(), aChild); it != mChildren.end())
+    if (const auto it = std::ranges::find(mChildren, aChild); it != mChildren.end())
         mChildren.erase(it);
     aChild->SetParent(nullptr);
     mParent->SetDirty();

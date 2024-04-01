@@ -262,7 +262,7 @@ void Scene::OnImGuiRender() {
                 });
             }
             ImGui::Indent();
-            for (auto system: mRenderSystems) {
+            for (const auto system: mRenderSystems) {
                 if (ImGui::CollapsingHeader(system->mPipeline->mPipelineName)) {
                     ImGui::Indent();
                     ImGui::Text("Material Count: ");
@@ -390,7 +390,7 @@ const btRigidBody *Scene::PickRigidBody(const int x, const int y) const {
 }
 
 Texture *Scene::CreateTexture(const char *aName, std::vector<std::string> aPathsSet) {
-    if (mLoadedTextures.find(aName) == mLoadedTextures.end()) {
+    if (!mLoadedTextures.contains(aName)) {
         mLoadedTextures[aName] = std::make_unique<Texture>();
 
         auto *texture = mLoadedTextures[aName].get();

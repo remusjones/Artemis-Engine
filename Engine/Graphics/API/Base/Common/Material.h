@@ -28,13 +28,13 @@ public:
     Material(const char* aMaterialName = "Default") : mMaterialName(aMaterialName){}
     virtual void Create(MaterialBase *aBaseMaterial);
     virtual void CreateProperties(uint32_t aBinding, const MaterialProperties &aMaterialProperties);
-    virtual void BindTexture(const std::vector<VkDescriptorImageInfo> &textureInfo, const uint8_t aBinding) const;
+    virtual void BindTexture(const std::vector<VkDescriptorImageInfo> &textureInfo, uint8_t aBinding) const;
 
     void BindTexture(const VkDescriptorImageInfo &imageInfo, uint8_t aBinding) const;
 
     virtual void AddBinding(uint32_t aBinding, uint32_t aCount,
                             VkDescriptorType aType, VkShaderStageFlagBits aShaderStage);
-    virtual void SetBuffers(const AllocatedBuffer &aBuffer, const uint8_t aBinding, const uint8_t aIndex) const;
+    virtual void SetBuffers(const AllocatedBuffer &aBuffer, uint8_t aBinding, uint8_t aIndex) const;
 
     VkDescriptorSet GetDescriptorSet() const { return mDescriptorSet; }
     VkDescriptorSetLayout GetDescriptorLayout() const { return mLayout; }

@@ -39,13 +39,13 @@ bool LoadUtilities::LoadImageFromDisk(const VulkanGraphics *aEngine, const char 
         return false;
     }
 
-    void *pixel_ptr = pixels;
-    VkDeviceSize imageSize = texWidth * texHeight * 4;
+    const void *pixel_ptr = pixels;
+    const VkDeviceSize imageSize = texWidth * texHeight * 4;
 
-    VkFormat image_format = VK_FORMAT_R8G8B8A8_SRGB;
+    constexpr VkFormat image_format = VK_FORMAT_R8G8B8A8_SRGB;
 
 
-    AllocatedBuffer stagingBuffer = AllocatedBuffer(pixel_ptr, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+    const AllocatedBuffer stagingBuffer = AllocatedBuffer(pixel_ptr, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
 
     stbi_image_free(pixels);
 
@@ -55,9 +55,9 @@ bool LoadUtilities::LoadImageFromDisk(const VulkanGraphics *aEngine, const char 
     imageExtent.height = static_cast<uint32_t>(texHeight);
     imageExtent.depth = 1;
 
-    VkImageCreateInfo dimg_info = VulkanInitialization::CreateImageInfo(image_format, VK_IMAGE_USAGE_SAMPLED_BIT |
-                                                                            VK_IMAGE_USAGE_TRANSFER_DST_BIT,
-                                                                        imageExtent);
+    const VkImageCreateInfo dimg_info = VulkanInitialization::CreateImageInfo(image_format, VK_IMAGE_USAGE_SAMPLED_BIT |
+                                                                                            VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+                                                                              imageExtent);
 
     AllocatedImage newImage;
     VmaAllocationCreateInfo dimg_allocinfo = {};
@@ -240,8 +240,8 @@ bool LoadUtilities::LoadImagesFromDisk(const VulkanGraphics *aEngine, const std:
     VmaAllocationCreateInfo dimg_allocinfo = {};
     dimg_allocinfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
-    VkResult result = vmaCreateImage(aEngine->mAllocator, &dimg_info, &dimg_allocinfo, &newImage.mImage,
-                                     &newImage.mAllocation, nullptr);
+    const VkResult result = vmaCreateImage(aEngine->mAllocator, &dimg_info, &dimg_allocinfo, &newImage.mImage,
+                                           &newImage.mAllocation, nullptr);
 
 
     vmaSetAllocationName(gGraphics->mAllocator, newImage.mAllocation,
@@ -315,7 +315,8 @@ bool LoadUtilities::CreateImage(const int aWidth, const int aHeight,
                                 VulkanGraphics *aEngine,
                                 AllocatedImage &aResult,
                                 Color_RGBA aColor = Color_RGBA(1, 1, 1, 1)) {
-    int texWidth = aWidth, texHeight = aHeight; // Assuming RGB texture
+    const int texWidth = aWidth;
+    const int texHeight = aHeight; // Assuming RGB texture
     stbi_uc *pixels = new stbi_uc[4 * texWidth * texHeight];
     for (int i = 0; i < 4 * texWidth * texHeight; i += 4) {
         pixels[i] = aColor.R; // red
@@ -324,10 +325,10 @@ bool LoadUtilities::CreateImage(const int aWidth, const int aHeight,
         pixels[i + 3] = aColor.A; // alpha
     }
 
-    void *pixel_ptr = pixels;
-    VkDeviceSize imageSize = texWidth * texHeight * 4;
+    const void *pixel_ptr = pixels;
+    const VkDeviceSize imageSize = texWidth * texHeight * 4;
 
-    VkFormat image_format = VK_FORMAT_R8G8B8A8_SRGB;
+    const VkFormat image_format = VK_FORMAT_R8G8B8A8_SRGB;
 
 
     AllocatedBuffer stagingBuffer = AllocatedBuffer(pixel_ptr, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
@@ -444,7 +445,7 @@ bool LoadUtilities::LoadMeshFromDisk(const char *aFilePath,
                 tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
 
                 // Check if vertex with these attributes was already processed
-                if (uniqueVertices.count(idx) == 0) {
+                if (!uniqueVertices.contains(idx)) {
                     // If not found
                     // New unique Vertex
                     Vertex newVertex;

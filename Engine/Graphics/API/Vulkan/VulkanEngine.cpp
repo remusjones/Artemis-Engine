@@ -65,7 +65,7 @@ void VulkanEngine::Cleanup()
 void VulkanEngine::SubmitBufferCommand(std::function<void(VkCommandBuffer cmd)>&& function) const
 {
     VkCommandBuffer cmd = mUploadContext.mCommandBuffer;
-    VkCommandBufferBeginInfo cmdBeginInfo = VulkanInitialization::CommandBufferBeginInfo(
+    const VkCommandBufferBeginInfo cmdBeginInfo = VulkanInitialization::CommandBufferBeginInfo(
         VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
     vkBeginCommandBuffer(cmd, &cmdBeginInfo);
@@ -73,7 +73,7 @@ void VulkanEngine::SubmitBufferCommand(std::function<void(VkCommandBuffer cmd)>&
     vkResetFences(mLogicalDevice, 1, &mUploadContext.mUploadFence);
     vkEndCommandBuffer(cmd);
 
-    VkSubmitInfo submit = VulkanInitialization::SubmitInfo(&cmd);
+    const VkSubmitInfo submit = VulkanInitialization::SubmitInfo(&cmd);
 
 
     vkQueueSubmit(mGraphicsQueue, 1, &submit, mUploadContext.mUploadFence);
@@ -98,8 +98,8 @@ void VulkanEngine::CreateUploadContext()
         throw std::runtime_error("failed to create command pool");
     }
 
-    VkCommandBufferAllocateInfo cmdAllocInfo = VulkanInitialization::CommandBufferAllocateInfo(mUploadContext
-        .mCommandPool, 1, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+    const VkCommandBufferAllocateInfo cmdAllocInfo = VulkanInitialization::CommandBufferAllocateInfo(mUploadContext
+                                                                                                     .mCommandPool, 1, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
     vkAllocateCommandBuffers(mLogicalDevice, &cmdAllocInfo, &mUploadContext.mCommandBuffer);
 
 
@@ -151,8 +151,7 @@ void VulkanEngine::CreateCommandBuffers()
     }
 }
 
-void VulkanEngine::DestroyCommandPool()
-{
+void VulkanEngine::DestroyCommandPool() const {
     vkDestroyCommandPool(mLogicalDevice, mUploadContext.mCommandPool, nullptr);
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
@@ -252,8 +251,8 @@ void VulkanEngine::DrawFrame(Scene& aActiveScene)
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = gGraphics->mSwapChain->mSwapChainExtent.height;;
-    viewport.width = (float)gGraphics->mSwapChain->mSwapChainExtent.width;
-    viewport.height = -(float)gGraphics->mSwapChain->mSwapChainExtent.height;
+    viewport.width = static_cast<float>(gGraphics->mSwapChain->mSwapChainExtent.width);
+    viewport.height = -static_cast<float>(gGraphics->mSwapChain->mSwapChainExtent.height);
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
     vkCmdSetViewport(currentCommandBuffer, 0, 1, &viewport);
@@ -359,19 +358,19 @@ void VulkanEngine::DrawFrame(Scene& aActiveScene)
 
 void VulkanEngine::CleanupOldSyncObjects()
 {
-    for (auto& i : mRenderFinishedSemaphoresToDestroy)
+    for (const auto& i : mRenderFinishedSemaphoresToDestroy)
     {
         vkDestroySemaphore(mLogicalDevice, i, nullptr);
     }
     mRenderFinishedSemaphoresToDestroy.clear();
 
-    for (auto& i : mInFlightFencesToDestroy)
+    for (const auto& i : mInFlightFencesToDestroy)
     {
         vkDestroyFence(mLogicalDevice, i, nullptr);
     }
     mInFlightFencesToDestroy.clear();
 
-    for (auto& i : mImageAvailableSemaphoresToDestroy)
+    for (const auto& i : mImageAvailableSemaphoresToDestroy)
     {
         vkDestroySemaphore(mLogicalDevice, i, nullptr);
     }

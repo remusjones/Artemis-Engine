@@ -19,7 +19,6 @@
 #include <Logger.h>
 #include "ImGuizmo.h"
 #include "Profiler.h"
-#include "ScopedProfileTimer.h"
 #include "Objects/Editor.h"
 #include "Scenes/SandboxScene.h"
 #include "Vulkan/Common/MeshObject.h"
@@ -63,7 +62,7 @@ void VulkanGraphicsImpl::InitializeVulkan() {
 void VulkanGraphicsImpl::InitializeImgui() {
     //1: create descriptor pool for IMGUI
     // the size of the pool is very oversize, but it's copied from imgui demo itself.
-    VkDescriptorPoolSize pool_sizes[] =
+    const VkDescriptorPoolSize pool_sizes[] =
     {
         {VK_DESCRIPTOR_TYPE_SAMPLER, 1000},
         {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000},
@@ -420,8 +419,8 @@ VkResult VulkanGraphicsImpl::CreateDebugUtilsMessengerEXT(VkInstance instance,
 void VulkanGraphicsImpl::DestroyDebugUtilsMessengerEXT(
     VkInstance aInstance, VkDebugUtilsMessengerEXT aDebugMessenger,
     const VkAllocationCallbacks *aAllocator) {
-    auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(
-        aInstance, "vkDestroyDebugUtilsMessengerEXT");
+    auto func = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(
+        aInstance, "vkDestroyDebugUtilsMessengerEXT"));
     if (func != nullptr) {
         func(aInstance, aDebugMessenger, aAllocator);
     }
@@ -471,7 +470,7 @@ void VulkanGraphicsImpl::InitializePhysicalDevice() {
     }
 }
 
-bool VulkanGraphicsImpl::IsDeviceSuitable(VkPhysicalDevice aPhysicalDevice) {
+bool VulkanGraphicsImpl::IsDeviceSuitable(VkPhysicalDevice aPhysicalDevice) const {
     const QueueFamilyIndices indices = FindQueueFamilies(aPhysicalDevice);
 
     const bool extensionsSupported = CheckDeviceExtensionSupport(aPhysicalDevice);
@@ -622,13 +621,13 @@ void VulkanGraphicsImpl::CreateLogicalDevice() {
     mFamilyIndices = FindQueueFamilies(mPhysicalDevice);
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-    std::set<uint32_t> uniqueQueueFamilies = {
+    const std::set uniqueQueueFamilies = {
         mFamilyIndices.mGraphicsFamily.value(),
         mFamilyIndices.mPresentFamily.value()
     };
 
-    float queuePriority = 1.0f;
-    for (uint32_t queueFamily: uniqueQueueFamilies) {
+    constexpr float queuePriority = 1.0f;
+    for (const uint32_t queueFamily: uniqueQueueFamilies) {
         VkDeviceQueueCreateInfo queueCreateInfo{};
         queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         queueCreateInfo.queueFamilyIndex = queueFamily;
@@ -639,7 +638,7 @@ void VulkanGraphicsImpl::CreateLogicalDevice() {
 
     VkDeviceQueueCreateInfo queueCreateInfo{};
     queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-    uint32_t graphicsFamilyIndex = mFamilyIndices.mGraphicsFamily.value();
+    const uint32_t graphicsFamilyIndex = mFamilyIndices.mGraphicsFamily.value();
 
     queueCreateInfo.queueFamilyIndex = graphicsFamilyIndex;
     queueCreateInfo.queueCount = 1;
@@ -675,6 +674,6 @@ void VulkanGraphicsImpl::CreateLogicalDevice() {
     vkGetDeviceQueue(mLogicalDevice, graphicsFamilyIndex, 0, &mGraphicsQueue);
 }
 
-void VulkanGraphicsImpl::DestroyLogicalDevice() {
+void VulkanGraphicsImpl::DestroyLogicalDevice() const {
     vkDestroyDevice(mLogicalDevice, nullptr);
 }

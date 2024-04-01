@@ -33,8 +33,8 @@ Ray Camera::GetRayTo(const int x, const int y) {
     const float normalizedPointX = x / (width * 0.5f) - 1.0f;
     const float normalizedPointY = y / (height * 0.5f) - 1.0f;
 
-    glm::mat4 invVP = glm::inverse(GetViewProjectionMatrix());
-    glm::vec4 screenPos = glm::vec4(normalizedPointX, -normalizedPointY, 1.0f, 1.0f);
+    const glm::mat4 invVP = glm::inverse(GetViewProjectionMatrix());
+    const glm::vec4 screenPos = glm::vec4(normalizedPointX, -normalizedPointY, 1.0f, 1.0f);
     glm::vec4 worldPos = invVP * screenPos;
 
     worldPos = worldPos / worldPos.w;

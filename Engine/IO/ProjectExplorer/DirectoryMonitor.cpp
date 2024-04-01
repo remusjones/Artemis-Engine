@@ -1,12 +1,8 @@
-//
-// Created by Remus on 5/02/2024.
-//
-
 #include "DirectoryMonitor.h"
 
 #include <filesystem>
-#include "FileManagement.h"
-#include "../../System/Logger.h"
+#include <FileManagement.h>
+#include <Logger.h>
 
 void DirectoryMonitor::CreateDirectoryMonitor(const std::string &aPath) {
     mMonitoredDirectory = aPath;

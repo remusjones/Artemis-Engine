@@ -3,8 +3,6 @@
 #include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
 
-#include <iostream>
-
 #include "Engine/System/Logger.h"
 #include "VulkanGraphicsImpl.h"
 

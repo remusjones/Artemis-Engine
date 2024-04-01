@@ -64,8 +64,8 @@ btBoxShape* CollisionHelper::MakeAABBCollision(const std::vector<Vertex>& aVerti
     }
 
     // Calculate extents and half extents for the box shape
-    btVector3 extents = maxVertex - minVertex;
-    btVector3 halfExtents = extents * 0.5f;
+    const btVector3 extents = maxVertex - minVertex;
+    const btVector3 halfExtents = extents * 0.5f;
 
     // Create and return AABB (Axis-Aligned Bounding Box)
     return new btBoxShape(halfExtents);

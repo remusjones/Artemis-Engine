@@ -35,14 +35,14 @@ void VulkanSwapChain::RecreateSwapChain()
 
 void VulkanSwapChain::CreateSwapChain()
 {
-    SwapChainSupportDetails swapChainSupport = mApplication->
+    const SwapChainSupportDetails swapChainSupport = mApplication->
         QuerySwapChainSupport(mPhysicalDevice);
 
-    VkSurfaceFormatKHR surfaceFormat = mApplication->ChooseSwapSurfaceFormat(
+    const VkSurfaceFormatKHR surfaceFormat = mApplication->ChooseSwapSurfaceFormat(
         swapChainSupport.mFormats);
-    VkPresentModeKHR presentMode = mApplication->ChooseSwapPresentMode(
+    const VkPresentModeKHR presentMode = mApplication->ChooseSwapPresentMode(
         swapChainSupport.mPresentModes);
-    VkExtent2D extent = mApplication->ChooseSwapExtent(
+    const VkExtent2D extent = mApplication->ChooseSwapExtent(
         swapChainSupport.mCapabilities);
 
     uint32_t imageCount = swapChainSupport.mCapabilities.minImageCount + 1;
@@ -64,7 +64,7 @@ void VulkanSwapChain::CreateSwapChain()
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
     QueueFamilyIndices indices = gGraphics->GetQueueFamilyIndices();
-    uint32_t queueFamilyIndices[] = {
+    const uint32_t queueFamilyIndices[] = {
         indices.mGraphicsFamily.value(), indices.mPresentFamily.value()
     };
 
@@ -168,7 +168,7 @@ void VulkanSwapChain::CreateDepthBufferView()
 
     _depthFormat = VK_FORMAT_D32_SFLOAT;
 
-    VkImageCreateInfo imageInfo = VulkanInitialization::CreateImageInfo(
+    const VkImageCreateInfo imageInfo = VulkanInitialization::CreateImageInfo(
         _depthFormat,
         VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, depthImageExtent);
 

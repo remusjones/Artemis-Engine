@@ -44,7 +44,7 @@ public:
 
     void CreateCommandBuffers();
 
-    void DestroyCommandPool();
+    void DestroyCommandPool() const;
 
     void CreateDescriptorPool();
 

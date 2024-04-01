@@ -47,7 +47,7 @@ void Texture::Create(VkFilter aSamplerFilter,
 void Texture::Destroy() const {
     vmaDestroyImage(gGraphics->mAllocator, mAllocatedImage.mImage, mAllocatedImage.mAllocation);
     // Destroy each imageView
-    for (auto imageView: mImageViews) {
+    for (const auto imageView: mImageViews) {
         vkDestroyImageView(gGraphics->mLogicalDevice, imageView, nullptr);
     }
     vkDestroySampler(gGraphics->mLogicalDevice, mSampler, nullptr);
