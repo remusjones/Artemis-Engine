@@ -24,10 +24,11 @@ public:
             material->Create(material.get());
         }
     }
-    void DestroyMaterials() const {
+    void DestroyMaterials() {
         for(const auto& material : mMaterials) {
             material->Destroy();
         }
+        mMaterials.clear();
     }
 
     [[nodiscard]] std::vector<VkDescriptorSetLayout> GetDescriptorLayouts() const {
