@@ -75,7 +75,7 @@ void SandboxScene::Construct() {
     //
     mMonkey = CreateObject("Monkey",
                          "/Assets/Models/monkey_smooth.obj", *monkeyTexturedMaterial,
-                         *mWireframeRenderSystem->mPipeline,
+                         *mWireframeRenderSystem->m_graphicsPipeline,
                          glm::vec3(2, 0, -5),
                          glm::vec3(0),
                          glm::vec3(1.f));
@@ -83,19 +83,19 @@ void SandboxScene::Construct() {
 
     mTeapot = CreateObject("Teapot",
                          "/Assets/Models/teapot.obj", *teapotMaterial,
-                         *mPBRPipeline->mPipeline,
+                         *mPBRPipeline->m_graphicsPipeline,
                          glm::vec3(2, 0, -20),
                          glm::vec3(0),
                          glm::vec3(0.1f));
 
     mLight = CreateObject("Light",
                         "/Assets/Models/sphere.obj", *lightMaterial,
-                        *mUnlitPipeline->mPipeline,
+                        *mUnlitPipeline->m_graphicsPipeline,
                         glm::vec3(0, 0, 0),
                         glm::vec3(0),
                         glm::vec3(0.2));
 
-    mMonkey->mTransform.SetParent(&mLight->mTransform);
+    mMonkey->m_transform.SetParent(&mLight->m_transform);
 
     constexpr int uniformSphereCount = 3;
     for (int i = 0; i < uniformSphereCount; i++) {
@@ -104,7 +104,7 @@ void SandboxScene::Construct() {
                 constexpr float sphereRadius = 0.5f;
                 MeshObject *sphere = CreateObject("Physics Sphere",
                                                 "/Assets/Models/sphere.obj", *sphereMaterial,
-                                                *mPBRPipeline->mPipeline,
+                                                *mPBRPipeline->m_graphicsPipeline,
                                                 glm::vec3(i, j, k),
                                                 glm::vec3(0),
                                                 glm::vec3(sphereRadius));
@@ -117,7 +117,7 @@ void SandboxScene::Construct() {
 
     constexpr glm::vec3 floorScale(50, 0.5f, 50);
     mFloor = CreateObject("Floor", "/Assets/Models/cube.obj",
-                        *cubeMaterial, *mPBRPipeline->mPipeline,
+                        *cubeMaterial, *mPBRPipeline->m_graphicsPipeline,
                         glm::vec3(0, -10, 0), glm::vec3(0), floorScale);
 
     AttachBoxCollider(*mFloor, floorScale, 0);
@@ -136,23 +136,23 @@ void SandboxScene::Construct() {
     auto *mSkyboxRenderer = new SkyboxRenderer();
     mCubemapMesh->mRenderer = mSkyboxRenderer;
     mSkyboxRenderer->mMaterial = mCubemap;
-    mSkyboxRenderer->mTransform = &mCubemapMesh->mTransform;
-    mSkyboxRenderer->BindRenderer(*mCubemapPipeline->mPipeline);
+    mSkyboxRenderer->mTransform = &mCubemapMesh->m_transform;
+    mSkyboxRenderer->BindRenderer(*mCubemapPipeline->m_graphicsPipeline);
     mSkyboxRenderer->LoadMesh((FileManagement::GetWorkingDirectory() +
                                std::string("/Assets/Models/cube.obj")).c_str());
 
     //
     // Scene Camera
     //
-    mActiveSceneCamera = new FlyCamera();
-    mActiveSceneCamera->Construct();
-    mActiveSceneCamera->mTransform.SetLocalPosition({0, 0, -5.0f});
+    m_ActiveSceneCamera = new FlyCamera();
+    m_ActiveSceneCamera->Construct();
+    m_ActiveSceneCamera->m_transform.SetLocalPosition({0, 0, -5.0f});
 
     mLineRendererEntity = new Primative("LineRenderer");
     mLineRendererEntity->mRenderer = mLineRenderer;
 
     mLineRenderer = new LineRenderer();
-    mLineRenderer->mTransform = &mLineRendererEntity->mTransform;
+    mLineRenderer->mTransform = &mLineRendererEntity->m_transform;
     mLineRenderer->SetLinePositions(
         {
             glm::vec3(0, -10, 0),
@@ -162,7 +162,7 @@ void SandboxScene::Construct() {
         });
 
     mLineRenderer->mMaterial = unlitMaterial;
-    mLineRenderer->BindRenderer(*mLineRenderPipeline->mPipeline);
+    mLineRenderer->BindRenderer(*mLineRenderPipeline->m_graphicsPipeline);
 
     //
     // Setup Scene Dependencies
@@ -192,20 +192,20 @@ void SandboxScene::Tick(float aDeltaTime) {
     mLight->mMeshRenderer.mMaterial->mMaterialProperties.mColor =
             glm::vec4(mSceneData.color.x, mSceneData.color.y, mSceneData.color.z, 1);
 
-    mSceneData.position = mLight->mTransform.GetLocalPosition();
-    mSceneData.mViewMatrix = mActiveSceneCamera->GetViewMatrix();
-    mSceneData.mViewPos = glm::vec4(mActiveSceneCamera->mTransform.GetLocalPosition(), 1.0f);
-    mSceneData.mViewProjectionMatrix = mActiveSceneCamera->GetPerspectiveMatrix();
+    mSceneData.position = mLight->m_transform.GetLocalPosition();
+    mSceneData.mViewMatrix = m_ActiveSceneCamera->GetViewMatrix();
+    mSceneData.mViewPos = glm::vec4(m_ActiveSceneCamera->m_transform.GetLocalPosition(), 1.0f);
+    mSceneData.mViewProjectionMatrix = m_ActiveSceneCamera->GetPerspectiveMatrix();
 
-    mMonkey->mTransform.RotateAxisLocal(aDeltaTime / 5, glm::vec3(0.0f, 1, 0));
+    mMonkey->m_transform.RotateAxisLocal(aDeltaTime / 5, glm::vec3(0.0f, 1, 0));
     Scene::Tick(aDeltaTime);
 
 
     mLineRenderer->SetLinePositions({
-                                        mTeapot->mTransform.GetWorldPosition(),
-                                        mMonkey->mTransform.GetWorldPosition(),
-                                        mLight->mTransform.GetWorldPosition(),
-                                        mFloor->mTransform.GetWorldPosition()
+                                        mTeapot->m_transform.GetWorldPosition(),
+                                        mMonkey->m_transform.GetWorldPosition(),
+                                        mLight->m_transform.GetWorldPosition(),
+                                        mFloor->m_transform.GetWorldPosition()
                                     }, {
                                         Color::Red(),
                                         Color::Green(),
@@ -214,11 +214,11 @@ void SandboxScene::Tick(float aDeltaTime) {
                                     });
 
     mLineRenderer->DrawLine(
-        mFloor->mTransform.GetWorldPosition(),
-        mMonkey->mTransform.GetWorldPosition(),
+        mFloor->m_transform.GetWorldPosition(),
+        mMonkey->m_transform.GetWorldPosition(),
         Color::Magenta());
 
-    mActiveSceneCamera->Tick(aDeltaTime);
+    m_ActiveSceneCamera->Tick(aDeltaTime);
 }
 
 void SandboxScene::Cleanup() {

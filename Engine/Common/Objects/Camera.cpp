@@ -23,7 +23,7 @@ glm::mat4 Camera::GetPerspectiveMatrix() const {
 }
 
 glm::mat4 Camera::GetViewMatrix() const {
-    return glm::inverse(mTransform.GetTranslationMatrix() * mTransform.GetRotationMatrix());
+    return glm::inverse(m_transform.GetTranslationMatrix() * m_transform.GetRotationMatrix());
 }
 
 Ray Camera::GetRayTo(const int x, const int y) {
@@ -40,7 +40,7 @@ Ray Camera::GetRayTo(const int x, const int y) {
     worldPos = worldPos / worldPos.w;
 
     Ray ray;
-    ray.origin = mTransform.GetWorldPosition();
+    ray.origin = m_transform.GetWorldPosition();
     ray.direction = glm::normalize(glm::vec3(worldPos) - ray.origin);
 
     return ray;

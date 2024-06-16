@@ -10,7 +10,7 @@
 struct Ray;
 class Camera : public Entity{
 public:
-    // TODO: Only update vpm when mTransform gets marked dirty
+    // TODO: Only update vpm when m_transform gets marked dirty
     glm::mat4 GetViewProjectionMatrix() const;
     glm::mat4 GetPerspectiveMatrix() const;
     glm::mat4 GetViewMatrix() const;

@@ -27,14 +27,13 @@ public:
     void Tick(float aDeltaTime) override;
     void Initialize() override;
 
-    btRigidBody* GetRigidBody() const { return mRigidBody; }
+    btRigidBody* GetRigidBody() const { return m_rigidBody; }
 
 protected:
-    btCollisionShape* mCollisionShape;
-    btRigidBody* mRigidBody;
-    PhysicsSystem* mPhysicsSystem;
+    btRigidBody* m_rigidBody;
+    PhysicsSystem* m_physicsSystem;
 
     // Cached Frame to detect external input
-    glm::mat4 mWorldMatrixLastFrame;
+    glm::mat4 m_matrixLastFrame;
 
 };

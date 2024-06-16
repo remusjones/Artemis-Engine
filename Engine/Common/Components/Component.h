@@ -24,7 +24,7 @@ public:
 
 
 protected:
-    Entity* mAttachedEntity;
+    Entity* m_attachedEntity;
 
     // TODO: Replace with Hash
     std::string mName;

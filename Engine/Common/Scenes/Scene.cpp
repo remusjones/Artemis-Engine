@@ -32,18 +32,18 @@
 #include "Vulkan/Systems/RenderSystemBase.h"
 
 
-static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
-static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
+static ImGuizmo::MODE currentGizmoMode(ImGuizmo::WORLD);
+static ImGuizmo::OPERATION currentGizmoOperation(ImGuizmo::TRANSLATE);
 
 void Scene::PreConstruct(const char *aSceneName) {
     PROFILE_BEGIN("SCENE CONSTRUCT");
-    mSceneName = aSceneName;
+    m_sceneName = aSceneName;
 
-    mPhysicsSystem = new PhysicsSystem();
-    mSceneInteractionPhysicsSystem = new PhysicsSystem();
+    m_physicsSystem = new PhysicsSystem();
+    m_SceneInteractionPhysicsSystem = new PhysicsSystem();
 
-    mPhysicsSystem->Create();
-    mSceneInteractionPhysicsSystem->Create();
+    m_physicsSystem->Create();
+    m_SceneInteractionPhysicsSystem->Create();
     gInputManager->RegisterMouseInput([&](const SDL_MouseMotionEvent &motion) { MouseMovement(motion); },
                                       "Scene Mouse Movement");
     gInputManager->RegisterMouseInput([&](const SDL_MouseButtonEvent &input) { MouseInput(input); },
@@ -51,19 +51,19 @@ void Scene::PreConstruct(const char *aSceneName) {
 
     gInputManager->RegisterKeyCodeInput(SDLK_w,
                                         [this](KeyboardEvent) {
-                                            if (!mActiveSceneCamera->IsCameraConsumingInput())
+                                            if (!m_ActiveSceneCamera->IsCameraConsumingInput())
                                                 ChangeImGuizmoOperation(ImGuizmo::TRANSLATE);
                                         }, "Scene Gizmo Translate");
 
     gInputManager->RegisterKeyCodeInput(SDLK_e,
                                         [this](KeyboardEvent) {
-                                            if (!mActiveSceneCamera->IsCameraConsumingInput())
+                                            if (!m_ActiveSceneCamera->IsCameraConsumingInput())
                                                 ChangeImGuizmoOperation(ImGuizmo::ROTATE);
                                         }, "Scene Gizmo Rotate");
 
     gInputManager->RegisterKeyCodeInput(SDLK_r,
                                         [this](KeyboardEvent) {
-                                            if (!mActiveSceneCamera->IsCameraConsumingInput())
+                                            if (!m_ActiveSceneCamera->IsCameraConsumingInput())
                                                 ChangeImGuizmoOperation(ImGuizmo::SCALE);
                                         }, "Scene Gizmo Scale");
     PROFILE_END();
@@ -71,23 +71,23 @@ void Scene::PreConstruct(const char *aSceneName) {
 
 
 void Scene::MouseMovement(const SDL_MouseMotionEvent &aMouseMotion) {
-    mMouseX = static_cast<int>(aMouseMotion.x);
-    mMouseY = static_cast<int>(aMouseMotion.y);
+    m_mouseX = static_cast<int>(aMouseMotion.x);
+    m_mouseY = static_cast<int>(aMouseMotion.y);
 }
 
 void Scene::MouseInput(const SDL_MouseButtonEvent &aMouseInput) {
-    if (mActiveSceneCamera->IsCameraConsumingInput())
+    if (m_ActiveSceneCamera->IsCameraConsumingInput())
         return;
 
     if (aMouseInput.button == SDL_BUTTON_LEFT
         && aMouseInput.state == SDL_PRESSED
         && !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow)
         && !ImGuizmo::IsOver()) {
-        const auto pickedRigidBody = PickRigidBody(mMouseX, mMouseY);
+        const auto pickedRigidBody = PickRigidBody(m_mouseX, m_mouseY);
         for (const auto object: mObjects) {
             if (ColliderComponent comp; object->GetComponent<ColliderComponent>(comp)
                                         && pickedRigidBody == comp.GetRigidBody()) {
-                mPickedEntity = object;
+                m_PickedEntity = object;
                 break;
             }
         }
@@ -98,13 +98,13 @@ void Scene::Construct() {
     for (const auto obj: mObjects) {
         obj->Construct();
     }
-    assert(mActiveSceneCamera != nullptr);
+    assert(m_ActiveSceneCamera != nullptr);
 }
 
 void Scene::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
                    uint32_t aCurrentFrame) {
     for (const auto obj: mRenderSystems) {
-        obj->mPipeline->Draw(aCommandBuffer, *this);
+        obj->m_graphicsPipeline->Draw(aCommandBuffer, *this);
     }
 }
 
@@ -118,19 +118,19 @@ void Scene::DrawObjectsRecursive(Entity *obj) {
 
     ImGuiTreeNodeFlags nodeFlag = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
 
-    if (obj->mTransform.GetChildCount() == 0)
+    if (obj->m_transform.GetChildCount() == 0)
         nodeFlag = ImGuiTreeNodeFlags_Leaf;
 
-    if (mPickedEntity == obj) {
+    if (m_PickedEntity == obj) {
         nodeFlag |= ImGuiTreeNodeFlags_Selected;
         ImGui::Begin("Picked Object");
-        ImGui::Text(mPickedEntity->mName);
+        ImGui::Text(m_PickedEntity->mName);
         obj->OnImGuiRender();
         ImGui::End();
     }
 
     if (ImGui::TreeNodeEx(nodeLabel, nodeFlag)) {
-        for (auto childTransform: obj->mTransform.GetChildren()) {
+        for (auto childTransform: obj->m_transform.GetChildren()) {
             Entity *childEntity = mTransformEntityRelationships[childTransform];
             DrawObjectsRecursive(childEntity);
         }
@@ -138,16 +138,16 @@ void Scene::DrawObjectsRecursive(Entity *obj) {
     }
 
     if (ImGui::IsItemClicked()) {
-        mPickedEntity = obj;
+        m_PickedEntity = obj;
     }
 }
 
 bool Scene::IsParentOfPickedEntity(const Entity *obj) {
-    if (mPickedEntity == nullptr) {
+    if (m_PickedEntity == nullptr) {
         return false;
     }
-    for (const Entity *parentEntity = mPickedEntity; parentEntity != nullptr;
-         parentEntity = mTransformEntityRelationships[parentEntity->mTransform.GetParent()]) {
+    for (const Entity *parentEntity = m_PickedEntity; parentEntity != nullptr;
+         parentEntity = mTransformEntityRelationships[parentEntity->m_transform.GetParent()]) {
         if (parentEntity == obj) {
             return true;
         }
@@ -156,11 +156,11 @@ bool Scene::IsParentOfPickedEntity(const Entity *obj) {
 }
 
 void Scene::ChangeImGuizmoOperation(const int aOperation) {
-    mCurrentGizmoOperation = static_cast<ImGuizmo::OPERATION>(aOperation);
+    currentGizmoOperation = static_cast<ImGuizmo::OPERATION>(aOperation);
 }
 
 void Scene::OnImGuiRender() {
-    ImGui::Begin(mSceneName);
+    ImGui::Begin(m_sceneName);
 
     const ImGuiIO &io = ImGui::GetIO();
     // Draw Gizmo Controls TODO: Add KB Control shortcuts
@@ -168,23 +168,23 @@ void Scene::OnImGuiRender() {
     ImGui::BeginChild(GetUniqueLabel("Controls"),
                       ImVec2(0.0f, 0.0f),
                       ImGuiChildFlags_Border | ImGuiChildFlags_AutoResizeY); {
-        if (ImGui::RadioButton(GetUniqueLabel("Translate"), mCurrentGizmoOperation == ImGuizmo::TRANSLATE))
-            mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
+        if (ImGui::RadioButton(GetUniqueLabel("Translate"), currentGizmoOperation == ImGuizmo::TRANSLATE))
+            currentGizmoOperation = ImGuizmo::TRANSLATE;
 
         ImGui::SameLine();
-        if (ImGui::RadioButton(GetUniqueLabel("Rotate"), mCurrentGizmoOperation == ImGuizmo::ROTATE))
-            mCurrentGizmoOperation = ImGuizmo::ROTATE;
+        if (ImGui::RadioButton(GetUniqueLabel("Rotate"), currentGizmoOperation == ImGuizmo::ROTATE))
+            currentGizmoOperation = ImGuizmo::ROTATE;
 
         ImGui::SameLine();
-        if (ImGui::RadioButton(GetUniqueLabel("Scale"), mCurrentGizmoOperation == ImGuizmo::SCALE))
-            mCurrentGizmoOperation = ImGuizmo::SCALE;
+        if (ImGui::RadioButton(GetUniqueLabel("Scale"), currentGizmoOperation == ImGuizmo::SCALE))
+            currentGizmoOperation = ImGuizmo::SCALE;
 
-        if (mCurrentGizmoOperation != ImGuizmo::SCALE) {
-            if (ImGui::RadioButton(GetUniqueLabel("Local"), mCurrentGizmoMode == ImGuizmo::LOCAL))
-                mCurrentGizmoMode = ImGuizmo::LOCAL;
+        if (currentGizmoOperation != ImGuizmo::SCALE) {
+            if (ImGui::RadioButton(GetUniqueLabel("Local"), currentGizmoMode == ImGuizmo::LOCAL))
+                currentGizmoMode = ImGuizmo::LOCAL;
             ImGui::SameLine();
-            if (ImGui::RadioButton(GetUniqueLabel("World"), mCurrentGizmoMode == ImGuizmo::WORLD))
-                mCurrentGizmoMode = ImGuizmo::WORLD;
+            if (ImGui::RadioButton(GetUniqueLabel("World"), currentGizmoMode == ImGuizmo::WORLD))
+                currentGizmoMode = ImGuizmo::WORLD;
         }
     }
     ImGui::EndChild();
@@ -197,22 +197,22 @@ void Scene::OnImGuiRender() {
             ImGui::DragFloat(GetUniqueLabel("Ambient Lighting"), &mSceneData.ambientStrength, 0.1f);
         }
         if (ImGui::CollapsingHeader("Camera")) {
-            mActiveSceneCamera->OnImGuiRender();
+            m_ActiveSceneCamera->OnImGuiRender();
         }
         ImGui::Unindent();
     }
 
-    if (mPickedEntity != nullptr) {
+    if (m_PickedEntity != nullptr) {
         // Draw Gizmos
-        glm::mat4 matrix = mPickedEntity->mTransform.GetWorldMatrix();
+        glm::mat4 matrix = m_PickedEntity->m_transform.GetWorldMatrix();
 
         ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
         ImGuizmo::AllowAxisFlip(false);
-        if (ImGuizmo::Manipulate(glm::value_ptr(mActiveSceneCamera->GetViewMatrix()),
-                                 glm::value_ptr(mActiveSceneCamera->GetPerspectiveMatrix()),
-                                 mCurrentGizmoOperation, mCurrentGizmoMode,
-                                 glm::value_ptr(matrix),NULL)) {
-            mPickedEntity->mTransform.SetMatrix(matrix);
+        if (ImGuizmo::Manipulate(glm::value_ptr(m_ActiveSceneCamera->GetViewMatrix()),
+                                 glm::value_ptr(m_ActiveSceneCamera->GetPerspectiveMatrix()),
+                                 currentGizmoOperation, currentGizmoMode,
+                                 glm::value_ptr(matrix), NULL)) {
+            m_PickedEntity->m_transform.SetMatrix(matrix);
         }
     }
 
@@ -220,7 +220,7 @@ void Scene::OnImGuiRender() {
         for (const auto obj: mObjects) {
             ImGui::BeginGroup();
             ImGui::Indent(); {
-                if (obj->mTransform.GetParent() == nullptr) {
+                if (obj->m_transform.GetParent() == nullptr) {
                     DrawObjectsRecursive(obj);
                 }
             }
@@ -253,22 +253,22 @@ void Scene::OnImGuiRender() {
         if (ImGui::CollapsingHeader("Graphic Systems Info")) {
             if (ImGui::Button(GetUniqueLabel("Rebuild All"))) {
                 gGraphics->mVulkanEngine.SubmitEndOfFrameTask([this] {
-                    for (const auto &renderSystem: mRenderSystems) {
+                    for (const auto& renderSystem: mRenderSystems) {
                         vkDeviceWaitIdle(gGraphics->mLogicalDevice);
-                        renderSystem->mPipeline->Destroy();
+                        renderSystem->m_graphicsPipeline->Destroy();
                         renderSystem->Create(renderSystem->GetBoundDescriptors());
-                        renderSystem->mPipeline->Create();
+                        renderSystem->m_graphicsPipeline->Create();
                     }
                 });
             }
             ImGui::Indent();
             for (const auto system: mRenderSystems) {
-                if (ImGui::CollapsingHeader(system->mPipeline->mPipelineName)) {
+                if (ImGui::CollapsingHeader(system->m_graphicsPipeline->mPipelineName)) {
                     ImGui::Indent();
                     ImGui::Text("Material Count: ");
                     ImGui::SameLine();
-                    ImGui::Text(std::to_string(system->mPipeline->mRenderers.size()).c_str());
-                    for (const auto renderer: system->mPipeline->mRenderers) {
+                    ImGui::Text(std::to_string(system->m_graphicsPipeline->mRenderers.size()).c_str());
+                    for (const auto renderer: system->m_graphicsPipeline->mRenderers) {
                         ImGui::Text(renderer->mMaterial->mMaterialName);
                     }
                     ImGui::Unindent();
@@ -284,8 +284,8 @@ void Scene::OnImGuiRender() {
 
 void Scene::Tick(const float aDeltaTime) {
     PROFILE_BEGIN("Scene Physics");
-    mPhysicsSystem->Tick(aDeltaTime);
-    mSceneInteractionPhysicsSystem->Tick(aDeltaTime);
+    m_physicsSystem->Tick(aDeltaTime);
+    m_SceneInteractionPhysicsSystem->Tick(aDeltaTime);
     for (const auto obj: mObjects) {
         obj->Tick(aDeltaTime);
     }
@@ -293,29 +293,29 @@ void Scene::Tick(const float aDeltaTime) {
 }
 
 void Scene::Cleanup() {
-    Logger::Log(spdlog::level::info, (std::string("Cleaning up scene ") + mSceneName).c_str());
+    Logger::Log(spdlog::level::info, (std::string("Cleaning up scene ") + m_sceneName).c_str());
     for (const auto obj: mObjects) {
         obj->Cleanup();
         delete obj;
     }
 
-    delete mActiveSceneCamera;
+    delete m_ActiveSceneCamera;
     for (const auto system: mRenderSystems) {
-        system->mPipeline->Destroy();
-        delete system->mPipeline.get();
+        system->m_graphicsPipeline->Destroy();
+        delete system->m_graphicsPipeline.get();
     }
-    mPhysicsSystem->Destroy();
-    delete mPhysicsSystem;
-    mPhysicsSystem = nullptr;
+    m_physicsSystem->Destroy();
+    delete m_physicsSystem;
+    m_physicsSystem = nullptr;
 
-    mSceneInteractionPhysicsSystem->Destroy();
-    delete mSceneInteractionPhysicsSystem;
-    mSceneInteractionPhysicsSystem = nullptr;
+    m_SceneInteractionPhysicsSystem->Destroy();
+    delete m_SceneInteractionPhysicsSystem;
+    m_SceneInteractionPhysicsSystem = nullptr;
 }
 
 void Scene::AddRenderSystem(RenderSystemBase *aRenderSystem) {
     mRenderSystems.push_back(aRenderSystem);
-    aRenderSystem->mPipeline->Create();
+    aRenderSystem->m_graphicsPipeline->Create();
 }
 
 // TODO: Make pointers managed
@@ -328,9 +328,9 @@ MeshObject *Scene::CreateObject(const char *aName, const char *aMeshPath, Materi
     object->mMeshRenderer.BindRenderer(aPipeline);
     object->mMeshRenderer.LoadMesh((FileManagement::GetWorkingDirectory() + aMeshPath).c_str());
 
-    object->mTransform.SetLocalPosition(aPos);
-    object->mTransform.SetLocalRotation(aRot);
-    object->mTransform.SetLocalScale(aScale);
+    object->m_transform.SetLocalPosition(aPos);
+    object->m_transform.SetLocalRotation(aRot);
+    object->m_transform.SetLocalScale(aScale);
 
     //auto *sceneCollider = new ColliderComponent();
     //sceneCollider->SetName("SceneCollider");
@@ -338,7 +338,7 @@ MeshObject *Scene::CreateObject(const char *aName, const char *aMeshPath, Materi
     //colliderInfo.collisionShape = CollisionHelper::MakeCollisionMesh(object->mMeshRenderer.mMesh->GetVertices(),
     //                                                                  object->mMeshRenderer.mMesh->GetIndices());
     ////   colliderInfo.collisionShape = CollisionHelper::MakeAABBCollision(object->mMeshRenderer.mMesh->GetVertices());
-    //sceneCollider->Create(mSceneInteractionPhysicsSystem, colliderInfo);
+    //sceneCollider->Create(m_SceneInteractionPhysicsSystem, colliderInfo);
     //object->AddComponent(sceneCollider);
 
     AddEntity(object);
@@ -347,7 +347,7 @@ MeshObject *Scene::CreateObject(const char *aName, const char *aMeshPath, Materi
 
 void Scene::AddEntity(Entity *aEntity) {
     mObjects.push_back(aEntity);
-    mTransformEntityRelationships[&aEntity->mTransform] = aEntity;
+    mTransformEntityRelationships[&aEntity->m_transform] = aEntity;
 }
 
 void Scene::AttachSphereCollider(Entity &aEntity, const float aRadius, const float aMass,
@@ -357,7 +357,7 @@ void Scene::AttachSphereCollider(Entity &aEntity, const float aRadius, const flo
     sphereColliderInfo.collisionShape = new btSphereShape(aRadius);
     sphereColliderInfo.mass = aMass;
     sphereColliderInfo.friction = aFriction;
-    sphereCollider->Create(mPhysicsSystem, sphereColliderInfo);
+    sphereCollider->Create(m_physicsSystem, sphereColliderInfo);
     aEntity.AddComponent(sphereCollider);
 }
 
@@ -368,18 +368,18 @@ void Scene::AttachBoxCollider(Entity &aEntity, const glm::vec3 aHalfExtents, con
     boxColliderInfo.collisionShape = new btBoxShape(btVector3(aHalfExtents.x, aHalfExtents.y, aHalfExtents.z));
     boxColliderInfo.mass = aMass;
     boxColliderInfo.friction = aFriction;
-    boxCollider->Create(mPhysicsSystem, boxColliderInfo);
+    boxCollider->Create(m_physicsSystem, boxColliderInfo);
     aEntity.AddComponent(boxCollider);
 }
 
 const btRigidBody *Scene::PickRigidBody(const int x, const int y) const {
-    const Ray ray = mActiveSceneCamera->GetRayTo(x, y);
+    const Ray ray = m_ActiveSceneCamera->GetRayTo(x, y);
     const btVector3 rayFrom(CollisionHelper::GlmToBullet(ray.origin));
-    const btVector3 rayTo(CollisionHelper::GlmToBullet(ray.origin + ray.direction * mActiveSceneCamera->mZFar));
+    const btVector3 rayTo(CollisionHelper::GlmToBullet(ray.origin + ray.direction * m_ActiveSceneCamera->mZFar));
 
     btCollisionWorld::ClosestRayResultCallback RayCallback(rayFrom, rayTo);
 
-    mPhysicsSystem->mDynamicsWorld->rayTest(rayFrom, rayTo, RayCallback);
+    m_physicsSystem->GetDynamicsWorld()->rayTest(rayFrom, rayTo, RayCallback);
     if (RayCallback.hasHit()) {
         if (const btRigidBody *pickedBody = btRigidBody::upcast(RayCallback.m_collisionObject)) {
             return pickedBody;

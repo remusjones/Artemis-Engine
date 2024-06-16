@@ -42,6 +42,6 @@ void LightingRenderSystem::CreatePipeline() {
     mPipelineConfig.depthStencilInfo.depthCompareOp = VK_COMPARE_OP_NEVER;
 
     CreatePipelineObject("LightingRenderSystem");
-    mPipeline->CreateShaderModule("/Assets/Shaders/Filtercube_v.spv", VK_SHADER_STAGE_VERTEX_BIT);
-    mPipeline->CreateShaderModule("/Assets/Shaders/Skybox_f.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+    m_graphicsPipeline->CreateShaderModule("/Assets/Shaders/Filtercube_v.spv", VK_SHADER_STAGE_VERTEX_BIT);
+    m_graphicsPipeline->CreateShaderModule("/Assets/Shaders/Skybox_f.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 }

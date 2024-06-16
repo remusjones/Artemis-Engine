@@ -12,7 +12,7 @@ public:
 
     ImGuiLayer();
     virtual void OnImGuiRender() = 0;
-    const char* GetUniqueLabel(const char* aLabel);
+    const char* GetUniqueLabel(const char* aLabel); // Todo: Refactor method of generating unique labels (Urgently)
 
 
 private:

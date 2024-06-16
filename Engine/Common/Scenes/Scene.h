@@ -73,20 +73,20 @@ private:
 
 public:
     // TODO: Make unique ptr
-    FlyCamera *mActiveSceneCamera;
-    std::vector<RenderSystemBase *> mRenderSystems;
+    FlyCamera* m_ActiveSceneCamera;
+    std::vector<RenderSystemBase*> mRenderSystems;
     GPUSceneData mSceneData;
-    const char *mSceneName; //
-    PhysicsSystem *mPhysicsSystem;
+    const char* m_sceneName; //
+    PhysicsSystem* m_physicsSystem;
 
 protected:
     // TODO: Make unique ptr
-    std::vector<Entity *> mObjects;
-    std::unordered_map<Transform *, Entity *> mTransformEntityRelationships;
+    std::vector<Entity*> mObjects;
+    std::unordered_map<Transform*, Entity*> mTransformEntityRelationships;
     std::unordered_map<std::string, std::unique_ptr<Texture>> mLoadedTextures;
 private:
     // TODO: Make unique ptr
-    PhysicsSystem *mSceneInteractionPhysicsSystem;
-    Entity *mPickedEntity{nullptr};
-    int mMouseX{0}, mMouseY{0};
+    PhysicsSystem* m_SceneInteractionPhysicsSystem;
+    Entity* m_PickedEntity{nullptr};
+    int m_mouseX{0}, m_mouseY{0};
 };

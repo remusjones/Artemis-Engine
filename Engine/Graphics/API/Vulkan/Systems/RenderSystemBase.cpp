@@ -14,7 +14,7 @@ void RenderSystemBase::Create(const std::vector<VkDescriptorSetLayout> &aDescrip
 }
 
 void RenderSystemBase::CreatePipelineObject(const char *pipelineName, bool aDestructive) {
-    if (mPipeline == nullptr || aDestructive)
-        mPipeline = std::make_unique<GraphicsPipeline>(pipelineName, mPipelineConfig);
-    else mPipeline->mPipelineConfig = mPipelineConfig;
+    if (m_graphicsPipeline == nullptr || aDestructive)
+        m_graphicsPipeline = std::make_unique<GraphicsPipeline>(pipelineName, mPipelineConfig);
+    else m_graphicsPipeline->mPipelineConfig = mPipelineConfig;
 }

@@ -21,7 +21,7 @@ protected:
 
 
 public:
-    std::unique_ptr<GraphicsPipeline> mPipeline;
+    std::unique_ptr<GraphicsPipeline> m_graphicsPipeline;
     std::vector<VkDescriptorSetLayout> GetBoundDescriptors() {return mBoundDescriptorLayouts;}
 protected:
     VkPipelineLayout mPipelineLayout = nullptr;

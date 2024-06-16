@@ -15,19 +15,29 @@ public:
 
     void Create();
     void AwakeRigidBodies();
-
-    void Tick(float aDeltaTime) const;
-
+    void Tick(float aDeltaTime);
     void Destroy();
+    void AddRigidBody(btRigidBody* aRigidBody);
+    void AddCollisionShape(btCollisionShape* aCollisionShape);
 
-    btAlignedObjectArray<btCollisionShape *> mCollisionShapes;
-    btAlignedObjectArray<btRigidBody*> mAllocatedRigidBodies;
+    [[nodiscard]] btAlignedObjectArray <btRigidBody*> GetRigidBodies() const;
+    [[nodiscard]] btAlignedObjectArray <btCollisionShape*> GetCollisionShapes() const;
+    [[nodiscard]] btBroadphaseInterface* GetBroadphase() const;
+    [[nodiscard]] btCollisionDispatcher* GetDispatcher() const;
+    [[nodiscard]] btConstraintSolver* GetConstraintSolver() const;
+    [[nodiscard]] btDefaultCollisionConfiguration* GetCollisionConfiguration() const;
+    [[nodiscard]] btDiscreteDynamicsWorld* GetDynamicsWorld() const;
 
-    btBroadphaseInterface *mBroadphase;
-    btCollisionDispatcher *mDispatcher;
-    btConstraintSolver *mSolver;
-    btDefaultCollisionConfiguration *mCollisionConfiguration;
-    btDiscreteDynamicsWorld *mDynamicsWorld;
+
+private:
+    btAlignedObjectArray<btCollisionShape*> m_CollisionShapes;
+    btAlignedObjectArray<btRigidBody*> m_AllocatedRigidBodies;
+
+    btBroadphaseInterface* m_broadphaseInterface;
+    btCollisionDispatcher* m_collisionDispatcher;
+    btConstraintSolver* m_constraintSolver;
+    btDefaultCollisionConfiguration* m_collisionConfiguration;
+    btDiscreteDynamicsWorld* m_dynamicsWorld;
 
     float_t mGravity = -9.81f;
 };

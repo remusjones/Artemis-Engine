@@ -26,7 +26,7 @@ void MeshObject::CreateObject(
     mName = aName;
     Logger::Log(spdlog::level::info, (std::string("Creating object ") + mName).c_str());
     mMeshRenderer.mMaterial = &aMaterial;
-    mMeshRenderer.mTransform = &mTransform;
+    mMeshRenderer.mTransform = &m_transform;
 }
 
 void MeshObject::OnImGuiRender() {

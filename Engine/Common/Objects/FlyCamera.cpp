@@ -53,11 +53,11 @@ void FlyCamera::OnImGuiRender() {
     }
 
     ImGui::SeparatorText("DEBUG");
-    if (ImGui::DragFloat3(GetUniqueLabel("Forward"), &mTransform.Forward()[0], 0.1f)) {
+    if (ImGui::DragFloat3(GetUniqueLabel("Forward"), &m_transform.Forward()[0], 0.1f)) {
     }
-    if (ImGui::DragFloat3(GetUniqueLabel("Right"), &mTransform.Right()[0], 0.1f)) {
+    if (ImGui::DragFloat3(GetUniqueLabel("Right"), &m_transform.Right()[0], 0.1f)) {
     }
-    if (ImGui::DragFloat3(GetUniqueLabel("Up"), &mTransform.Up()[0], 0.1f)) {
+    if (ImGui::DragFloat3(GetUniqueLabel("Up"), &m_transform.Up()[0], 0.1f)) {
     }
     ImGui::Unindent();
 }
@@ -95,7 +95,7 @@ void FlyCamera::MouseMovement(const SDL_MouseMotionEvent &aMouseMotion) {
 
     constexpr float sensitivity = 0.1f;
     const glm::vec2 delta = -glm::vec2(yDelta, xDelta) * sensitivity;
-    mTransform.RotateAxisLocal(delta);
+    m_transform.RotateAxisLocal(delta);
 }
 
 void FlyCamera::MouseInput(const SDL_MouseButtonEvent &aMouseInput) {
@@ -124,11 +124,11 @@ void FlyCamera::Tick(float aDeltaTime) {
         mMoveVector.x += mInput[3] ? mSpeed : 0;
         mMoveVector.y += mInput[4] ? mSpeed : 0;
         mMoveVector.y += mInput[5] ? -mSpeed : 0;
-        mTransform.TranslateLocal(mMoveVector * aDeltaTime);
+        m_transform.TranslateLocal(mMoveVector * aDeltaTime);
     } else {
         constexpr float dampeningSpeed = 25.f;
         mMoveVector = lerp(mMoveVector, glm::vec3(), aDeltaTime * dampeningSpeed);
-        mTransform.TranslateLocal(mMoveVector * aDeltaTime);
+        m_transform.TranslateLocal(mMoveVector * aDeltaTime);
     }
 
 

@@ -7,11 +7,11 @@
 #include "Objects/Entity.h"
 
 void Component::SetEntity(Entity *aEntity) {
-    mAttachedEntity = aEntity;
+    m_attachedEntity = aEntity;
 }
 
 void Component::ClearEntity() {
-    mAttachedEntity = nullptr;
+    m_attachedEntity = nullptr;
 }
 
 void Component::SetName(const std::string& aName) {
@@ -26,7 +26,7 @@ void Component::Tick(float aDeltaTime) {
 }
 
 void Component::Destroy() {
-    mAttachedEntity->RemoveComponent(this);
+    m_attachedEntity->RemoveComponent(this);
 }
 
 void Component::Initialize() {
