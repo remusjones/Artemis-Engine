@@ -25,26 +25,30 @@ void SandboxScene::PreConstruct(const char *aSceneName) {
 
 void SandboxScene::Construct() {
 
+    // Todo move rendering setup to a separate function
     //
     // Create Render Pipelines
     //
     GraphicsPipeline::DefaultPipelineConfigInfo(mDefaultPipelineConfig);
-    mPBRPipeline = std::make_shared<PBRRenderSystem>();
-    mUnlitPipeline = std::make_shared<UnlitRenderSystem>();
+
+    // todo: do I need to actually allocate these on the heap?
+    mPBRPipeline = std::make_unique<PBRRenderSystem>();
+    mUnlitPipeline = std::make_unique<UnlitRenderSystem>();
     mCubemapPipeline = std::make_unique<SkyboxRenderSystem>();
-    mWireframeRenderSystem = std::make_shared<WireframeRenderSystem>();
-    mLineRenderPipeline = std::make_shared<LineRenderSystem>();
+    mWireframeRenderSystem = std::make_unique<WireframeRenderSystem>();
+    mLineRenderPipeline = std::make_unique<LineRenderSystem>();
 
     //
     // Define Material Usages
     //
-    Material *monkeyTexturedMaterial = mMaterialUnlitFactory.CreateMaterialInstance<DefaultMaterial>("Monkey Unlit").get();
-    Material *unlitMaterial = mMaterialUnlitFactory.CreateMaterialInstance<DefaultMaterial>("Unlit").get();
-    Material *teapotMaterial = mMaterialPBRFactory.CreateMaterialInstance<DefaultMaterial>("Teapot PBR").get();
-    Material *lightMaterial = mMaterialUnlitFactory.CreateMaterialInstance<DefaultMaterial>("Light Unlit").get();
-    Material *sphereMaterial = mMaterialPBRFactory.CreateMaterialInstance<DefaultMaterial>("Sphere PBR").get();
-    Material *cubeMaterial = mMaterialPBRFactory.CreateMaterialInstance<DefaultMaterial>("Cube PBR").get();
-    mCubemap = mGenericMaterialFactory.CreateMaterialInstance<Cubemap>("Skybox Cubemap").get();
+    // todo: do I need to actually allocate these on the heap?
+    Material* monkeyTexturedMaterial = mMaterialUnlitFactory.Create<DefaultMaterial>("Monkey Unlit");
+    Material* unlitMaterial = mMaterialUnlitFactory.Create<DefaultMaterial>("Unlit");
+    Material* teapotMaterial = mMaterialPBRFactory.Create<DefaultMaterial>("Teapot PBR");
+    Material* lightMaterial = mMaterialUnlitFactory.Create<DefaultMaterial>("Light Unlit");
+    Material* sphereMaterial = mMaterialPBRFactory.Create<DefaultMaterial>("Sphere PBR");
+    Material* cubeMaterial = mMaterialPBRFactory.Create<DefaultMaterial>("Cube PBR");
+    mCubemap = mGenericMaterialFactory.Create<Cubemap>("Skybox Cubemap");
 
     //
     // Make Materials

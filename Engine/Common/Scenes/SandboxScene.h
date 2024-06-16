@@ -47,11 +47,10 @@ private:
 
     Cubemap* mCubemap;
     std::unique_ptr<SkyboxRenderSystem> mCubemapPipeline;
-    std::shared_ptr<UnlitRenderSystem> mUnlitPipeline;
-    std::shared_ptr<WireframeRenderSystem> mWireframeRenderSystem;
-    std::shared_ptr<PBRRenderSystem> mPBRPipeline;
-
-    std::shared_ptr<LineRenderSystem> mLineRenderPipeline;
+    std::unique_ptr<UnlitRenderSystem> mUnlitPipeline;
+    std::unique_ptr<WireframeRenderSystem> mWireframeRenderSystem;
+    std::unique_ptr<PBRRenderSystem> mPBRPipeline;
+    std::unique_ptr<LineRenderSystem> mLineRenderPipeline;
 
     MaterialFactory mMaterialUnlitFactory;
     MaterialFactory mMaterialPBRFactory;

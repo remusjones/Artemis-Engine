@@ -5,17 +5,18 @@
 #pragma once
 #include <memory>
 
-#include "../../Base/Common/Material.h"
+#include "Base/Common/Material.h"
 
 
 class MaterialFactory {
 public:
     template<typename T>
-    std::shared_ptr<T> CreateMaterialInstance(const char* aMaterialName = "Default") {
+    T* Create(const char* aMaterialName = "Default") {
         static_assert(std::is_base_of_v<Material, T>, "T must derive from Material");
-        std::shared_ptr<T> material = std::make_shared<T>(aMaterialName);
-        mMaterials.push_back(material);
-        return material;
+        std::unique_ptr<T> material = std::make_unique<T>(aMaterialName);
+        T* materialPtr = material.get();
+        mMaterials.push_back(std::move(material)); // move into array
+        return materialPtr;
     }
 
     void MakeMaterials() const {
@@ -38,5 +39,5 @@ public:
         return descriptors;
     }
 
-    std::vector<std::shared_ptr<Material>> mMaterials = {};
+    std::vector<std::unique_ptr<Material>> mMaterials = {};
 };
