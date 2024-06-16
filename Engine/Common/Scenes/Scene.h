@@ -52,7 +52,8 @@ public:
                            glm::vec3 aScale = glm::vec3(1)
     );
 
-    void AddEntity(Entity *aEntity);
+    void AddEntity(std::unique_ptr<Entity> aEntity);
+    void AddEntity(Entity* aEntity);
 
     void AttachSphereCollider(Entity &aEntity, const float aRadius, const float aMass, float aFriction = 0.5f) const;
 
@@ -66,9 +67,11 @@ public:
     const btRigidBody *PickRigidBody(int x, int y) const;
 
     Texture* CreateTexture(const char *aName, std::vector<std::string> aPathsSet);
+protected:
+    virtual Entity* MakeEntity(); // todo: move to factory
 private:
-    void DrawObjectsRecursive(Entity *obj);
-    bool IsParentOfPickedEntity(const Entity *obj);
+    void DrawObjectsRecursive(Entity& entityToDraw);
+    bool IsParentOfPickedEntity(const Entity& obj);
     void ChangeImGuizmoOperation(int aOperation);
 
 public:
@@ -81,7 +84,7 @@ public:
 
 protected:
     // TODO: Make unique ptr
-    std::vector<Entity*> mObjects;
+    std::vector<std::unique_ptr<Entity>> mObjects;
     std::unordered_map<Transform*, Entity*> mTransformEntityRelationships;
     std::unordered_map<std::string, std::unique_ptr<Texture>> mLoadedTextures;
 private:
@@ -89,4 +92,6 @@ private:
     PhysicsSystem* m_SceneInteractionPhysicsSystem;
     Entity* m_PickedEntity{nullptr};
     int m_mouseX{0}, m_mouseY{0};
+
+
 };

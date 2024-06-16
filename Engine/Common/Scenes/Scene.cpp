@@ -84,10 +84,10 @@ void Scene::MouseInput(const SDL_MouseButtonEvent &aMouseInput) {
         && !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow)
         && !ImGuizmo::IsOver()) {
         const auto pickedRigidBody = PickRigidBody(m_mouseX, m_mouseY);
-        for (const auto object: mObjects) {
+        for (const auto& object: mObjects) {
             if (ColliderComponent comp; object->GetComponent<ColliderComponent>(comp)
                                         && pickedRigidBody == comp.GetRigidBody()) {
-                m_PickedEntity = object;
+                m_PickedEntity = object.get();
                 break;
             }
         }
@@ -95,7 +95,7 @@ void Scene::MouseInput(const SDL_MouseButtonEvent &aMouseInput) {
 }
 
 void Scene::Construct() {
-    for (const auto obj: mObjects) {
+    for (const auto& obj: mObjects) {
         obj->Construct();
     }
     assert(m_ActiveSceneCamera != nullptr);
@@ -109,46 +109,46 @@ void Scene::Render(VkCommandBuffer aCommandBuffer, uint32_t aImageIndex,
 }
 
 
-void Scene::DrawObjectsRecursive(Entity *obj) {
-    const char *nodeLabel = obj->GetUniqueLabel(obj->mName);
+void Scene::DrawObjectsRecursive(Entity& entityToDraw) {
+    const char *nodeLabel = entityToDraw.GetUniqueLabel(entityToDraw.mName);
 
-    if (IsParentOfPickedEntity(obj)) {
+    if (IsParentOfPickedEntity(entityToDraw)) {
         ImGui::SetNextItemOpen(true, ImGuiCond_Once);
     }
 
     ImGuiTreeNodeFlags nodeFlag = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
 
-    if (obj->m_transform.GetChildCount() == 0)
+    if (entityToDraw.m_transform.GetChildCount() == 0)
         nodeFlag = ImGuiTreeNodeFlags_Leaf;
 
-    if (m_PickedEntity == obj) {
+    if (m_PickedEntity == &entityToDraw) {
         nodeFlag |= ImGuiTreeNodeFlags_Selected;
         ImGui::Begin("Picked Object");
         ImGui::Text(m_PickedEntity->mName);
-        obj->OnImGuiRender();
+        entityToDraw.OnImGuiRender();
         ImGui::End();
     }
 
     if (ImGui::TreeNodeEx(nodeLabel, nodeFlag)) {
-        for (auto childTransform: obj->m_transform.GetChildren()) {
-            Entity *childEntity = mTransformEntityRelationships[childTransform];
+        for (auto childTransform: entityToDraw.m_transform.GetChildren()) {
+            Entity& childEntity = *mTransformEntityRelationships[childTransform];
             DrawObjectsRecursive(childEntity);
         }
         ImGui::TreePop();
     }
 
     if (ImGui::IsItemClicked()) {
-        m_PickedEntity = obj;
+        m_PickedEntity = &entityToDraw;
     }
 }
 
-bool Scene::IsParentOfPickedEntity(const Entity *obj) {
+bool Scene::IsParentOfPickedEntity(const Entity& obj){
     if (m_PickedEntity == nullptr) {
         return false;
     }
     for (const Entity *parentEntity = m_PickedEntity; parentEntity != nullptr;
          parentEntity = mTransformEntityRelationships[parentEntity->m_transform.GetParent()]) {
-        if (parentEntity == obj) {
+        if (parentEntity == &obj) {
             return true;
         }
     }
@@ -163,7 +163,6 @@ void Scene::OnImGuiRender() {
     ImGui::Begin(m_sceneName);
 
     const ImGuiIO &io = ImGui::GetIO();
-    // Draw Gizmo Controls TODO: Add KB Control shortcuts
     ImGui::SeparatorText("Controls");
     ImGui::BeginChild(GetUniqueLabel("Controls"),
                       ImVec2(0.0f, 0.0f),
@@ -211,17 +210,17 @@ void Scene::OnImGuiRender() {
         if (ImGuizmo::Manipulate(glm::value_ptr(m_ActiveSceneCamera->GetViewMatrix()),
                                  glm::value_ptr(m_ActiveSceneCamera->GetPerspectiveMatrix()),
                                  currentGizmoOperation, currentGizmoMode,
-                                 glm::value_ptr(matrix), NULL)) {
+                                 glm::value_ptr(matrix), nullptr)) {
             m_PickedEntity->m_transform.SetMatrix(matrix);
         }
     }
 
     if (ImGui::CollapsingHeader("Objects")) {
-        for (const auto obj: mObjects) {
+        for (const auto& obj: mObjects) {
             ImGui::BeginGroup();
             ImGui::Indent(); {
                 if (obj->m_transform.GetParent() == nullptr) {
-                    DrawObjectsRecursive(obj);
+                    DrawObjectsRecursive(*obj);
                 }
             }
             ImGui::Unindent();
@@ -286,7 +285,7 @@ void Scene::Tick(const float aDeltaTime) {
     PROFILE_BEGIN("Scene Physics");
     m_physicsSystem->Tick(aDeltaTime);
     m_SceneInteractionPhysicsSystem->Tick(aDeltaTime);
-    for (const auto obj: mObjects) {
+    for (const auto& obj: mObjects) {
         obj->Tick(aDeltaTime);
     }
     PROFILE_END();
@@ -294,9 +293,8 @@ void Scene::Tick(const float aDeltaTime) {
 
 void Scene::Cleanup() {
     Logger::Log(spdlog::level::info, (std::string("Cleaning up scene ") + m_sceneName).c_str());
-    for (const auto obj: mObjects) {
+    for (const auto& obj: mObjects) {
         obj->Cleanup();
-        delete obj;
     }
 
     delete m_ActiveSceneCamera;
@@ -322,8 +320,8 @@ void Scene::AddRenderSystem(RenderSystemBase *aRenderSystem) {
 MeshObject *Scene::CreateObject(const char *aName, const char *aMeshPath, Material &aMaterial,
                                 GraphicsPipeline &aPipeline, const glm::vec3 aPos, const glm::vec3 aRot,
                                 const glm::vec3 aScale) {
-    auto *object = new MeshObject();
 
+    auto object = std::make_unique<MeshObject>();
     object->CreateObject(aMaterial, aName);
     object->mMeshRenderer.BindRenderer(aPipeline);
     object->mMeshRenderer.LoadMesh((FileManagement::GetWorkingDirectory() + aMeshPath).c_str());
@@ -341,13 +339,15 @@ MeshObject *Scene::CreateObject(const char *aName, const char *aMeshPath, Materi
     //sceneCollider->Create(m_SceneInteractionPhysicsSystem, colliderInfo);
     //object->AddComponent(sceneCollider);
 
-    AddEntity(object);
-    return object;
+    MeshObject* rawPtr = object.get();
+    AddEntity(std::move(object));
+    return rawPtr;
+
 }
 
-void Scene::AddEntity(Entity *aEntity) {
-    mObjects.push_back(aEntity);
-    mTransformEntityRelationships[&aEntity->m_transform] = aEntity;
+void Scene::AddEntity(std::unique_ptr<Entity> aEntity) {
+    mTransformEntityRelationships[&aEntity->m_transform] = aEntity.get();
+    mObjects.push_back(std::move(aEntity));
 }
 
 void Scene::AttachSphereCollider(Entity &aEntity, const float aRadius, const float aMass,
@@ -402,4 +402,16 @@ Texture *Scene::CreateTexture(const char *aName, std::vector<std::string> aPaths
 
     Logger::Log(spdlog::level::err, "Texture Already Exists");
     return nullptr;
+}
+
+Entity* Scene::MakeEntity() {
+    std::unique_ptr<Entity> entity = std::make_unique<Entity>();
+    Entity* entityPtr = entity.get();
+    mObjects.push_back(std::move(entity));
+    return entityPtr;
+}
+
+void Scene::AddEntity(Entity* aEntity) {
+    mTransformEntityRelationships[&aEntity->m_transform] = aEntity;
+    mObjects.push_back(std::unique_ptr<Entity>(aEntity));
 }
